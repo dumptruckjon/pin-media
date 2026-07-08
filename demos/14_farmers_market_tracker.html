@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Farmers Market Sales &amp; Profit Tracker</title>
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+:root {
+  /* Spacing scale */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+
+  /* Type scale */
+  --text-xs: 13px; --text-sm: 15px; --text-base: 17px;
+  --text-lg: 20px; --text-xl: 26px; --text-2xl: 34px;
+
+  /* Radii */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 24px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+
+  /* Light palette */
+  --bg:        #F5F7FA;
+  --bg-card:   #FFFFFF;
+  --bg-input:  #FFFFFF;
+  --bg-muted:  #EEF1F6;
+  --border:    #D8E0EA;
+  --border-focus: #6B9BD1;
+  --text-ink:  #2B3A4A;
+  --text-muted:#637080;
+  --text-light:#99A8B8;
+  --accent:    #6B9BD1;
+  --accent-dk: #4A7BB5;
+  --accent-bg: #EBF3FB;
+  --success:   #2E7D54;
+  --success-bg:#E6F4ED;
+  --danger:    #C0392B;
+  --danger-bg: #FDECEA;
+  --warn:      #B7791F;
+  --warn-bg:   #FEF8E7;
+  --profit-pos:#2E7D54;
+  --profit-neg:#C0392B;
+
+  /* Tab bar */
+  --tab-bg:    #FFFFFF;
+  --tab-active-bg: #6B9BD1;
+  --tab-active-text: #FFFFFF;
+  --tab-text:  #637080;
+}
+
+[data-theme="dark"] {
+  --bg:        #141C26;
+  --bg-card:   #1E2A38;
+  --bg-input:  #1A2433;
+  --bg-muted:  #243245;
+  --border:    #2E3F56;
+  --border-focus: #7AAEDE;
+  --text-ink:  #E4EAF2;
+  --text-muted:#8CA0B5;
+  --text-light:#506070;
+  --accent:    #7AAEDE;
+  --accent-dk: #5A8EC8;
+  --accent-bg: #1A2E42;
+  --success:   #4CAF80;
+  --success-bg:#0E2A1E;
+  --danger:    #E57373;
+  --danger-bg: #2A1010;
+  --warn:      #F0C060;
+  --warn-bg:   #2A2008;
+  --profit-pos:#4CAF80;
+  --profit-neg:#E57373;
+  --tab-bg:    #1E2A38;
+  --tab-active-bg: #7AAEDE;
+  --tab-active-text: #141C26;
+  --tab-text:  #8CA0B5;
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--text-base);
+  color: var(--text-ink);
+  background: var(--bg);
+  min-height: 100vh;
+  transition: background .2s, color .2s;
+}
+input, select, textarea, button {
+  font-family: inherit;
+  font-size: inherit;
+}
+input:focus, select:focus, textarea:focus, button:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   APP SHELL
+   ============================================================ */
+#app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 80px;
+}
+
+/* Header */
+#app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-4) var(--sp-4);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+#app-title {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-ink);
+  line-height: 1.2;
+}
+#app-title span {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--text-muted);
+}
+.header-actions { display: flex; gap: var(--sp-2); align-items: center; }
+
+/* Theme toggle */
+#theme-toggle {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-1) var(--sp-3);
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  transition: all .15s;
+}
+#theme-toggle:hover { background: var(--accent-bg); color: var(--accent); }
+
+/* ============================================================
+   TAB NAV
+   ============================================================ */
+#tab-nav {
+  display: flex;
+  background: var(--tab-bg);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 57px;
+  z-index: 99;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#tab-nav::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: var(--sp-3) var(--sp-2);
+  border: none;
+  background: transparent;
+  color: var(--tab-text);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-bottom: 3px solid transparent;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--accent); background: var(--accent-bg); }
+.tab-btn.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--accent-bg);
+}
+.tab-btn svg { flex-shrink: 0; }
+
+/* ============================================================
+   PANELS
+   ============================================================ */
+.panel { display: none; padding: var(--sp-4); }
+.panel.active { display: block; }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-6);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--sp-4);
+}
+.card-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+/* Summary metric row */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.metric-card {
+  background: var(--bg-muted);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  text-align: center;
+}
+.metric-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.metric-value {
+  font-size: var(--text-xl);
+  font-weight: 800;
+  color: var(--text-ink);
+  line-height: 1.1;
+  transition: color .2s;
+}
+.metric-value.positive { color: var(--profit-pos); }
+.metric-value.negative { color: var(--profit-neg); }
+.metric-sub {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+.form-row.full { grid-template-columns: 1fr; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.field label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.field input, .field select, .field textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2) var(--sp-3);
+  color: var(--text-ink);
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(107,155,209,.18);
+}
+.field input.invalid { border-color: var(--danger); }
+.input-error {
+  font-size: var(--text-xs);
+  color: var(--danger);
+  font-weight: 500;
+  min-height: 16px;
+}
+
+/* ============================================================
+   TALLY BUTTONS
+   ============================================================ */
+.tally-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.tally-btn {
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4) var(--sp-3);
+  cursor: pointer;
+  text-align: center;
+  transition: all .15s;
+  position: relative;
+  user-select: none;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  box-shadow: var(--shadow-sm);
+}
+.tally-btn:hover { border-color: var(--accent); background: var(--accent-bg); }
+.tally-btn:active { transform: scale(.97); }
+.tally-btn.tally-has-sales {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+}
+.tally-name {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+.tally-count {
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1;
+  transition: color .15s;
+}
+.tally-price {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.tally-revenue {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--profit-pos);
+}
+.tally-sellthru {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.tally-hint {
+  font-size: 10px;
+  color: var(--text-light);
+  position: absolute;
+  bottom: var(--sp-1);
+  right: var(--sp-2);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  transition: all .15s;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-dk); }
+.btn-secondary {
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  color: var(--text-ink);
+}
+.btn-secondary:hover { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+.btn-danger {
+  background: var(--danger-bg);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+}
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-sm { padding: var(--sp-1) var(--sp-3); font-size: var(--text-xs); }
+.btn-lg {
+  padding: var(--sp-3) var(--sp-6);
+  font-size: var(--text-base);
+  border-radius: var(--r-lg);
+}
+.btn-icon {
+  width: 36px; height: 36px;
+  padding: 0;
+  border-radius: var(--r-md);
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.btn-icon:hover { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+
+/* ============================================================
+   STATUS BADGE
+   ============================================================ */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  border: none;
+}
+.status-planned { background: var(--warn-bg); color: var(--warn); }
+.status-active { background: var(--success-bg); color: var(--success); }
+.status-closed { background: var(--bg-muted); color: var(--text-muted); cursor: default; }
+
+/* ============================================================
+   PRODUCT TABLE (Products tab)
+   ============================================================ */
+.product-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 90px 80px auto;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.product-row:last-child { border-bottom: none; }
+.product-row-header {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+/* ============================================================
+   MARKET DAY LIST
+   ============================================================ */
+.day-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.day-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  cursor: pointer;
+  transition: all .15s;
+  box-shadow: var(--shadow-sm);
+}
+.day-card:hover { border-color: var(--accent); box-shadow: var(--shadow-md); }
+.day-card.selected { border-color: var(--accent); background: var(--accent-bg); }
+.day-card-info { flex: 1; min-width: 0; }
+.day-card-name {
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--text-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.day-card-date { font-size: var(--text-xs); color: var(--text-muted); }
+.day-card-profit {
+  font-weight: 800;
+  font-size: var(--text-base);
+  text-align: right;
+  min-width: 70px;
+}
+
+/* ============================================================
+   SVG CHART
+   ============================================================ */
+#chart-container {
+  overflow-x: auto;
+  background: var(--bg-muted);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+}
+#chart-revenue {
+  display: block;
+  min-height: 180px;
+}
+
+/* ============================================================
+   WEATHER TABLE
+   ============================================================ */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.data-table th {
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  border-bottom: 2px solid var(--border);
+}
+.data-table td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-ink);
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--bg-muted); }
+
+/* ============================================================
+   YOY PANEL
+   ============================================================ */
+.yoy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 2px;
+}
+.yoy-header {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  padding: var(--sp-2) var(--sp-3);
+  text-align: right;
+}
+.yoy-header:first-child { text-align: left; }
+.yoy-row {
+  display: contents;
+}
+.yoy-cell {
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--border);
+}
+.yoy-month { font-weight: 600; text-align: left; }
+.yoy-val { text-align: right; }
+.yoy-delta { text-align: right; font-weight: 700; }
+.yoy-delta.pos { color: var(--profit-pos); }
+.yoy-delta.neg { color: var(--profit-neg); }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+#toast-container {
+  position: fixed;
+  bottom: var(--sp-6);
+  right: var(--sp-4);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  pointer-events: none;
+}
+.toast {
+  background: var(--text-ink);
+  color: var(--bg-card);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: all .2s;
+  max-width: 300px;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.section-sep {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--sp-4) 0;
+}
+.empty-state {
+  text-align: center;
+  padding: var(--sp-12) var(--sp-6);
+  color: var(--text-muted);
+}
+.empty-state svg { margin: 0 auto var(--sp-3); display: block; opacity: .5; }
+.empty-state p { font-size: var(--text-base); }
+.inline-alert {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
+  color: var(--warn);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  margin-top: var(--sp-2);
+}
+.inline-alert.danger {
+  background: var(--danger-bg);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+.actions-row {
+  display: flex;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+.section-title {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--text-ink);
+  margin-bottom: var(--sp-4);
+}
+
+/* pulse animation */
+@keyframes pulse-val {
+  0% { opacity:1 } 50% { opacity:.5 } 100% { opacity:1 }
+}
+.pulse { animation: pulse-val .35s ease; }
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { background: #fff; color: #000; }
+  #app-header, #tab-nav, .no-print, .btn, .tab-btn,
+  .tally-btn, .btn-icon, button.status-badge,
+  #toast-container, .tally-hint,
+  [data-panel="products"], [data-panel="dashboard"], [data-panel="settings"] {
+    display: none !important;
+  }
+  #print-day-summary { display: block !important; }
+  #app { max-width: 100%; padding: 0; }
+  .panel { display: block !important; padding: 0; }
+  [data-panel="day"] { display: block !important; }
+  .card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; margin-bottom: 16px; }
+  .print-header {
+    display: block !important;
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  .print-footer {
+    display: block !important;
+    border-top: 1px solid #ccc;
+    padding-top: 8px;
+    margin-top: 16px;
+    font-size: 11px;
+    color: #666;
+  }
+}
+.print-header, .print-footer { display: none; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 600px) {
+  .form-row { grid-template-columns: 1fr; }
+  .form-row.three { grid-template-columns: 1fr 1fr; }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+  .product-row { grid-template-columns: 1fr 70px 70px auto; }
+  .product-row .col-qty { display: none; }
+  #app-title span { display: none; }
+}
+@media (max-width: 390px) {
+  .tally-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+  .metrics-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- HEADER -->
+  <header id="app-header">
+    <h1 id="app-title">
+      Farmers Market Tracker
+      <span>Sales, profit &amp; tax-ready export</span>
+    </h1>
+    <div class="header-actions">
+      <button id="theme-toggle" aria-label="Toggle dark/light theme">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/></svg>
+        <span id="theme-label">Dark</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- TAB NAV -->
+  <nav id="tab-nav" role="tablist">
+    <button class="tab-btn active" id="tab-day" data-tab="day" role="tab" aria-selected="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Market Day
+    </button>
+    <button class="tab-btn" id="tab-products" data-tab="products" role="tab" aria-selected="false">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 7V5a2 2 0 0 0-4 0v2"/></svg>
+      Products
+    </button>
+    <button class="tab-btn" id="tab-dashboard" data-tab="dashboard" role="tab" aria-selected="false">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Dashboard
+    </button>
+    <button class="tab-btn" id="tab-settings" data-tab="settings" role="tab" aria-selected="false">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <!-- PANELS -->
+  <div id="panel-day" class="panel active" data-panel="day" role="tabpanel">
+    <!-- filled by JS -->
+  </div>
+  <div id="panel-products" class="panel" data-panel="products" role="tabpanel">
+    <!-- filled by JS -->
+  </div>
+  <div id="panel-dashboard" class="panel" data-panel="dashboard" role="tabpanel">
+    <!-- filled by JS -->
+  </div>
+  <div id="panel-settings" class="panel" data-panel="settings" role="tabpanel">
+    <!-- filled by JS -->
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   STATE & CONSTANTS
+   ============================================================ */
+const STORAGE_KEY = 'fm-tracker-v1:state';
+const MONTHS = ['January','February','March','April','May','June',
+                'July','August','September','October','November','December'];
+const WEATHER_OPTIONS = ['Clear','Cloudy','Rain','Hot','Windy'];
+const WEATHER_EMOJI = {Clear:'☀',Cloudy:'⛅',Rain:'🌧',Hot:'🌡',Windy:'💨'};
+const IRS_RATE_DEFAULT = 0.70;
+
+function defaultState() {
+  const today = new Date();
+  const yy = today.getFullYear();
+  // Seed the demo day in the CURRENT month so the dashboard's default period (selectedMonth =
+  // today.getMonth()) always contains it. A hardcoded June date left the demo Dashboard empty for
+  // ~11 months of the year, contradicting the marketed Dashboard screenshots.
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  return {
+    theme: 'light',
+    settings: {
+      mileageRate: IRS_RATE_DEFAULT,
+      currencySymbol: '$',
+    },
+    catalog: [
+      { id: 'p1', name: 'Strawberry Jam', price: 8.00, defaultBring: 24 },
+      { id: 'p2', name: 'Sourdough Loaf', price: 12.00, defaultBring: 10 },
+      { id: 'p3', name: 'Wildflower Honey', price: 15.00, defaultBring: 8 },
+    ],
+    days: [
+      {
+        id: 'd1',
+        date: `${yy}-${mm}-14`,
+        marketName: 'Saturday Maple Street Market',
+        status: 'closed',
+        boothFee: 35,
+        miles: 18,
+        otherExpenses: 5,
+        weatherNote: 'Clear',
+        startTime: '09:00',
+        endTime: '13:00',
+        travelHours: 0.5,
+        setupHours: 0.75,
+        breakdownHours: 0.5,
+        cashTotal: 60,
+        tally: { p1: 5, p2: 3, p3: 2 },
+        bringQty: { p1: 24, p2: 10, p3: 8 },
+      }
+    ],
+    activeDayId: 'd1',
+    selectedMonth: today.getMonth(),
+    selectedYear: yy,
+    yoyYear1: yy - 1,
+    yoyYear2: yy,
+  };
+}
+
+let state = loadState();
+let saveTimer = null;
+
+var _loadWarning; // var WITHOUT init: loadState() runs before this line, so initializing here would reset the flag it set (and `let` would TDZ)
+function loadState() {
+  let raw = null; try { raw = localStorage.getItem(STORAGE_KEY); } catch(_){}
+  if (!raw) return defaultState();
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.days) || !Array.isArray(parsed.catalog)) throw new Error('bad shape');
+    // merge in any new default fields
+    const def = defaultState();
+    return {
+      ...def,
+      ...parsed,
+      settings: { ...def.settings, ...(parsed.settings || {}) },
+    };
+  } catch(e) {
+    // L-129: stash the unreadable saved bytes + warn instead of silently discarding (the next save would
+    // overwrite the original = irreversible loss). A genuinely empty first run (no raw) does NOT warn.
+    try { localStorage.setItem(STORAGE_KEY + '__corrupt-backup', raw); } catch(_){}
+    _loadWarning = true;
+    return defaultState();
+  }
+}
+
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { try { showToast('Could not save: your browser storage may be full or disabled. Export a backup so you do not lose your work.'); } catch(_){} }
+}
+window.addEventListener('load', () => { if (_loadWarning) { try { showToast('Your saved data could not be read, so it was set aside (a backup was kept) and the app started fresh. Message me your order number to recover it.'); } catch(_){} } });
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 300);
+}
+// L-98: flush the pending debounced save the instant the tab is hidden or closed, so a fast tab-close or
+// reload right after an edit never loses the last change.
+window.addEventListener('pagehide', () => { clearTimeout(saveTimer); saveState(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(saveTimer); saveState(); } });
+// Cross-tab safety: if another tab writes our key, WARN only. Do NOT auto-reload or auto-overwrite an
+// in-progress edit (either would itself lose the work being typed here). The seller decides when to reload.
+window.addEventListener('storage', e => {
+  if (e.key === STORAGE_KEY) {
+    try { showToast('Your data was changed in another tab. Reload this page to see the latest and avoid overwriting it.'); } catch(_){}
+  }
+});
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function uid() { return 'id_' + Math.random().toString(36).slice(2, 10); }
+
+function isDemoData() {
+  return state.days.length === 1 && state.days[0].id === 'd1' && state.catalog.length === 3 && state.catalog[0].id === 'p1';
+}
+
+function fmt(val, sym) {
+  sym = sym || state.settings.currencySymbol || '$';
+  const n = Number(val);
+  if (!isFinite(n)) return sym + '0.00';
+  const abs = Math.abs(n);
+  const s = abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (n < 0 ? '-' : '') + sym + s;
+}
+
+function fmtPct(val) {
+  const n = Number(val);
+  if (!isFinite(n)) return '--';
+  return n.toFixed(1) + '%';
+}
+
+function fmtHr(val) {
+  const n = Number(val);
+  // Distinguish 'no rate available' (hours==0 -> hourlyRate/avgHr stays null upstream) from 'rate is
+  // exactly $0.00'. Only null/non-finite shows '--'; a real 0 formats as the currency value so the
+  // on-screen Per Hour cells agree with the CSV export.
+  if (!isFinite(n)) return '--';
+  return fmt(n) + '/hr';
+}
+
+function parseNum(v, fallback) {
+  const n = parseFloat(v);
+  return isFinite(n) ? n : (fallback !== undefined ? fallback : 0);
+}
+
+function parseTime(t) {
+  if (!t) return null;
+  const parts = t.split(':');
+  if (parts.length < 2) return null;
+  return parseInt(parts[0]) + parseInt(parts[1]) / 60;
+}
+
+/* ============================================================
+   FORMULAS
+   ============================================================ */
+function computeDay(day) {
+  const mileageRate = parseNum(state.settings.mileageRate, IRS_RATE_DEFAULT);
+  const boothFee = parseNum(day.boothFee, 0);
+  const miles = parseNum(day.miles, 0);
+  const otherExp = parseNum(day.otherExpenses, 0);
+  const mileageCost = miles * mileageRate;
+  const dayExpenses = boothFee + mileageCost + otherExp;
+
+  // product revenues
+  let dayRevenue = 0;
+  const productStats = {};
+  for (const cat of state.catalog) {
+    const sold = parseNum((day.tally || {})[cat.id], 0);
+    const brought = parseNum((day.bringQty || {})[cat.id], cat.defaultBring || 0);
+    const rev = sold * parseNum(cat.price, 0);
+    const sellThru = brought > 0 ? (sold / brought) * 100 : null;
+    productStats[cat.id] = { sold, brought, rev, sellThru };
+    dayRevenue += rev;
+  }
+
+  const dayProfit = dayRevenue - dayExpenses;
+
+  // hours
+  const startH = parseTime(day.startTime);
+  const endH = parseTime(day.endTime);
+  let marketHours = 0;
+  if (startH !== null && endH !== null && endH > startH) {
+    marketHours = endH - startH;
+  }
+  const totalHours = parseNum(day.travelHours, 0.5) +
+                     parseNum(day.setupHours, 0.75) +
+                     marketHours +
+                     parseNum(day.breakdownHours, 0.5);
+  const hourlyRate = totalHours > 0 ? dayProfit / totalHours : null;
+
+  // cash / card
+  const cashTotal = parseNum(day.cashTotal, 0);
+  const cardTotal = dayRevenue - cashTotal;
+  const cashMismatch = Math.abs(cashTotal + cardTotal - dayRevenue) > 0.01;
+  const cashExceedsRev = cashTotal > dayRevenue + 0.01;
+
+  // top product
+  let topProduct = null, topRev = -Infinity;
+  for (const [pid, ps] of Object.entries(productStats)) {
+    if (ps.rev > topRev) { topRev = ps.rev; topProduct = pid; }
+  }
+
+  return {
+    dayRevenue, dayExpenses, dayProfit, mileageCost,
+    totalHours, marketHours, hourlyRate,
+    cashTotal, cardTotal, cashMismatch, cashExceedsRev,
+    productStats, topProduct,
+  };
+}
+
+function computeMonth(month, year) {
+  const closed = state.days.filter(d => {
+    if (d.status !== 'closed') return false;
+    const dt = new Date(d.date + 'T00:00:00');
+    return dt.getMonth() === month && dt.getFullYear() === year;
+  });
+  if (closed.length === 0) return null;
+  let rev = 0, exp = 0, prof = 0, hrs = 0;
+  const dayResults = [];
+  for (const d of closed) {
+    const c = computeDay(d);
+    rev += c.dayRevenue;
+    exp += c.dayExpenses;
+    prof += c.dayProfit;
+    hrs += c.totalHours;
+    dayResults.push({ day: d, computed: c });
+  }
+  const avgHr = hrs > 0 ? prof / hrs : null;
+  // best/worst by profit
+  let best = dayResults[0], worst = dayResults[0];
+  for (const dr of dayResults) {
+    if (dr.computed.dayProfit > best.computed.dayProfit) best = dr;
+    if (dr.computed.dayProfit < worst.computed.dayProfit) worst = dr;
+  }
+  // top 3 products by revenue
+  const prodTotals = {};
+  for (const cat of state.catalog) { prodTotals[cat.id] = 0; }
+  for (const { day } of dayResults) {
+    for (const cat of state.catalog) {
+      const sold = parseNum((day.tally || {})[cat.id], 0);
+      prodTotals[cat.id] += sold * parseNum(cat.price, 0);
+    }
+  }
+  const top3 = Object.entries(prodTotals)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([pid, rev]) => ({ pid, rev, name: (state.catalog.find(c => c.id === pid) || {}).name || '' }));
+
+  return { rev, exp, prof, hrs, avgHr, best, worst, top3, dayResults, count: closed.length };
+}
+
+// Weather correlation for the SELECTED dashboard period (month + year), matching computeMonth's filter
+// so the table agrees with the rest of the dashboard and the 'monthly correlation' wording in the listing.
+function computeWeatherCorr(month, year) {
+  const closed = state.days.filter(d => {
+    if (d.status !== 'closed') return false;
+    const dt = new Date(d.date + 'T00:00:00');
+    return dt.getMonth() === month && dt.getFullYear() === year;
+  });
+  const buckets = {};
+  for (const w of WEATHER_OPTIONS) buckets[w] = { revSum: 0, profSum: 0, count: 0 };
+  for (const d of closed) {
+    const w = d.weatherNote;
+    if (!buckets[w]) continue;
+    const c = computeDay(d);
+    buckets[w].revSum += c.dayRevenue;
+    buckets[w].profSum += c.dayProfit;
+    buckets[w].count++;
+  }
+  return buckets;
+}
+
+/* ============================================================
+   ACTIVE DAY HELPERS
+   ============================================================ */
+function getActiveDay() {
+  return state.days.find(d => d.id === state.activeDayId) || state.days[0] || null;
+}
+
+function updateDay(id, changes) {
+  const idx = state.days.findIndex(d => d.id === id);
+  if (idx === -1) return;
+  state.days[idx] = { ...state.days[idx], ...changes };
+  scheduleSave();
+  render();
+}
+
+function addDay() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const bringQty = {};
+  for (const cat of state.catalog) bringQty[cat.id] = cat.defaultBring;
+  const newDay = {
+    id: uid(),
+    date: `${yyyy}-${mm}-${dd}`,
+    marketName: '',
+    status: 'planned',
+    boothFee: 0,
+    miles: 0,
+    otherExpenses: 0,
+    weatherNote: 'Clear',
+    startTime: '09:00',
+    endTime: '13:00',
+    travelHours: 0.5,
+    setupHours: 0.75,
+    breakdownHours: 0.5,
+    cashTotal: 0,
+    tally: {},
+    bringQty,
+  };
+  state.days.unshift(newDay);
+  state.activeDayId = newDay.id;
+  scheduleSave();
+  render();
+}
+
+/* ============================================================
+   RENDER FUNCTIONS
+   ============================================================ */
+function render() {
+  renderDayPanel();
+  renderProductsPanel();
+  renderDashboardPanel();
+  renderSettingsPanel();
+}
+
+/* ---- DAY PANEL ---- */
+function renderDayPanel() {
+  const panel = document.getElementById('panel-day');
+  const day = getActiveDay();
+
+  if (!day) {
+    panel.innerHTML = `
+      <div class="empty-state">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <p>No market days yet.</p>
+        <button class="btn btn-primary btn-lg" style="margin-top:16px" onclick="addDay()">+ Add Market Day</button>
+      </div>`;
+    return;
+  }
+
+  const c = computeDay(day);
+  const isReadOnly = day.status === 'closed';
+  const sym = state.settings.currencySymbol || '$';
+
+  // Build tally buttons HTML
+  let tallyHTML = '';
+  if (state.catalog.length === 0) {
+    tallyHTML = `<div class="empty-state" style="padding:24px"><p>Add products in the Products tab to start tallying sales.</p></div>`;
+  } else {
+    tallyHTML = `<div class="tally-grid" id="tally-grid">`;
+    for (const cat of state.catalog) {
+      const ps = c.productStats[cat.id] || { sold: 0, brought: 0, rev: 0, sellThru: null };
+      const hasSales = ps.sold > 0;
+      const stDisplay = ps.sellThru !== null ? fmtPct(ps.sellThru) : '--';
+      tallyHTML += `
+        <button class="tally-btn${hasSales ? ' tally-has-sales' : ''}"
+          id="tally-${cat.id}"
+          data-pid="${cat.id}"
+          aria-label="Tally ${escAttr(cat.name)}: ${ps.sold} sold, tap to add"
+          ${isReadOnly ? 'disabled style="opacity:.6;cursor:default"' : ''}>
+          <span class="tally-name">${escHtml(cat.name)}</span>
+          <span class="tally-count" id="tally-count-${cat.id}">${ps.sold}</span>
+          <span class="tally-price">${fmt(cat.price, sym)} each</span>
+          <span class="tally-revenue" id="tally-rev-${cat.id}">${fmt(ps.rev, sym)}</span>
+          <span class="tally-sellthru">Sell-thru: ${stDisplay}</span>
+          ${!isReadOnly ? '<span class="tally-hint">hold to undo</span>' : ''}
+        </button>`;
+    }
+    tallyHTML += `</div>`;
+  }
+
+  // Cash/card alert
+  let cashAlert = '';
+  if (c.cashExceedsRev) {
+    cashAlert = `<div class="inline-alert danger" role="alert">Cash (${fmt(c.cashTotal, sym)}) is more than total revenue (${fmt(c.dayRevenue, sym)}).</div>`;
+  } else if (c.cashMismatch) {
+    cashAlert = `<div class="inline-alert" role="alert">Cash + Card (${fmt(c.cashTotal + c.cardTotal, sym)}) doesn't match revenue (${fmt(c.dayRevenue, sym)}). Check your entries.</div>`;
+  }
+
+  // Status
+  const nextStatus = { planned: 'active', active: 'closed' };
+  const statusLabels = { planned: 'Planned', active: 'Active', closed: 'Closed' };
+
+  panel.innerHTML = `
+    <div class="print-header" id="print-header-day">
+      <strong>${escHtml(day.marketName || 'Market Day')}</strong> &nbsp;|&nbsp; ${escHtml(day.date)}
+    </div>
+
+    <!-- Day Selector -->
+    <div class="card no-print" style="padding:16px">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <select id="day-selector" aria-label="Select market day" style="flex:1;min-width:180px;background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;color:var(--text-ink)">
+          ${state.days.map(d => `<option value="${d.id}" ${d.id === day.id ? 'selected' : ''}>${escHtml(d.date)}: ${escHtml(d.marketName || 'Untitled')}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary btn-sm" id="btn-new-day" onclick="addDay()">+ New Day</button>
+        ${day.status === 'closed' ? `<button class="btn btn-secondary btn-sm" id="btn-reopen-day" data-act="reopenDay" data-arg="${escAttr(day.id)}">Reopen day</button>` : ''}
+        <button class="btn btn-danger btn-sm" id="btn-delete-day" data-act="deleteDay" data-arg="${escAttr(day.id)}">Delete</button>
+      </div>
+      ${isDemoData() ? `<div style="margin-top:10px;display:flex;align-items:center;gap:8px;font-size:var(--text-xs);color:var(--text-muted)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        This is sample data to show how the tracker works.
+        <button class="btn btn-sm btn-secondary" id="btn-clear-demo" onclick="clearDemoAndStart()" style="padding:2px 10px">Clear demo data</button>
+      </div>` : ''}
+    </div>
+
+    <!-- Summary Card -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+        <div>
+          <div class="section-title" style="margin:0">${escHtml(day.marketName || 'Market Day')}</div>
+          <div style="font-size:var(--text-xs);color:var(--text-muted)">${escHtml(day.date)}${day.weatherNote ? '  ' + (WEATHER_EMOJI[day.weatherNote] || '') + ' ' + escHtml(day.weatherNote) : ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${day.status !== 'closed'
+            ? `<button class="status-badge status-${day.status}" id="status-advance" data-act="advanceStatus" data-arg="${escAttr(day.id)}" aria-label="Advance status">
+                ${statusLabels[day.status]} &#8594; ${statusLabels[nextStatus[day.status]] || ''}
+               </button>`
+            : `<span class="status-badge status-closed">&#128274; Closed</span>`}
+          ${!isReadOnly ? '' : ''}
+        </div>
+      </div>
+      <div class="metrics-grid" id="day-metrics">
+        <div class="metric-card">
+          <div class="metric-label">Revenue</div>
+          <div class="metric-value" id="result-revenue">${fmt(c.dayRevenue, sym)}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Expenses</div>
+          <div class="metric-value" id="result-expenses">${fmt(c.dayExpenses, sym)}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Profit</div>
+          <div class="metric-value ${c.dayProfit >= 0 ? 'positive' : 'negative'}" id="result-profit">${fmt(c.dayProfit, sym)}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Per Hour</div>
+          <div class="metric-value" id="result-hourly">${c.hourlyRate !== null ? fmtHr(c.hourlyRate) : '--'}</div>
+        </div>
+        <div class="metric-card" style="grid-column:span 2">
+          <div class="metric-label">Top Product</div>
+          <div class="metric-value" style="font-size:var(--text-base)" id="result-top-product">${c.topProduct ? escHtml((state.catalog.find(p => p.id === c.topProduct) || {}).name || '--') : '--'}</div>
+          <div class="metric-sub">${c.topProduct && c.productStats[c.topProduct] ? fmt(c.productStats[c.topProduct].rev, sym) + ' revenue' : ''}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tally Grid -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+        Product Tally
+        ${isReadOnly ? '<span style="font-weight:400;font-size:var(--text-xs);color:var(--text-muted)">(read-only, day is closed)</span>' : ''}
+      </div>
+      ${tallyHTML}
+    </div>
+
+    <!-- Expenses & Time Form -->
+    <div class="card" id="day-form-card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Expenses &amp; Time
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="field-date">Date</label>
+          <input type="date" id="field-date" value="${escAttr(day.date)}" ${isReadOnly ? 'disabled' : ''} aria-label="Market date">
+          <div class="input-error" id="err-date" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="field-market-name">Market Name</label>
+          <input type="text" id="field-market-name" value="${escAttr(day.marketName)}" placeholder="e.g. Maple Street Farmers Market" ${isReadOnly ? 'disabled' : ''} aria-label="Market name">
+        </div>
+      </div>
+      <div class="form-row three">
+        <div class="field">
+          <label for="field-booth-fee">Booth Fee (${sym})</label>
+          <input type="number" id="field-booth-fee" min="0" step="0.01" value="${day.boothFee}" ${isReadOnly ? 'disabled' : ''} aria-label="Booth fee">
+          <div class="input-error" id="err-booth-fee" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="field-miles">Round-trip Miles</label>
+          <input type="number" id="field-miles" min="0" step="0.1" value="${day.miles}" ${isReadOnly ? 'disabled' : ''} aria-label="Round trip miles">
+          <div class="input-error" id="err-miles" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="field-other-exp">Other Expenses (${sym})</label>
+          <input type="number" id="field-other-exp" min="0" step="0.01" value="${day.otherExpenses}" ${isReadOnly ? 'disabled' : ''} aria-label="Other expenses">
+          <div class="input-error" id="err-other-exp" role="alert"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="field-start-time">Start Time</label>
+          <input type="time" id="field-start-time" value="${day.startTime}" ${isReadOnly ? 'disabled' : ''} aria-label="Market start time">
+        </div>
+        <div class="field">
+          <label for="field-end-time">End Time</label>
+          <input type="time" id="field-end-time" value="${day.endTime}" ${isReadOnly ? 'disabled' : ''} aria-label="Market end time">
+        </div>
+      </div>
+      <div class="form-row three">
+        <div class="field">
+          <label for="field-travel-hours">Travel Hours</label>
+          <input type="number" id="field-travel-hours" min="0" step="0.25" value="${day.travelHours}" ${isReadOnly ? 'disabled' : ''} aria-label="Travel hours">
+          <div class="input-error" id="err-travel-hours" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="field-setup-hours">Setup Hours</label>
+          <input type="number" id="field-setup-hours" min="0" step="0.25" value="${day.setupHours}" ${isReadOnly ? 'disabled' : ''} aria-label="Setup hours">
+          <div class="input-error" id="err-setup-hours" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="field-breakdown-hours">Breakdown Hours</label>
+          <input type="number" id="field-breakdown-hours" min="0" step="0.25" value="${day.breakdownHours}" ${isReadOnly ? 'disabled' : ''} aria-label="Breakdown hours">
+          <div class="input-error" id="err-breakdown-hours" role="alert"></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label for="field-weather">Weather</label>
+          <select id="field-weather" ${isReadOnly ? 'disabled' : ''} aria-label="Weather conditions">
+            ${WEATHER_OPTIONS.map(w => `<option value="${w}" ${day.weatherNote === w ? 'selected' : ''}>${WEATHER_EMOJI[w] || ''} ${w}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field">
+          <label for="field-cash">Cash Received (${sym})</label>
+          <input type="number" id="field-cash" min="0" step="0.01" value="${day.cashTotal}" ${isReadOnly ? 'disabled' : ''} aria-label="Cash total">
+          <div class="input-error" id="err-cash" role="alert"></div>
+        </div>
+      </div>
+      ${cashAlert}
+      <div style="margin-top:8px;font-size:var(--text-sm);color:var(--text-muted)">
+        Card received: <strong id="result-card">${fmt(c.cardTotal, sym)}</strong>
+        &nbsp;|&nbsp; Mileage cost: <strong>${fmt(c.mileageCost, sym)}</strong> (${c.totalHours.toFixed(2)} hrs total)
+      </div>
+    </div>
+
+    <!-- Per-product bring qty (for sell-through) -->
+    <div class="card" id="bring-qty-card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2M8 7V5a2 2 0 0 0-4 0v2"/></svg>
+        Units Brought (for Sell-through %)
+      </div>
+      <div class="form-row three" id="bring-qty-fields">
+        ${state.catalog.map(cat => `
+          <div class="field">
+            <label for="bring-${cat.id}">${escHtml(cat.name)}</label>
+            <input type="number" id="bring-${cat.id}" min="0" step="1" value="${parseNum((day.bringQty || {})[cat.id], cat.defaultBring)}" ${isReadOnly ? 'disabled' : ''} data-bring-pid="${cat.id}" aria-label="Units brought of ${escAttr(cat.name)}">
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Print summary table (visible only in print) -->
+    <div id="print-day-summary" style="display:none">
+      <table class="data-table">
+        <thead><tr><th>Product</th><th>Price</th><th>Sold</th><th>Revenue</th><th>Brought</th><th>Sell-thru</th></tr></thead>
+        <tbody>
+          ${state.catalog.map(cat => {
+            const ps = c.productStats[cat.id] || { sold:0, brought:0, rev:0, sellThru:null };
+            return `<tr><td>${escHtml(cat.name)}</td><td>${fmt(cat.price, sym)}</td><td>${ps.sold}</td><td>${fmt(ps.rev, sym)}</td><td>${ps.brought}</td><td>${ps.sellThru !== null ? fmtPct(ps.sellThru) : '--'}</td></tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+      <table class="data-table" style="margin-top:16px">
+        <thead><tr><th>Expense</th><th>Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Booth Fee</td><td>${fmt(day.boothFee, sym)}</td></tr>
+          <tr><td>Mileage (${escHtml(day.miles)} mi @ ${sym}${escHtml(state.settings.mileageRate)}/mi)</td><td>${fmt(c.mileageCost, sym)}</td></tr>
+          <tr><td>Other</td><td>${fmt(day.otherExpenses, sym)}</td></tr>
+          <tr><td><strong>Total Expenses</strong></td><td><strong>${fmt(c.dayExpenses, sym)}</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="print-footer">Farmers Market Sales &amp; Profit Tracker &middot; jonsDesignerShop</div>
+  `;
+
+  // Attach event listeners
+  attachDayFormListeners(day, isReadOnly);
+}
+
+function attachDayFormListeners(day, isReadOnly) {
+  const el = (id) => document.getElementById(id);
+
+  // Day selector
+  const sel = el('day-selector');
+  if (sel) sel.addEventListener('change', e => {
+    state.activeDayId = e.target.value;
+    scheduleSave();
+    render();
+  });
+
+  if (isReadOnly) return;
+
+  const numField = (id, prop, min) => {
+    const input = el(id);
+    if (!input) return;
+    // Validate visually on every keystroke, but only commit to state on change/blur
+    input.addEventListener('input', e => {
+      const raw = e.target.value;
+      const n = parseFloat(raw);
+      const errId = 'err-' + id.replace('field-', '');
+      const errEl = el(errId);
+      if (raw !== '' && (!isFinite(n) || n < min)) {
+        input.classList.add('invalid');
+        if (errEl) errEl.textContent = min >= 0 ? 'Must be 0 or more.' : 'Must be a number.';
+      } else {
+        input.classList.remove('invalid');
+        if (errEl) errEl.textContent = '';
+      }
+    });
+    input.addEventListener('change', e => {
+      const n = parseFloat(e.target.value);
+      if (isFinite(n) && n >= min) {
+        input.classList.remove('invalid');
+        updateDay(day.id, { [prop]: n });
+      } else if (e.target.value === '') {
+        updateDay(day.id, { [prop]: 0 });
+      }
+    });
+  };
+
+  numField('field-booth-fee', 'boothFee', 0);
+  numField('field-miles', 'miles', 0);
+  numField('field-other-exp', 'otherExpenses', 0);
+  numField('field-cash', 'cashTotal', 0);
+  numField('field-travel-hours', 'travelHours', 0);
+  numField('field-setup-hours', 'setupHours', 0);
+  numField('field-breakdown-hours', 'breakdownHours', 0);
+
+  const textField = (id, prop) => {
+    const input = el(id);
+    if (!input) return;
+    input.addEventListener('change', e => updateDay(day.id, { [prop]: e.target.value }));
+  };
+  textField('field-date', 'date');
+  textField('field-market-name', 'marketName');
+  textField('field-start-time', 'startTime');
+  textField('field-end-time', 'endTime');
+
+  const weatherSel = el('field-weather');
+  if (weatherSel) weatherSel.addEventListener('change', e => updateDay(day.id, { weatherNote: e.target.value }));
+
+  // Bring qty fields
+  document.querySelectorAll('[data-bring-pid]').forEach(input => {
+    input.addEventListener('input', e => {
+      const n = parseFloat(e.target.value);
+      if (e.target.value !== '' && (!isFinite(n) || n < 0)) { e.target.classList.add('invalid'); }
+      else { e.target.classList.remove('invalid'); }
+    });
+    input.addEventListener('change', e => {
+      const pid = e.target.dataset.bringPid;
+      const n = Math.max(0, parseNum(e.target.value, 0));
+      e.target.classList.remove('invalid');
+      const bringQty = { ...(state.days.find(d => d.id === day.id) || {}).bringQty };
+      bringQty[pid] = n;
+      updateDay(day.id, { bringQty });
+    });
+  });
+
+  // Tally buttons
+  let longPressTimer = null;
+  document.querySelectorAll('.tally-btn[data-pid]').forEach(btn => {
+    const pid = btn.dataset.pid;
+
+    btn.addEventListener('click', () => {
+      if (!isReadOnly) tallyIncrement(day.id, pid, 1);
+    });
+
+    // Long press to decrement
+    btn.addEventListener('pointerdown', () => {
+      longPressTimer = setTimeout(() => {
+        tallyIncrement(day.id, pid, -1);
+      }, 500);
+    });
+    btn.addEventListener('pointerup', () => clearTimeout(longPressTimer));
+    btn.addEventListener('pointerleave', () => clearTimeout(longPressTimer));
+    btn.addEventListener('contextmenu', e => { e.preventDefault(); tallyIncrement(day.id, pid, -1); });
+  });
+}
+
+function tallyIncrement(dayId, pid, delta) {
+  const idx = state.days.findIndex(d => d.id === dayId);
+  if (idx === -1) return;
+  const tally = { ...(state.days[idx].tally || {}) };
+  tally[pid] = Math.max(0, parseNum(tally[pid], 0) + delta);
+  state.days[idx] = { ...state.days[idx], tally };
+  scheduleSave();
+  render();
+}
+
+function advanceStatus(dayId) {
+  const day = state.days.find(d => d.id === dayId);
+  if (!day) return;
+  const next = { planned: 'active', active: 'closed' };
+  if (!next[day.status]) return;
+  // Closing a day locks it (read-only tax record). Confirm before that irreversible step; it can still
+  // be reopened from the closed state if it was a mistake.
+  if (next[day.status] === 'closed' && !confirm('Close this market day? It becomes a read-only record. You can reopen it later if you need to edit.')) return;
+  updateDay(dayId, { status: next[day.status] });
+}
+
+function reopenDay(dayId) {
+  const day = state.days.find(d => d.id === dayId);
+  if (!day || day.status !== 'closed') return;
+  if (!confirm('Reopen this market day so you can edit it again? Its saved sales are kept.')) return;
+  updateDay(dayId, { status: 'active' });
+}
+
+function deleteDay(dayId) {
+  if (!confirm('Delete this market day? This cannot be undone.')) return;
+  state.days = state.days.filter(d => d.id !== dayId);
+  state.activeDayId = state.days[0] ? state.days[0].id : null;
+  scheduleSave();
+  render();
+}
+
+// SECURITY (L-128): row action buttons carry data-act/data-arg (read via getAttribute, never eval'd) instead of
+// interpolating an id into an inline on* handler. A quote in a typed/imported id would otherwise break out of the
+// JS-string-inside-the-HTML-attribute and execute (stored XSS). One delegated listener dispatches by name.
+document.addEventListener('click', function (e) {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const fn = el.getAttribute('data-act'), arg = el.getAttribute('data-arg');
+  const map = { deleteDay, advanceStatus, reopenDay, deleteProduct };
+  if (map[fn]) map[fn](arg);
+});
+
+/* ---- PRODUCTS PANEL ---- */
+function renderProductsPanel() {
+  const panel = document.getElementById('panel-products');
+  const sym = state.settings.currencySymbol || '$';
+
+  // Compute lifetime stats per product
+  const stats = {};
+  for (const cat of state.catalog) {
+    stats[cat.id] = { totalSold: 0, totalRev: 0, bestDayRev: 0, bestDayName: '', stSum: 0, stCount: 0 };
+  }
+  for (const day of state.days) {
+    if (day.status !== 'closed') continue;
+    for (const cat of state.catalog) {
+      const sold = parseNum((day.tally || {})[cat.id], 0);
+      const brought = parseNum((day.bringQty || {})[cat.id], cat.defaultBring || 0);
+      const rev = sold * parseNum(cat.price, 0);
+      stats[cat.id].totalSold += sold;
+      stats[cat.id].totalRev += rev;
+      if (rev > stats[cat.id].bestDayRev) {
+        stats[cat.id].bestDayRev = rev;
+        stats[cat.id].bestDayName = day.marketName || day.date;
+      }
+      if (brought > 0) {
+        stats[cat.id].stSum += (sold / brought) * 100;
+        stats[cat.id].stCount++;
+      }
+    }
+  }
+
+  panel.innerHTML = `
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/></svg>
+        Add Product
+      </div>
+      <div class="form-row three" id="add-product-form">
+        <div class="field">
+          <label for="new-prod-name">Product Name</label>
+          <input type="text" id="new-prod-name" placeholder="e.g. Blueberry Jam" aria-label="New product name">
+          <div class="input-error" id="err-prod-name" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="new-prod-price">Unit Price (${sym})</label>
+          <input type="number" id="new-prod-price" min="0.01" step="0.01" placeholder="8.00" aria-label="Unit price">
+          <div class="input-error" id="err-prod-price" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="new-prod-bring">Default Bring Qty</label>
+          <input type="number" id="new-prod-bring" min="0" step="1" placeholder="12" aria-label="Default bring quantity">
+        </div>
+      </div>
+      <div class="actions-row" style="margin-top:8px">
+        <button class="btn btn-primary" id="btn-add-product" onclick="addProduct()">+ Add Product</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Product Catalog (${state.catalog.length})
+      </div>
+      ${state.catalog.length === 0
+        ? `<div class="empty-state" style="padding:24px"><p>No products yet. Add your first product above.</p></div>`
+        : `<div>
+          <div class="product-row product-row-header">
+            <span>Name</span><span>Price</span><span>Bring Qty</span><span class="col-qty">Lifetime Sales</span><span></span>
+          </div>
+          ${state.catalog.map(cat => `
+            <div class="product-row" id="prod-row-${cat.id}">
+              <div>
+                <input type="text" value="${escAttr(cat.name)}" data-edit-pid="${cat.id}" data-edit-field="name"
+                  aria-label="Product name" style="width:100%;background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 6px;color:var(--text-ink)">
+              </div>
+              <div>
+                <input type="number" min="0.01" step="0.01" value="${cat.price}" data-edit-pid="${cat.id}" data-edit-field="price"
+                  aria-label="Unit price" style="width:100%;background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 6px;color:var(--text-ink)">
+              </div>
+              <div>
+                <input type="number" min="0" step="1" value="${cat.defaultBring}" data-edit-pid="${cat.id}" data-edit-field="defaultBring"
+                  aria-label="Default bring quantity" style="width:100%;background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 6px;color:var(--text-ink)">
+              </div>
+              <div class="col-qty" style="font-size:var(--text-xs);color:var(--text-muted)">
+                ${stats[cat.id].totalSold} sold &middot; ${fmt(stats[cat.id].totalRev, sym)}
+                ${stats[cat.id].stCount > 0 ? '&middot; avg ' + fmtPct(stats[cat.id].stSum / stats[cat.id].stCount) + ' sell-thru' : ''}
+              </div>
+              <button class="btn-icon" data-act="deleteProduct" data-arg="${escAttr(cat.id)}" aria-label="Delete ${escAttr(cat.name)}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+              </button>
+            </div>`).join('')}
+          </div>`}
+    </div>
+  `;
+
+  // Inline edit listeners
+  document.querySelectorAll('[data-edit-pid]').forEach(input => {
+    input.addEventListener('focus', e => e.target.style.borderColor = 'var(--accent)');
+    input.addEventListener('blur', e => {
+      e.target.style.borderColor = 'transparent';
+      const pid = e.target.dataset.editPid;
+      const field = e.target.dataset.editField;
+      const idx = state.catalog.findIndex(c => c.id === pid);
+      if (idx === -1) return;
+      let val = e.target.value;
+      if (field === 'price') val = Math.max(0, parseNum(val, state.catalog[idx].price));
+      if (field === 'defaultBring') val = Math.max(0, parseNum(val, state.catalog[idx].defaultBring));
+      if (field === 'name' && !val.trim()) { e.target.value = state.catalog[idx].name; return; }
+      state.catalog[idx] = { ...state.catalog[idx], [field]: val };
+      scheduleSave();
+      render();
+    });
+  });
+}
+
+function addProduct() {
+  const nameEl = document.getElementById('new-prod-name');
+  const priceEl = document.getElementById('new-prod-price');
+  const bringEl = document.getElementById('new-prod-bring');
+  const errName = document.getElementById('err-prod-name');
+  const errPrice = document.getElementById('err-prod-price');
+  let ok = true;
+
+  const name = (nameEl.value || '').trim();
+  const price = parseNum(priceEl.value, NaN);
+  const bring = parseNum(bringEl.value, 12);
+
+  if (!name) { errName.textContent = 'Product name is required.'; nameEl.classList.add('invalid'); ok = false; }
+  else { errName.textContent = ''; nameEl.classList.remove('invalid'); }
+
+  if (!isFinite(price) || price <= 0) { errPrice.textContent = 'Enter a price greater than 0.'; priceEl.classList.add('invalid'); ok = false; }
+  else { errPrice.textContent = ''; priceEl.classList.remove('invalid'); }
+
+  if (!ok) return;
+
+  const newCat = { id: uid(), name, price, defaultBring: Math.max(0, bring) };
+  state.catalog.push(newCat);
+  // Add bring qty to all non-closed days
+  for (const d of state.days) {
+    if (d.status !== 'closed') {
+      d.bringQty = { ...(d.bringQty || {}), [newCat.id]: newCat.defaultBring };
+    }
+  }
+  nameEl.value = ''; priceEl.value = ''; bringEl.value = '';
+  scheduleSave();
+  render();
+  showToast('Product added.', 'success');
+}
+
+function deleteProduct(pid) {
+  if (!confirm('Remove this product from the catalog? Its tally data on planned and active market days is removed; closed (finished) days keep their saved sales as a tax record.')) return;
+  state.catalog = state.catalog.filter(c => c.id !== pid);
+  for (const d of state.days) {
+    // Preserve the sales history of closed (locked, tax-record) days, mirroring how addProduct only
+    // touches non-closed days. Editing a finished record silently rewrites a filed tax number.
+    if (d.status === 'closed') continue;
+    if (d.tally) delete d.tally[pid];
+    if (d.bringQty) delete d.bringQty[pid];
+  }
+  scheduleSave();
+  render();
+}
+
+/* ---- DASHBOARD PANEL ---- */
+function renderDashboardPanel() {
+  const panel = document.getElementById('panel-dashboard');
+  const sym = state.settings.currencySymbol || '$';
+  const mo = state.selectedMonth;
+  const yr = state.selectedYear;
+  const mData = computeMonth(mo, yr);
+
+  // Build month/year selectors
+  const monthSelHTML = MONTHS.map((m, i) => `<option value="${i}" ${i === mo ? 'selected' : ''}>${m}</option>`).join('');
+  const yearSet = new Set([yr - 2, yr - 1, yr, yr + 1]);
+  for (const d of state.days) yearSet.add(new Date(d.date + 'T00:00:00').getFullYear());
+  const years = [...yearSet].sort((a,b)=>b-a);
+  const yearSelHTML = years.map(y => `<option value="${y}" ${y === yr ? 'selected' : ''}>${y}</option>`).join('');
+
+  let summaryHTML = '';
+  if (!mData) {
+    summaryHTML = `<div class="empty-state" style="padding:32px"><p>No completed market days for this period.</p></div>`;
+  } else {
+    summaryHTML = `
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-label">Revenue</div>
+          <div class="metric-value" id="dash-revenue">${fmt(mData.rev, sym)}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Expenses</div>
+          <div class="metric-value" id="dash-expenses">${fmt(mData.exp, sym)}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Profit</div>
+          <div class="metric-value ${mData.prof >= 0 ? 'positive' : 'negative'}" id="dash-profit">${fmt(mData.prof, sym)}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Avg Per Hour</div>
+          <div class="metric-value" id="dash-hourly">${mData.avgHr !== null ? fmtHr(mData.avgHr) : '--'}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px">
+        <div class="metric-card">
+          <div class="metric-label">Best Day</div>
+          <div class="metric-value" style="font-size:var(--text-sm)" id="dash-best">${escHtml(mData.best.day.marketName || mData.best.day.date)}</div>
+          <div class="metric-sub">${fmt(mData.best.computed.dayProfit, sym)} profit</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Worst Day</div>
+          <div class="metric-value" style="font-size:var(--text-sm)" id="dash-worst">${escHtml(mData.worst.day.marketName || mData.worst.day.date)}</div>
+          <div class="metric-sub">${fmt(mData.worst.computed.dayProfit, sym)} profit</div>
+        </div>
+      </div>`;
+  }
+
+  // SVG bar chart
+  const chartHTML = buildBarChart(mData, sym);
+
+  // Top 3 products table
+  let top3HTML = '';
+  if (mData && mData.top3.length > 0) {
+    top3HTML = `<table class="data-table">
+      <thead><tr><th>#</th><th>Product</th><th>Revenue</th></tr></thead>
+      <tbody>${mData.top3.map((p, i) => `<tr><td>${i+1}</td><td>${escHtml(p.name)}</td><td>${fmt(p.rev, sym)}</td></tr>`).join('')}</tbody>
+    </table>`;
+  } else {
+    top3HTML = `<p style="color:var(--text-muted);font-size:var(--text-sm)">No data for this period.</p>`;
+  }
+
+  // Weather correlation for the SAME selected period as the rest of the dashboard
+  const wCorr = computeWeatherCorr(mo, yr);
+  let weatherHTML = '';
+  const wRows = WEATHER_OPTIONS.filter(w => wCorr[w].count > 0);
+  if (wRows.length > 0) {
+    weatherHTML = `<table class="data-table">
+      <thead><tr><th>Condition</th><th>Days</th><th>Avg Revenue</th><th>Avg Profit</th></tr></thead>
+      <tbody>${wRows.map(w => {
+        const b = wCorr[w];
+        return `<tr>
+          <td>${WEATHER_EMOJI[w] || ''} ${w}</td>
+          <td>${b.count}</td>
+          <td>${fmt(b.revSum / b.count, sym)}</td>
+          <td class="${b.profSum >= 0 ? 'positive' : 'negative'}" style="color:${b.profSum/b.count >= 0 ? 'var(--profit-pos)' : 'var(--profit-neg)'}">${fmt(b.profSum / b.count, sym)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+  } else {
+    weatherHTML = `<p style="color:var(--text-muted);font-size:var(--text-sm)">No closed days with weather data yet.</p>`;
+  }
+
+  // YoY panel
+  const yoy1Set = [...yearSet].sort((a,b)=>b-a);
+  const yoy2Set = [...yoy1Set];
+  const y1 = state.yoyYear1, y2 = state.yoyYear2;
+  let yoyHTML = '';
+  const yoyRows = MONTHS.map((mName, mi) => {
+    const d1 = computeMonth(mi, y1);
+    const d2 = computeMonth(mi, y2);
+    const v1 = d1 ? d1.prof : null;
+    const v2 = d2 ? d2.prof : null;
+    const delta = v1 !== null && v2 !== null ? v2 - v1 : null;
+    return { mName, v1, v2, delta };
+  });
+  yoyHTML = `
+    <div class="yoy-grid">
+      <div class="yoy-header">Month</div>
+      <div class="yoy-header" style="text-align:right">${y1}</div>
+      <div class="yoy-header" style="text-align:right">${y2}</div>
+      <div class="yoy-header" style="text-align:right">Change</div>
+    </div>
+    <div class="yoy-grid">
+      ${yoyRows.map(r => `
+        <div class="yoy-cell yoy-month">${r.mName.slice(0,3)}</div>
+        <div class="yoy-cell yoy-val">${r.v1 !== null ? fmt(r.v1, sym) : '--'}</div>
+        <div class="yoy-cell yoy-val">${r.v2 !== null ? fmt(r.v2, sym) : '--'}</div>
+        <div class="yoy-cell yoy-delta ${r.delta !== null ? (r.delta >= 0 ? 'pos' : 'neg') : ''}">${r.delta !== null ? (r.delta >= 0 ? '+' : '') + fmt(r.delta, sym) : '--'}</div>
+      `).join('')}
+    </div>`;
+
+  panel.innerHTML = `
+    <!-- Period Selector -->
+    <div class="card" style="padding:16px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <select id="dash-month-sel" aria-label="Select month" style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;color:var(--text-ink)">${monthSelHTML}</select>
+        <select id="dash-year-sel" aria-label="Select year" style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;color:var(--text-ink)">${yearSelHTML}</select>
+      </div>
+    </div>
+
+    <!-- Monthly Summary -->
+    <div class="card">
+      <div class="card-title">Monthly Summary: ${MONTHS[mo]} ${yr}</div>
+      ${summaryHTML}
+    </div>
+
+    <!-- SVG Bar Chart -->
+    <div class="card">
+      <div class="card-title">Profit by Market Day: ${MONTHS[mo]} ${yr}</div>
+      <div id="chart-container">${chartHTML}</div>
+    </div>
+
+    <!-- Top 3 Products -->
+    <div class="card">
+      <div class="card-title">Top Products: ${MONTHS[mo]} ${yr}</div>
+      ${top3HTML}
+    </div>
+
+    <!-- Weather Correlation -->
+    <div class="card">
+      <div class="card-title">Weather Correlation: ${MONTHS[mo]} ${yr}</div>
+      ${weatherHTML}
+    </div>
+
+    <!-- Year-over-Year -->
+    <div class="card">
+      <div class="card-title">Year-over-Year Profit Comparison</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <select id="yoy-y1-sel" aria-label="Year 1" style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px;color:var(--text-ink)">${yoy1Set.map(y=>`<option value="${y}" ${y===y1?'selected':''}>${y}</option>`).join('')}</select>
+        <span style="align-self:center;color:var(--text-muted)">vs</span>
+        <select id="yoy-y2-sel" aria-label="Year 2" style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px;color:var(--text-ink)">${yoy2Set.map(y=>`<option value="${y}" ${y===y2?'selected':''}>${y}</option>`).join('')}</select>
+      </div>
+      ${yoyHTML}
+    </div>
+  `;
+
+  // Dashboard listeners
+  const dashMonthSel = document.getElementById('dash-month-sel');
+  const dashYearSel = document.getElementById('dash-year-sel');
+  if (dashMonthSel) dashMonthSel.addEventListener('change', e => { state.selectedMonth = parseInt(e.target.value); scheduleSave(); renderDashboardPanel(); });
+  if (dashYearSel) dashYearSel.addEventListener('change', e => { state.selectedYear = parseInt(e.target.value); scheduleSave(); renderDashboardPanel(); });
+
+  const y1Sel = document.getElementById('yoy-y1-sel');
+  const y2Sel = document.getElementById('yoy-y2-sel');
+  if (y1Sel) y1Sel.addEventListener('change', e => { state.yoyYear1 = parseInt(e.target.value); scheduleSave(); renderDashboardPanel(); });
+  if (y2Sel) y2Sel.addEventListener('change', e => { state.yoyYear2 = parseInt(e.target.value); scheduleSave(); renderDashboardPanel(); });
+}
+
+function buildBarChart(mData, sym) {
+  if (!mData || mData.dayResults.length === 0) {
+    return `<svg id="chart-revenue" viewBox="0 0 400 180" style="width:100%;height:180px">
+      <text x="200" y="95" text-anchor="middle" fill="var(--text-muted)" font-size="14">No data for this period</text>
+    </svg>`;
+  }
+
+  const W = Math.max(400, mData.dayResults.length * 80);
+  const H = 200;
+  const padL = 60, padR = 20, padT = 30, padB = 50;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+
+  const profits = mData.dayResults.map(dr => dr.computed.dayProfit);
+  const maxAbs = Math.max(...profits.map(Math.abs), 1);
+  const barW = Math.min(50, (chartW / profits.length) - 8);
+  const zero = padT + chartH / 2;
+
+  let bars = '';
+  profits.forEach((p, i) => {
+    const barH = Math.abs(p) / maxAbs * (chartH / 2 - 4);
+    const x = padL + (i / profits.length) * chartW + (chartW / profits.length - barW) / 2;
+    const y = p >= 0 ? zero - barH : zero;
+    const fill = p >= 0 ? '#2E7D54' : '#C0392B';
+    const dr = mData.dayResults[i];
+    const label = dr.day.date.slice(5); // MM-DD
+    bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW}" height="${Math.max(barH,1).toFixed(1)}" fill="${fill}" rx="3" opacity=".85"/>`;
+    bars += `<text x="${(x + barW/2).toFixed(1)}" y="${(p >= 0 ? y - 4 : y + barH + 13).toFixed(1)}" text-anchor="middle" fill="var(--text-ink)" font-size="10">${fmt(p, sym)}</text>`;
+    bars += `<text x="${(x + barW/2).toFixed(1)}" y="${(H - 8).toFixed(1)}" text-anchor="middle" fill="var(--text-muted)" font-size="10">${label}</text>`;
+  });
+
+  // Zero line
+  bars += `<line x1="${padL}" y1="${zero}" x2="${W - padR}" y2="${zero}" stroke="var(--border)" stroke-width="1.5"/>`;
+  // Y axis
+  bars += `<text x="${padL - 4}" y="${padT}" text-anchor="end" fill="var(--text-muted)" font-size="10">${fmt(maxAbs, sym)}</text>`;
+  bars += `<text x="${padL - 4}" y="${H - padB}" text-anchor="end" fill="var(--text-muted)" font-size="10">-${fmt(maxAbs, sym)}</text>`;
+  bars += `<text x="${padL - 4}" y="${zero + 4}" text-anchor="end" fill="var(--text-muted)" font-size="10">${sym}0</text>`;
+
+  return `<svg id="chart-revenue" viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px;min-width:${Math.min(W,600)}px" aria-label="Profit bar chart">${bars}</svg>`;
+}
+
+/* ---- SETTINGS PANEL ---- */
+function renderSettingsPanel() {
+  const panel = document.getElementById('panel-settings');
+  const sym = state.settings.currencySymbol || '$';
+
+  panel.innerHTML = `
+    <div class="card">
+      <div class="card-title">Preferences</div>
+      <div class="form-row">
+        <div class="field">
+          <label for="setting-mileage-rate">IRS Mileage Rate (${sym}/mile)</label>
+          <input type="number" id="setting-mileage-rate" min="0" step="0.01" value="${escAttr(state.settings.mileageRate)}" aria-label="Mileage rate per mile">
+          <div class="input-error" id="err-mileage-rate" role="alert"></div>
+        </div>
+        <div class="field">
+          <label for="setting-currency">Currency Symbol</label>
+          <input type="text" id="setting-currency" maxlength="3" value="${escAttr(state.settings.currencySymbol)}" placeholder="$" aria-label="Currency symbol">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Export &amp; Backup</div>
+      <div class="actions-row" style="flex-wrap:wrap">
+        <button class="btn btn-secondary" id="btn-export-csv" onclick="exportCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV (Tax-ready)
+        </button>
+        <button class="btn btn-secondary" id="btn-export-json" onclick="exportJSON()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export JSON Backup
+        </button>
+        <button class="btn btn-secondary" id="btn-download-template" onclick="downloadCSVTemplate()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>
+          Download CSV Template
+        </button>
+        <button class="btn btn-secondary" id="btn-print-day" onclick="window.print()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Print Day Summary
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Import Data</div>
+      <div class="field" style="margin-bottom:12px">
+        <label for="import-json-file">Restore JSON Backup</label>
+        <input type="file" id="import-json-file" accept=".json" aria-label="Import JSON backup file">
+        <div class="input-error" id="err-import-json" role="alert"></div>
+      </div>
+      <hr class="section-sep">
+      <div class="card-title" style="margin-top:12px">Import from Spreadsheet (paste rows)</div>
+      <p style="font-size:var(--text-sm);color:var(--text-muted);margin-bottom:8px">
+        Paste rows from a spreadsheet (tab or comma separated). One market day per row.
+        Header row is optional and will be auto-detected.
+      </p>
+      <div style="font-size:var(--text-xs);color:var(--text-muted);background:var(--bg-muted);border-radius:var(--r-sm);padding:8px 12px;margin-bottom:8px;font-family:monospace">
+        Expected columns: Date, Market Name, Booth Fee, Miles, Other Expenses, Weather, Start Time, End Time, Cash Total
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <label for="import-paste">Paste spreadsheet rows</label>
+        <textarea id="import-paste" rows="5" placeholder="2026-06-14&#9;Maple St Market&#9;35&#9;18&#9;5&#9;Clear&#9;09:00&#9;13:00&#9;60" style="background:var(--bg-input);border:1px solid var(--border);border-radius:var(--r-sm);padding:8px 12px;color:var(--text-ink);width:100%;resize:vertical" aria-label="Paste spreadsheet data here"></textarea>
+      </div>
+      <div id="import-preview" style="margin-bottom:8px"></div>
+      <div class="actions-row">
+        <button class="btn btn-secondary" id="import-btn" onclick="importPaste()">Import Rows</button>
+        <div class="input-error" id="err-import-paste" role="alert" style="margin-left:8px"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Appearance</div>
+      <div class="actions-row">
+        <span style="font-size:var(--text-sm);color:var(--text-muted)">Theme:</span>
+        <button class="btn btn-secondary" onclick="document.getElementById('theme-toggle').click()">Toggle Dark / Light</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">App</div>
+      <div class="actions-row">
+        <button class="btn btn-danger" id="btn-clear-data" onclick="clearData()">Clear All Data</button>
+        <button class="btn btn-secondary" id="btn-load-demo" onclick="loadDemo()">Load Demo Data</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:var(--text-xs);color:var(--text-muted);padding:24px 0 8px">
+      Farmers Market Sales &amp; Profit Tracker &middot; jonsDesignerShop &middot; For educational use; not professional tax advice.
+    </div>
+  `;
+
+  // Settings listeners
+  const mileageEl = document.getElementById('setting-mileage-rate');
+  if (mileageEl) mileageEl.addEventListener('input', e => {
+    const n = parseNum(e.target.value, NaN);
+    const errEl = document.getElementById('err-mileage-rate');
+    if (!isFinite(n) || n < 0) {
+      e.target.classList.add('invalid');
+      if (errEl) errEl.textContent = 'Enter a positive number.';
+    } else {
+      e.target.classList.remove('invalid');
+      if (errEl) errEl.textContent = '';
+      state.settings.mileageRate = n;
+      scheduleSave();
+    }
+  });
+
+  const currencyEl = document.getElementById('setting-currency');
+  if (currencyEl) currencyEl.addEventListener('change', e => {
+    state.settings.currencySymbol = e.target.value || '$';
+    scheduleSave();
+    render();
+  });
+
+  const jsonFileEl = document.getElementById('import-json-file');
+  if (jsonFileEl) jsonFileEl.addEventListener('change', e => importJSON(e.target.files[0]));
+
+  // Import paste preview
+  const pasteEl = document.getElementById('import-paste');
+  if (pasteEl) pasteEl.addEventListener('input', updateImportPreview);
+}
+
+/* ============================================================
+   IMPORT / EXPORT
+   ============================================================ */
+function exportCSV() {
+  const sym = state.settings.currencySymbol || '$';
+  const rate = parseNum(state.settings.mileageRate, IRS_RATE_DEFAULT);
+  const rows = [['Date','Market Name','Status','Revenue','Booth Fee','Mileage Cost','Other Expenses','Total Expenses','Profit','Hours','Hourly Rate','Weather','Cash','Card']];
+  for (const d of state.days) {
+    const c = computeDay(d);
+    rows.push([
+      d.date, d.marketName, d.status,
+      c.dayRevenue.toFixed(2), parseNum(d.boothFee,0).toFixed(2),
+      c.mileageCost.toFixed(2), parseNum(d.otherExpenses,0).toFixed(2),
+      c.dayExpenses.toFixed(2), c.dayProfit.toFixed(2),
+      c.totalHours.toFixed(2), c.hourlyRate !== null ? c.hourlyRate.toFixed(2) : '',
+      d.weatherNote, c.cashTotal.toFixed(2), c.cardTotal.toFixed(2),
+    ]);
+  }
+  downloadFile(rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n'), 'fm-tracker-export.csv', 'text/csv');
+  showToast('CSV exported.', 'success');
+}
+
+function exportJSON() {
+  downloadFile(JSON.stringify(state, null, 2), 'fm-tracker-backup.json', 'application/json');
+  showToast('JSON backup saved.', 'success');
+}
+
+function importJSON(file) {
+  if (!file) return;
+  const errEl = document.getElementById('err-import-json');
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.days)) {
+        if (errEl) errEl.textContent = 'Invalid backup file. Expected a JSON object with a "days" array.';
+        return;
+      }
+      const def = defaultState();
+      // imported backups are UNTRUSTED: coerce numeric fields to numbers + times to HH:MM so a
+      // crafted value can't break out of a value="" attribute when rendered (string fields like
+      // date/marketName/weatherNote are escaped at render time). XSS hardening (L-69).
+      const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+      const okTime = (s, d) => /^\d{1,2}:\d{2}$/.test(String(s)) ? String(s) : d;
+      const numMap = o => { const r = {}; if (o && typeof o === 'object') for (const k in o) r[k] = num(o[k]); return r; };
+      if (Array.isArray(parsed.days)) parsed.days = parsed.days.map(d => ({ ...d,
+        boothFee: num(d.boothFee), miles: num(d.miles), otherExpenses: num(d.otherExpenses),
+        travelHours: num(d.travelHours), setupHours: num(d.setupHours), breakdownHours: num(d.breakdownHours),
+        cashTotal: num(d.cashTotal), startTime: okTime(d.startTime, '09:00'), endTime: okTime(d.endTime, '13:00'),
+        tally: numMap(d.tally), bringQty: numMap(d.bringQty) }));
+      if (Array.isArray(parsed.catalog)) parsed.catalog = parsed.catalog.map(c => ({ ...c, price: num(c.price), defaultBring: num(c.defaultBring) }));
+      // mileageRate is rendered into a value="" attribute and into print text, so a crafted non-numeric
+      // value could break out. Coerce it to a number here (defense at the source); render sites also escape.
+      if (parsed.settings && typeof parsed.settings === 'object' && 'mileageRate' in parsed.settings) parsed.settings.mileageRate = num(parsed.settings.mileageRate);
+      if ((state.days && state.days.length) && !confirm('Restoring this backup will REPLACE all your current market days and products with the file contents. Export a backup first if you want to keep them. Continue?')) { if (errEl) errEl.textContent = 'Restore cancelled.'; return; }
+      state = { ...def, ...parsed, settings: { ...def.settings, ...(parsed.settings || {}) } };
+      if (errEl) errEl.textContent = '';
+      saveState();
+      render();
+      showToast('Backup restored.', 'success');
+    } catch(ex) {
+      if (errEl) errEl.textContent = 'Could not read file: ' + ex.message;
+    }
+  };
+  reader.readAsText(file);
+}
+
+function downloadCSVTemplate() {
+  const header = 'Date,Market Name,Booth Fee,Miles,Other Expenses,Weather,Start Time,End Time,Cash Total';
+  const example = '2026-06-14,Saturday Farmers Market,35,18,5,Clear,09:00,13:00,60';
+  downloadFile(header + '\n' + example, 'fm-tracker-template.csv', 'text/csv');
+  showToast('Template downloaded.', 'success');
+}
+
+function updateImportPreview() {
+  const pasteEl = document.getElementById('import-paste');
+  const previewEl = document.getElementById('import-preview');
+  if (!pasteEl || !previewEl) return;
+  const rows = parsePasteRows(pasteEl.value);
+  if (rows.length === 0) { previewEl.innerHTML = ''; return; }
+  previewEl.innerHTML = `<div style="font-size:var(--text-xs);color:var(--text-muted);background:var(--bg-muted);border-radius:var(--r-sm);padding:8px 12px">
+    <strong>Preview:</strong> ${rows.length} row${rows.length > 1 ? 's' : ''} detected.<br>
+    First row: Date=${escHtml(rows[0].date||'')}, Market=${escHtml(rows[0].marketName||'')}, Booth=${rows[0].boothFee||0}, Miles=${rows[0].miles||0}
+  </div>`;
+}
+
+// Normalize a pasted date to the canonical YYYY-MM-DD the rest of the app uses. Accepts ISO,
+// US M/D/YYYY (and M-D-YYYY), and long-form ("June 15, 2026") so a normal Excel/Sheets paste
+// imports instead of silently dropping rows. SECURITY: the OUTPUT is always rebuilt from parsed
+// integers, so it can never carry markup (the date is rendered into the page) — the strict regex
+// guard below still runs on this canonical value. Returns '' for anything unparseable.
+function normalizeDate(s) {
+  s = String(s == null ? '' : s).trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (m) { const mo = +m[1], da = +m[2]; if (mo >= 1 && mo <= 12 && da >= 1 && da <= 31) return m[3] + '-' + String(mo).padStart(2, '0') + '-' + String(da).padStart(2, '0'); }
+  const d = new Date(s);
+  if (!isNaN(d.getTime()) && d.getFullYear() > 1900 && d.getFullYear() < 2200) return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  return '';
+}
+function parsePasteRows(text) {
+  if (!text || !text.trim()) return [];
+  const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean);
+  const results = [];
+  const HEADER_PATTERNS = ['date','market','booth','mile','expense','weather','start','end','cash'];
+  let startLine = 0;
+  if (lines.length > 0) {
+    const firstLower = lines[0].toLowerCase();
+    if (HEADER_PATTERNS.some(p => firstLower.includes(p))) startLine = 1;
+  }
+  for (let i = startLine; i < lines.length; i++) {
+    const cols = lines[i].includes('\t') ? lines[i].split('\t') : lines[i].split(',').map(c => c.replace(/^"|"$/g,''));
+    const date = normalizeDate(cols[0]);
+    const marketName = (cols[1] || '').trim();
+    const boothFee = parseNum(cols[2], 0);
+    const miles = parseNum(cols[3], 0);
+    const otherExpenses = parseNum(cols[4], 0);
+    const weatherNote = WEATHER_OPTIONS.includes((cols[5]||'').trim()) ? (cols[5]||'').trim() : 'Clear';
+    const startTime = (cols[6] || '09:00').trim() || '09:00';
+    const endTime = (cols[7] || '13:00').trim() || '13:00';
+    const cashTotal = parseNum(cols[8], 0);
+    // require the canonical YYYY-MM-DD the template + date picker use: skips junk rows AND keeps
+    // markup out of an imported date (date is rendered into the page, so a raw value is untrusted)
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) continue;
+    results.push({ date, marketName, boothFee, miles, otherExpenses, weatherNote, startTime, endTime, cashTotal });
+  }
+  return results;
+}
+
+function importPaste() {
+  const pasteEl = document.getElementById('import-paste');
+  const errEl = document.getElementById('err-import-paste');
+  if (!pasteEl) return;
+  const rows = parsePasteRows(pasteEl.value);
+  if (rows.length === 0) {
+    if (errEl) errEl.textContent = 'No valid rows found. Check the format.';
+    return;
+  }
+  let imported = 0, skipped = 0;
+  for (const row of rows) {
+    if (!row.date) { skipped++; continue; }
+    const bringQty = {};
+    for (const cat of state.catalog) bringQty[cat.id] = cat.defaultBring;
+    state.days.push({
+      id: uid(),
+      date: row.date,
+      marketName: row.marketName || '',
+      status: 'closed',
+      boothFee: row.boothFee,
+      miles: row.miles,
+      otherExpenses: row.otherExpenses,
+      weatherNote: row.weatherNote,
+      startTime: row.startTime,
+      endTime: row.endTime,
+      travelHours: 0.5,
+      setupHours: 0.75,
+      breakdownHours: 0.5,
+      cashTotal: row.cashTotal,
+      tally: {},
+      bringQty,
+    });
+    imported++;
+  }
+  if (errEl) errEl.textContent = '';
+  pasteEl.value = '';
+  const previewEl = document.getElementById('import-preview');
+  if (previewEl) previewEl.innerHTML = '';
+  scheduleSave();
+  render();
+  showToast(`Imported ${imported} day${imported !== 1 ? 's' : ''}.${skipped > 0 ? ' ' + skipped + ' skipped.' : ''}`, 'success');
+}
+
+function clearDemoAndStart() {
+  if (!confirm('Remove the sample data and start with a blank tracker?')) return;
+  const def = defaultState();
+  state = { ...def, days: [], catalog: [], activeDayId: null };
+  saveState();
+  render();
+  showToast('Ready for your data. Add products first, then create a market day.', 'success');
+}
+
+function clearData() {
+  if (!confirm('Clear ALL market days and products? This cannot be undone.')) return;
+  state = defaultState();
+  saveState();
+  render();
+  showToast('All data cleared. Demo data restored.', 'success');
+}
+
+function loadDemo() {
+  if ((state.days && state.days.length) && !confirm('Loading demo data will REPLACE all your current market days and products with the built-in sample. Export a backup first if you want to keep them. Continue?')) return;
+  state = defaultState();
+  saveState();
+  render();
+  showToast('Demo data loaded.', 'success');
+}
+
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(msg, type) {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  container.appendChild(el);
+  requestAnimationFrame(() => { el.classList.add('show'); });
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 250);
+  }, 2800);
+}
+
+/* ============================================================
+   XSS HELPERS
+   ============================================================ */
+function escHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escAttr(s) { return escHtml(s); }
+
+/* ============================================================
+   TAB SWITCHING
+   ============================================================ */
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    btn.setAttribute('aria-selected','true');
+    const panelId = 'panel-' + btn.dataset.tab;
+    const panel = document.getElementById(panelId);
+    if (panel) panel.classList.add('active');
+  });
+});
+
+/* ============================================================
+   THEME TOGGLE
+   ============================================================ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const label = document.getElementById('theme-label');
+  if (label) label.textContent = theme === 'dark' ? 'Light' : 'Dark';
+}
+
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  state.theme = next;
+  applyTheme(next);
+  scheduleSave();
+});
+
+/* ============================================================
+   PRINT: show print elements
+   ============================================================ */
+window.addEventListener('beforeprint', () => {
+  const ph = document.getElementById('print-day-summary');
+  if (ph) ph.style.display = 'block';
+});
+window.addEventListener('afterprint', () => {
+  const ph = document.getElementById('print-day-summary');
+  if (ph) ph.style.display = 'none';
+});
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+applyTheme(state.theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+render();
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Farmers Market Sales &amp; Profit Tracker. It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4523547893?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($21) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

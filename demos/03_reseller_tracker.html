@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Reseller Inventory &amp; Profit Tracker (FIFO)</title>
+<style>
+:root {
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--sp-8:32px;--sp-12:48px;
+  --fs-xs:13px;--fs-sm:15px;--fs-md:17px;--fs-lg:20px;--fs-xl:26px;--fs-2xl:34px;
+  --r-sm:6px;--r-md:10px;--r-lg:16px;
+  --sh-sm:0 1px 3px rgba(0,0,0,.08);--sh-md:0 4px 12px rgba(0,0,0,.12);--sh-lg:0 8px 24px rgba(0,0,0,.18);
+  --accent:#6B9BD1;--accent-h:#5585BE;--accent-lt:#EBF2FA;
+  --bg:#F4F7FB;--surf:#FFFFFF;--surf2:#F8FAFD;
+  --ink:#2B3A4A;--ink2:#4A5E72;--ink3:#7A8FA3;
+  --bdr:#DDE5EF;--bdr-f:#6B9BD1;
+  --ok:#2E7D52;--ok-bg:#EAF5EF;
+  --warn:#B45309;--warn-bg:#FEF3C7;
+  --err:#C0392B;--err-bg:#FDECEA;
+  --c1:#6B9BD1;--c2:#5DBB8C;--c3:#F0A150;--c4:#9B7DD4;--c5:#E8636A;
+}
+[data-theme="dark"]{
+  --accent:#7AAEE0;--accent-h:#8FBDE8;--accent-lt:#1A2A3A;
+  --bg:#0F1923;--surf:#1A2535;--surf2:#1F2E42;
+  --ink:#E8EFF7;--ink2:#A8BDD0;--ink3:#6A8BA4;
+  --bdr:#2A3D55;--bdr-f:#7AAEE0;
+  --ok:#4CAF80;--ok-bg:#0F2820;
+  --warn:#F0A150;--warn-bg:#2A1E0A;
+  --err:#E87070;--err-bg:#2A1010;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:var(--fs-sm);line-height:1.6;min-height:100vh;transition:background .2s,color .2s}
+/* HEADER */
+.app-hdr{background:var(--surf);border-bottom:1px solid var(--bdr);padding:var(--sp-3) var(--sp-6);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);position:sticky;top:0;z-index:100;box-shadow:var(--sh-sm)}
+.app-hdr h1{font-size:var(--fs-lg);font-weight:700;color:var(--ink);line-height:1.2}
+.app-hdr .sub{font-size:var(--fs-xs);color:var(--ink3);margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:var(--sp-2)}
+#theme-toggle{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);cursor:pointer;color:var(--ink2);display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-xs);transition:all .15s;min-height:44px;min-width:44px;justify-content:center}
+#theme-toggle:hover{background:var(--accent-lt);color:var(--accent);border-color:var(--accent)}
+/* TABS */
+.tab-nav{background:var(--surf);border-bottom:2px solid var(--bdr);display:flex;padding:0 var(--sp-6);overflow-x:auto;scrollbar-width:none}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{background:none;border:none;border-bottom:3px solid transparent;margin-bottom:-2px;padding:var(--sp-3) var(--sp-4);font-size:var(--fs-sm);font-weight:500;color:var(--ink3);cursor:pointer;white-space:nowrap;transition:all .15s;min-height:44px;font-family:inherit}
+.tab-btn:hover{color:var(--ink)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+/* CONTENT */
+.tab-content{padding:var(--sp-6);max-width:1200px;margin:0 auto}
+.panel{display:none}
+.panel.active{display:block}
+/* CARDS */
+.card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-md);padding:var(--sp-6);box-shadow:var(--sh-sm);margin-bottom:var(--sp-4)}
+.card-title{font-size:var(--fs-md);font-weight:700;color:var(--ink);margin-bottom:var(--sp-4)}
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--sp-3);margin-bottom:var(--sp-6)}
+.kpi-card{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-md);padding:var(--sp-4);box-shadow:var(--sh-sm)}
+.kpi-lbl{font-size:11px;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-2)}
+.kpi-val{font-size:var(--fs-xl);font-weight:700;color:var(--accent);line-height:1.1;transition:color .2s}
+.kpi-val.neg{color:var(--err)}
+/* COLLAPSIBLE */
+.coll-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding-bottom:var(--sp-2)}
+.coll-hdr .chev{transition:transform .2s;color:var(--ink3);flex-shrink:0}
+.coll-hdr.open .chev{transform:rotate(180deg)}
+.coll-body{overflow:hidden}
+/* FORMS */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:var(--sp-4);margin-top:var(--sp-4)}
+.fg{display:flex;flex-direction:column;gap:var(--sp-1)}
+.fg label{font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select,.fg textarea{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r-sm);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-sm);color:var(--ink);width:100%;transition:border-color .15s,box-shadow .15s;min-height:44px;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--bdr-f);box-shadow:0 0 0 3px rgba(107,155,209,.15)}
+.fg input.err,.fg select.err{border-color:var(--err)}
+.ie{font-size:var(--fs-xs);color:var(--err);min-height:16px;display:block}
+.form-actions{display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--bdr)}
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);border-radius:var(--r-sm);font-size:var(--fs-sm);font-weight:600;cursor:pointer;transition:all .15s;border:1px solid transparent;min-height:44px;text-decoration:none;font-family:inherit;white-space:nowrap}
+.btn-p{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-p:hover{background:var(--accent-h);border-color:var(--accent-h)}
+.btn-p:disabled{opacity:.5;cursor:not-allowed;pointer-events:none}
+.btn-s{background:var(--surf);color:var(--ink2);border-color:var(--bdr)}
+.btn-s:hover{background:var(--accent-lt);color:var(--accent);border-color:var(--accent)}
+.btn-d{background:var(--err-bg);color:var(--err);border-color:var(--err)}
+.btn-d:hover{background:var(--err);color:#fff}
+.btn-sm{padding:var(--sp-1) var(--sp-3);font-size:var(--fs-xs);min-height:34px}
+/* TABLES */
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:var(--r-md);border:1px solid var(--bdr)}
+table{width:100%;border-collapse:collapse;font-size:var(--fs-xs)}
+th{background:var(--surf2);color:var(--ink2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:var(--sp-2) var(--sp-3);text-align:left;border-bottom:1px solid var(--bdr);white-space:nowrap;user-select:none}
+th.sortable{cursor:pointer}
+th.sortable:hover{color:var(--accent)}
+td{padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--bdr);color:var(--ink);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--accent-lt)}
+.neg-val{color:var(--err)}
+/* BADGES */
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-active{background:var(--ok-bg);color:var(--ok)}
+.b-sitting{background:var(--warn-bg);color:var(--warn)}
+.b-dead{background:var(--err-bg);color:var(--err)}
+.b-soldout{background:var(--surf2);color:var(--ink3)}
+/* AUDIT TRAIL */
+.audit-row>td{background:var(--surf2);padding:var(--sp-3) var(--sp-8)}
+.audit-layer{display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-1) 0;border-bottom:1px dashed var(--bdr);font-size:var(--fs-xs);color:var(--ink2)}
+.audit-layer:last-child{border-bottom:none}
+.audit-total{font-weight:700;color:var(--ink);padding-top:var(--sp-2);font-size:var(--fs-xs)}
+/* CHARTS */
+.chart-wrap{background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-md);padding:var(--sp-4);margin-top:var(--sp-4)}
+.chart-title{font-size:var(--fs-sm);font-weight:700;color:var(--ink);margin-bottom:var(--sp-4)}
+svg.chart{width:100%;height:auto;overflow:visible;display:block}
+#chart-monthly{width:100%;height:auto}
+#chart-platform-dash{width:100%;height:auto}
+#chart-platform-rep{width:100%;height:auto}
+#chart-category-rep{width:100%;height:auto}
+/* ALERTS */
+.alert{padding:var(--sp-3) var(--sp-4);border-radius:var(--r-sm);font-size:var(--fs-xs);display:flex;align-items:flex-start;gap:var(--sp-2);margin-top:var(--sp-2)}
+.alert-info{background:var(--accent-lt);color:var(--accent);border:1px solid var(--accent)}
+.alert-warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn)}
+.alert-err{background:var(--err-bg);color:var(--err);border:1px solid var(--err)}
+.alert-ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok)}
+/* TOAST */
+#toast{position:fixed;bottom:var(--sp-6);right:var(--sp-6);background:var(--ink);color:#fff;padding:var(--sp-3) var(--sp-4);border-radius:var(--r-md);font-size:var(--fs-xs);box-shadow:var(--sh-lg);z-index:9999;opacity:0;transition:opacity .2s;pointer-events:none;max-width:320px}
+#toast.show{opacity:1}
+/* AUTOCOMPLETE */
+.ac-wrap{position:relative}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--surf);border:1px solid var(--bdr);border-radius:var(--r-sm);box-shadow:var(--sh-md);z-index:300;max-height:200px;overflow-y:auto;display:none}
+.ac-item{padding:var(--sp-2) var(--sp-3);cursor:pointer;font-size:var(--fs-sm)}
+.ac-item:hover{background:var(--accent-lt);color:var(--accent)}
+/* FIFO PREVIEW */
+.fifo-preview{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r-sm);padding:var(--sp-3);margin-top:var(--sp-3);font-size:var(--fs-xs)}
+.fifo-preview-title{font-weight:700;color:var(--ink2);margin-bottom:var(--sp-2)}
+/* PASTE IMPORT */
+#import-paste{width:100%;min-height:110px;resize:vertical;font-family:'Courier New',monospace;font-size:var(--fs-xs)}
+.col-map{background:var(--surf2);border:1px solid var(--bdr);border-radius:var(--r-sm);padding:var(--sp-3);font-size:var(--fs-xs);color:var(--ink2);margin-top:var(--sp-2)}
+/* MISC */
+.no-data{text-align:center;padding:var(--sp-8);color:var(--ink3);font-size:var(--fs-sm)}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4);flex-wrap:wrap;gap:var(--sp-3)}
+.sec-hdr h2{font-size:var(--fs-md);font-weight:700;color:var(--ink)}
+.del-btn{background:none;border:none;color:var(--ink3);cursor:pointer;padding:4px;border-radius:4px;font-size:12px;line-height:1;transition:color .15s}
+.del-btn:hover{color:var(--err)}
+.expand-btn{background:none;border:none;color:var(--ink3);cursor:pointer;padding:4px;border-radius:4px;transition:color .15s;font-size:12px}
+.expand-btn:hover{color:var(--accent)}
+.expand-btn.open{color:var(--accent)}
+/* PRINT */
+.print-hdr{display:none}
+@media print{
+  .app-hdr .hdr-right,.tab-nav,.form-actions,.btn,button,.coll-hdr,.sec-hdr .btn-s,#toast{display:none!important}
+  .panel{display:block!important}
+  .tab-content{padding:0;max-width:100%}
+  .card,.chart-wrap{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}
+  body{background:#fff;color:#000;font-size:12px}
+  .app-hdr{position:static;box-shadow:none}
+  .print-hdr{display:block;padding:8px 0;border-bottom:2px solid #ccc;margin-bottom:12px}
+  table{min-width:100%}
+  .tbl-wrap{overflow:visible;border:none}
+  .kpi-grid{grid-template-columns:repeat(4,1fr)}
+}
+/* MOBILE */
+@media(max-width:600px){
+  .tab-content{padding:var(--sp-3)}
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .app-hdr{padding:var(--sp-2) var(--sp-3)}
+  .app-hdr h1{font-size:var(--fs-md)}
+  .tab-btn{padding:var(--sp-2) var(--sp-3);font-size:var(--fs-xs)}
+  .btn{min-height:48px}
+  .fg input,.fg select{min-height:48px}
+  .del-btn,.expand-btn{min-height:44px;min-width:44px}
+  #toast{left:var(--sp-3);right:var(--sp-3);bottom:var(--sp-3)}
+}
+@keyframes pulse-in{0%{opacity:.4}100%{opacity:1}}
+.changed{animation:pulse-in .25s ease}
+</style>
+</head>
+<body>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<header class="app-hdr">
+  <div>
+    <h1>Reseller Inventory &amp; Profit Tracker</h1>
+    <div class="sub">FIFO cost attribution &middot; Schedule C ready &middot; eBay / Poshmark / Mercari</div>
+  </div>
+  <div class="hdr-right">
+    <button id="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+      <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<nav class="tab-nav" role="tablist">
+  <button class="tab-btn active" role="tab" aria-selected="true" data-tab="dashboard" id="tab-dashboard">Dashboard</button>
+  <button class="tab-btn" role="tab" aria-selected="false" data-tab="inventory" id="tab-inventory">Inventory</button>
+  <button class="tab-btn" role="tab" aria-selected="false" data-tab="sales" id="tab-sales">Sales</button>
+  <button class="tab-btn" role="tab" aria-selected="false" data-tab="reports" id="tab-reports">Reports</button>
+</nav>
+
+<main class="tab-content">
+
+  <!-- DASHBOARD -->
+  <div class="panel" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard">
+    <div class="print-hdr">
+      <strong>Reseller Inventory &amp; Profit Tracker &mdash; Dashboard</strong>
+      <span id="print-date" style="float:right"></span>
+    </div>
+    <div id="kpi-grid" class="kpi-grid"></div>
+    <div class="chart-wrap">
+      <div class="chart-title">Monthly Net Profit &mdash; last 12 months</div>
+      <div id="chart-monthly"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-title">Platform P&amp;L (ranked by net profit)</div>
+      <div id="chart-platform-dash"></div>
+    </div>
+  </div>
+
+  <!-- INVENTORY -->
+  <div class="panel" id="panel-inventory" role="tabpanel" aria-labelledby="tab-inventory">
+    <div class="card">
+      <div class="coll-hdr" id="lot-hdr" role="button" aria-expanded="true" tabindex="0">
+        <h2 class="card-title" style="margin:0">Add Inventory Lot</h2>
+        <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="coll-body" id="lot-body">
+        <form id="lot-form" novalidate>
+          <div class="form-grid">
+            <div class="fg"><label for="lot-item">Item Name *</label><input type="text" id="lot-item" placeholder="Vintage Denim Jacket" autocomplete="off"><span class="ie" id="lot-item-e" role="alert"></span></div>
+            <div class="fg"><label for="lot-source">Source / Store *</label><input type="text" id="lot-source" placeholder="Goodwill" autocomplete="off"><span class="ie" id="lot-source-e" role="alert"></span></div>
+            <div class="fg"><label for="lot-date">Purchase Date *</label><input type="date" id="lot-date"><span class="ie" id="lot-date-e" role="alert"></span></div>
+            <div class="fg"><label for="lot-cat">Category</label>
+              <select id="lot-cat">
+                <option>Clothing</option><option>Shoes</option><option>Electronics</option><option>Books</option>
+                <option>Toys &amp; Games</option><option>Home &amp; Kitchen</option><option>Sports</option>
+                <option>Jewelry</option><option>Collectibles</option><option>Other</option>
+              </select>
+            </div>
+            <div class="fg"><label for="lot-cost">Cost per Unit ($) *</label><input type="number" id="lot-cost" min="0" step="0.01" placeholder="8.00"><span class="ie" id="lot-cost-e" role="alert"></span></div>
+            <div class="fg"><label for="lot-qty">Quantity *</label><input type="number" id="lot-qty" min="1" step="1" placeholder="10"><span class="ie" id="lot-qty-e" role="alert"></span></div>
+            <div class="fg" style="grid-column:1/-1"><label for="lot-notes">Notes (optional)</label><input type="text" id="lot-notes" placeholder="Great condition, assorted sizes" autocomplete="off"></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-p" id="save-lot-btn">Save Lot</button>
+            <button type="button" class="btn btn-s" id="clear-lot-btn">Clear</button>
+          </div>
+          <input type="hidden" id="lot-edit-id">
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-hdr">
+        <h2>Inventory Lots</h2>
+        <div style="display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-xs);color:var(--ink3)">
+          Sort:
+          <select id="inv-sort" style="min-height:36px;padding:4px 10px;border-radius:6px;border:1px solid var(--bdr);background:var(--surf);color:var(--ink);font-size:13px;cursor:pointer">
+            <option value="date-desc">Newest first</option>
+            <option value="date-asc">Oldest first</option>
+            <option value="status">Status (Dead first)</option>
+            <option value="remaining">Remaining qty</option>
+            <option value="age">Age (oldest first)</option>
+          </select>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table id="inv-table">
+          <thead><tr>
+            <th>Item Name</th><th>Source</th><th>Date</th><th>Category</th>
+            <th>Cost/Unit</th><th>Total Qty</th><th>Sold</th><th>Remaining</th>
+            <th>Age</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody id="inv-tbody"><tr><td colspan="11" class="no-data">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SALES -->
+  <div class="panel" id="panel-sales" role="tabpanel" aria-labelledby="tab-sales">
+    <div class="card">
+      <div class="coll-hdr" id="sale-hdr" role="button" aria-expanded="false" tabindex="0">
+        <h2 class="card-title" style="margin:0">Record Sale</h2>
+        <svg class="chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="coll-body" id="sale-body">
+        <form id="sale-form" novalidate>
+          <div class="form-grid">
+            <div class="fg"><label for="sale-date">Sale Date *</label><input type="date" id="sale-date"><span class="ie" id="sale-date-e" role="alert"></span></div>
+            <div class="fg ac-wrap"><label for="sale-item">Item Name *</label><input type="text" id="sale-item" placeholder="Vintage Denim Jacket" autocomplete="off"><div class="ac-list" id="sale-item-ac"></div><span class="ie" id="sale-item-e" role="alert"></span></div>
+            <div class="fg"><label for="sale-platform">Platform *</label>
+              <select id="sale-platform">
+                <option>eBay</option><option>Poshmark</option><option>Mercari</option>
+                <option>Depop</option><option>Facebook Marketplace</option><option>Other</option>
+              </select>
+            </div>
+            <div class="fg"><label for="sale-qty">Qty Sold *</label><input type="number" id="sale-qty" min="1" step="1" placeholder="4"><span class="ie" id="sale-qty-e" role="alert"></span></div>
+            <div class="fg"><label for="sale-price">Sale Price / Unit ($) *</label><input type="number" id="sale-price" min="0" step="0.01" placeholder="28.00"><span class="ie" id="sale-price-e" role="alert"></span></div>
+            <div class="fg"><label for="sale-ship">Shipping You Paid ($)</label><input type="number" id="sale-ship" min="0" step="0.01" placeholder="9.50"><span class="ie" id="sale-ship-e" role="alert"></span></div>
+            <div class="fg"><label for="sale-fees">Platform Fees ($) *</label><input type="number" id="sale-fees" min="0" step="0.01" placeholder="14.85"><span class="ie" id="sale-fees-e" role="alert"></span></div>
+          </div>
+          <div id="fifo-preview"></div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-p" id="save-sale-btn">Record Sale</button>
+            <button type="button" class="btn btn-s" id="clear-sale-btn">Clear</button>
+          </div>
+          <input type="hidden" id="sale-edit-id">
+        </form>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sec-hdr">
+        <h2>Sales History</h2>
+        <button class="btn btn-s btn-sm" id="export-csv-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+      <div class="tbl-wrap">
+        <table id="sales-table">
+          <thead><tr>
+            <th></th><th>Date</th><th>Item</th><th>Platform</th><th>Qty</th>
+            <th>Revenue</th><th>COGS</th><th>Fees</th><th>Shipping</th>
+            <th>Net Profit</th><th>Margin</th><th>ROI</th><th>Days</th><th></th>
+          </tr></thead>
+          <tbody id="sales-tbody"><tr><td colspan="14" class="no-data">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="panel" id="panel-reports" role="tabpanel" aria-labelledby="tab-reports">
+    <div class="card">
+      <h2 class="card-title">Category Breakdown</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Category</th><th>Units Sold</th><th>Revenue</th><th>COGS</th><th>Fees+Ship</th><th>Net Profit</th><th>Margin</th></tr></thead>
+          <tbody id="cat-tbody"></tbody>
+        </table>
+      </div>
+      <div id="chart-category-rep"></div>
+    </div>
+    <div class="card">
+      <h2 class="card-title">Platform Summary</h2>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Platform</th><th>Units Sold</th><th>Revenue</th><th>COGS</th><th>Fees</th><th>Shipping</th><th>Net Profit</th><th>Margin</th></tr></thead>
+          <tbody id="plat-tbody"></tbody>
+        </table>
+      </div>
+      <div id="chart-platform-rep"></div>
+    </div>
+    <div class="card">
+      <h2 class="card-title">Backup &amp; Restore</h2>
+      <div style="display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-bottom:var(--sp-4)">
+        <button class="btn btn-s" id="export-json-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export JSON Backup
+        </button>
+        <label class="btn btn-s" for="import-json-file" style="cursor:pointer">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import JSON Backup
+        </label>
+        <input type="file" id="import-json-file" accept=".json" style="display:none">
+        <button class="btn btn-d btn-sm" id="reset-btn">Reset / Clear All Data</button>
+      </div>
+      <div id="json-msg"></div>
+      <hr style="border:none;border-top:1px solid var(--bdr);margin:var(--sp-4) 0">
+      <h3 style="font-size:var(--fs-sm);font-weight:700;margin-bottom:var(--sp-2)">Import from Spreadsheet (Paste)</h3>
+      <p style="font-size:var(--fs-xs);color:var(--ink2);margin-bottom:var(--sp-3)">Paste rows from Excel or Google Sheets. Tab- or comma-separated. Columns: Item Name, Source, Date, Category, Cost/Unit, Quantity, Notes (header row optional).</p>
+      <div class="fg"><label for="import-paste">Paste Data Here</label>
+        <textarea id="import-paste" placeholder="Item Name&#9;Source&#9;Date&#9;Category&#9;Cost/Unit&#9;Qty&#9;Notes&#10;Vintage Denim Jacket&#9;Goodwill&#9;1/5/2026&#9;Clothing&#9;8.00&#9;10&#9;Great find"></textarea>
+      </div>
+      <div class="col-map" id="paste-preview">Paste data above to preview column mapping</div>
+      <div style="display:flex;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-3)">
+        <button class="btn btn-p" id="import-btn">Import Rows</button>
+        <button class="btn btn-s" id="dl-template-btn">Download CSV Template</button>
+      </div>
+      <div id="paste-msg" style="margin-top:var(--sp-2)"></div>
+    </div>
+  </div>
+
+</main>
+
+<footer style="text-align:center;padding:var(--sp-6);font-size:var(--fs-xs);color:var(--ink3);border-top:1px solid var(--bdr);margin-top:var(--sp-4)">
+  Reseller Inventory &amp; Profit Tracker (FIFO) &middot; jonsDesignerShop &middot; Educational tool &mdash; not professional tax advice
+</footer>
+
+<script>
+// ── CONSTANTS ──────────────────────────────────────────────────────────────
+const SK = 'reseller-tracker-v1:state';
+
+// ── UTILITIES ──────────────────────────────────────────────────────────────
+function uid(){ return 'id-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+function esc(v){ return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function today(){ return new Date().toISOString().slice(0,10); }
+function dAgo(n){ const d=new Date(); d.setDate(d.getDate()-n); return d.toISOString().slice(0,10); }
+function daysBetween(d1,d2){
+  if(!d1||!d2) return 0;
+  const a=new Date(d1+'T00:00:00'), b=new Date(d2+'T00:00:00');
+  if(isNaN(a.getTime())||isNaN(b.getTime())) return 0;
+  return Math.round((b-a)/86400000);
+}
+function fmtMoney(v){
+  const n=parseFloat(v)||0;
+  if(!isFinite(n)) return '$0.00';
+  const neg=n<0, abs=Math.abs(n);
+  return (neg?'-$':'$')+abs.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtPct(v,dec=2){
+  if(!isFinite(parseFloat(v))) return '0.00%';
+  return parseFloat(v).toFixed(dec)+'%';
+}
+function fmtNum(v,dec=2){
+  if(!isFinite(parseFloat(v))) return '0';
+  return parseFloat(v).toFixed(dec);
+}
+
+// ── DEFAULT STATE (demo data) ─────────────────────────────────────────────
+function defaultState(){
+  return {
+    lots:[
+      {id:'lot-d1',item:'Vintage Denim Jacket',source:'Goodwill',date:dAgo(95),category:'Clothing',costPerUnit:8,qty:10,notes:'Great condition, assorted sizes'},
+      {id:'lot-d2',item:'Vintage Denim Jacket',source:'Estate Sale',date:dAgo(60),category:'Clothing',costPerUnit:11,qty:6,notes:'Newer styles'},
+      {id:'lot-d3',item:'Nike Running Shoes',source:'Bins',date:dAgo(30),category:'Shoes',costPerUnit:5.5,qty:8,notes:'Mixed sizes, good shape'},
+      {id:'lot-d4',item:'Vintage Board Games',source:'Thrift Store',date:dAgo(14),category:'Toys & Games',costPerUnit:3,qty:12,notes:'Complete sets'},
+    ],
+    sales:[
+      {id:'sale-d1',date:dAgo(30),item:'Vintage Denim Jacket',platform:'eBay',qty:4,pricePerUnit:28,shipping:9.5,fees:14.85},
+      {id:'sale-d2',date:dAgo(14),item:'Vintage Denim Jacket',platform:'Poshmark',qty:3,pricePerUnit:32,shipping:0,fees:9.6},
+      {id:'sale-d3',date:dAgo(7),item:'Nike Running Shoes',platform:'Mercari',qty:2,pricePerUnit:45,shipping:8,fees:4.5},
+    ],
+    activeTab:'dashboard', invSort:'date-desc', expandedSales:[],
+    lotFormOpen:true, saleFormOpen:false, theme:'auto',
+  };
+}
+
+// ── LOAD / SAVE ────────────────────────────────────────────────────────────
+let state;
+let _loadWarning=false;
+let _firstRun=false;
+function loadState(){
+  let raw=null; try{ raw=localStorage.getItem(SK); }catch(_){ return defaultState(); }
+  if(!raw){ _firstRun=true; return defaultState(); }
+  try{
+    const p=JSON.parse(raw);
+    if(!Array.isArray(p.lots)||!Array.isArray(p.sales)) throw new Error('bad shape');
+    if(!Array.isArray(p.expandedSales)) p.expandedSales=[];
+    return p;
+  }catch(e){
+    // L-129: NEVER silently discard unreadable saved data — the next save would overwrite it (irreversible loss).
+    // Stash the raw bytes under a backup key and warn the user, so a corrupted save stays recoverable.
+    try{ localStorage.setItem(SK+'__corrupt-backup', raw); }catch(_){}
+    _loadWarning=true;
+    return defaultState();
+  }
+}
+let _saveTimer=null;
+function scheduleSave(){ clearTimeout(_saveTimer); _saveTimer=setTimeout(persist,300); }
+function persist(){ clearTimeout(_saveTimer); try{ localStorage.setItem(SK,JSON.stringify(state)); }catch(e){ try{ toast('Could not save: your browser storage may be full or disabled. Export a backup so you do not lose your work.',6000); }catch(_){}} }
+window.addEventListener('pagehide',persist);
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') persist(); });
+window.addEventListener('load',()=>{ if(_loadWarning) toast('Your saved data could not be read, so it was set aside (a backup was kept) and the app started fresh. Message me your order number to recover it.',9000); });
+// Two-tab safety: WARN (do not auto-reload, which would discard an in-progress edit in this tab) when
+// another tab writes to our storage key, so the user knows to reload before saving over the newer data.
+window.addEventListener('storage',e=>{ if(e.key===SK) toast('Your data was changed in another tab. Reload this page to see the latest and avoid overwriting it.',6000); });
+
+state=loadState();
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+let _toastTimer=null;
+function toast(msg,ms=3000){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>el.classList.remove('show'),ms);
+}
+
+// ── THEME ──────────────────────────────────────────────────────────────────
+function applyTheme(t){
+  const dark = t==='dark' || (t!=='light' && window.matchMedia('(prefers-color-scheme:dark)').matches);
+  document.documentElement.setAttribute('data-theme', dark?'dark':'light');
+  const icon=document.getElementById('theme-icon');
+  if(!icon) return;
+  if(dark){
+    icon.innerHTML='<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+  } else {
+    icon.innerHTML='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+  }
+}
+document.getElementById('theme-toggle').addEventListener('click',()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  state.theme=cur==='dark'?'light':'dark';
+  applyTheme(state.theme); persist();
+});
+
+// ── TABS ───────────────────────────────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    const on=b.dataset.tab===tab;
+    b.classList.toggle('active',on);
+    b.setAttribute('aria-selected',on);
+  });
+  document.querySelectorAll('.panel').forEach(p=>{
+    const on=p.id==='panel-'+tab;
+    p.classList.toggle('active',on);
+  });
+}
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{ state.activeTab=btn.dataset.tab; scheduleSave(); switchTab(btn.dataset.tab); });
+});
+
+// ── COLLAPSIBLE ────────────────────────────────────────────────────────────
+function setColl(hdrId,bodyId,open){
+  const hdr=document.getElementById(hdrId), body=document.getElementById(bodyId);
+  body.style.display=open?'block':'none';
+  hdr.classList.toggle('open',open);
+  hdr.setAttribute('aria-expanded',open);
+}
+document.getElementById('lot-hdr').addEventListener('click',()=>{
+  state.lotFormOpen=!state.lotFormOpen; setColl('lot-hdr','lot-body',state.lotFormOpen); scheduleSave();
+});
+document.getElementById('lot-hdr').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); document.getElementById('lot-hdr').click(); }});
+document.getElementById('sale-hdr').addEventListener('click',()=>{
+  state.saleFormOpen=!state.saleFormOpen; setColl('sale-hdr','sale-body',state.saleFormOpen); scheduleSave();
+});
+document.getElementById('sale-hdr').addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); document.getElementById('sale-hdr').click(); }});
+
+// ── FIFO ENGINE ────────────────────────────────────────────────────────────
+function computeDerived(){
+  const rem={}, sold={};
+  state.lots.forEach(l=>{ rem[l.id]=parseInt(l.qty)||0; sold[l.id]=0; });
+
+  const sortedSales=[...state.sales].sort((a,b)=>{
+    if(a.date!==b.date) return a.date<b.date?-1:1;
+    return state.sales.indexOf(a)-state.sales.indexOf(b);
+  });
+
+  const compMap=new Map();
+  sortedSales.forEach(sale=>{
+    const itemKey=sale.item.trim().toLowerCase();
+    const itemLots=state.lots
+      .filter(l=>l.item.trim().toLowerCase()===itemKey)
+      .sort((a,b)=>a.date!==b.date?(a.date<b.date?-1:1):state.lots.indexOf(a)-state.lots.indexOf(b));
+
+    let need=parseInt(sale.qty)||0;
+    let cogs=0;
+    const layers=[];
+
+    for(const lot of itemLots){
+      if(need<=0) break;
+      const avail=rem[lot.id]||0;
+      if(avail<=0) continue;
+      const consume=Math.min(avail,need);
+      const layerCost=consume*(parseFloat(lot.costPerUnit)||0);
+      const layerDays=Math.max(0,daysBetween(lot.date,sale.date));
+      layers.push({lotId:lot.id,lotItem:lot.item,lotSource:lot.source,lotDate:lot.date,unitsConsumed:consume,costPerUnit:parseFloat(lot.costPerUnit)||0,layerCost,layerDays});
+      rem[lot.id]-=consume;
+      sold[lot.id]=(sold[lot.id]||0)+consume;
+      cogs+=layerCost;
+      need-=consume;
+    }
+
+    const leftover=need;
+    const qty=parseInt(sale.qty)||0;
+    const ppu=parseFloat(sale.pricePerUnit)||0;
+    const ship=parseFloat(sale.shipping)||0;
+    const fees=parseFloat(sale.fees)||0;
+    const spt=qty*ppu;
+    const np=spt-cogs-ship-fees;
+    const margin=spt>0?(np/spt)*100:0;
+    const roi=cogs>0?(np/cogs)*100:null;
+    const filled=qty-leftover;
+    // Spec days-to-sell divides by qty_sold (not the FIFO-filled subset) so an oversold sale does not
+    // diverge from the documented formula; filled is still surfaced via leftover for the oversold flag.
+    const dts=qty>0?layers.reduce((s,l)=>s+l.unitsConsumed*l.layerDays,0)/qty:0;
+
+    compMap.set(sale.id,{...sale,qty,pricePerUnit:ppu,shipping:ship,fees,salePriceTotal:spt,cogs,layers,leftover,netProfit:np,marginPct:margin,roiPct:roi,daysToSell:dts});
+  });
+
+  const salesComputed=state.sales.map(s=>compMap.get(s.id)||{...s,cogs:0,layers:[],leftover:0,salePriceTotal:0,netProfit:0,marginPct:0,roiPct:null,daysToSell:0});
+  const td=today();
+  const lotsComputed=state.lots.map(l=>{
+    const r=rem[l.id]??parseInt(l.qty); const s=sold[l.id]??0;
+    const age=Math.max(0,daysBetween(l.date,td));
+    const status=r<=0?'sold-out':age>90?'dead':age>60?'sitting':'active';
+    return{...l,_remaining:r,_soldQty:s,_ageDays:age,_status:status};
+  });
+  return{lotsComputed,salesComputed};
+}
+
+// FIFO preview for the form (runs AFTER existing sales)
+function fifoPreview(itemName,qty,saleDate){
+  const{lotsComputed}=computeDerived();
+  const key=itemName.trim().toLowerCase();
+  const itemLots=lotsComputed.filter(l=>l.item.trim().toLowerCase()===key&&l._remaining>0)
+    .sort((a,b)=>a.date!==b.date?(a.date<b.date?-1:1):0);
+  const totalAvail=itemLots.reduce((s,l)=>s+l._remaining,0);
+  if(itemLots.length===0) return{error:'No inventory found for this item name.',available:0,layers:[],cogs:0};
+  if(qty>totalAvail) return{error:`Only ${totalAvail} unit${totalAvail!==1?'s':''} available for this item via FIFO.`,available:totalAvail,layers:[],cogs:0};
+  let need=qty, cogs=0; const layers=[];
+  for(const lot of itemLots){
+    if(need<=0) break;
+    const consume=Math.min(lot._remaining,need);
+    const layerCost=consume*lot.costPerUnit;
+    const layerDays=saleDate?Math.max(0,daysBetween(lot.date,saleDate)):0;
+    layers.push({lot,consume,layerCost,layerDays});
+    cogs+=layerCost; need-=consume;
+  }
+  return{error:null,available:totalAvail,layers,cogs};
+}
+
+// ── RENDER (stub — replaced below) ────────────────────────────────────────
+function render(){
+  const{lotsComputed,salesComputed}=computeDerived();
+  renderDashboard(lotsComputed,salesComputed);
+  renderInventory(lotsComputed,salesComputed);
+  renderSales(lotsComputed,salesComputed);
+  renderReports(lotsComputed,salesComputed);
+}
+
+// placeholder functions — replaced in subsequent script blocks
+function renderDashboard(){}
+function renderInventory(){}
+function renderSales(){}
+function renderReports(){}
+</script>
+
+<script>
+// ── DASHBOARD ──────────────────────────────────────────────────────────────
+function renderDashboard(lotsComputed,salesComputed){
+  const tot=v=>salesComputed.reduce((s,x)=>s+(parseFloat(x[v])||0),0);
+  const totalRev=tot('salePriceTotal'), totalCOGS=tot('cogs'), totalProfit=tot('netProfit');
+  const totalPurch=state.lots.reduce((s,l)=>s+(parseInt(l.qty)||0),0);
+  const totalSold=salesComputed.reduce((s,x)=>s+(parseInt(x.qty)||0),0);
+  const margin=totalRev>0?(totalProfit/totalRev)*100:0;
+  const roi=totalCOGS>0?totalProfit/totalCOGS*100:null;
+  const stPct=totalPurch>0?(totalSold/totalPurch)*100:0;
+  const wDays=salesComputed.reduce((s,x)=>s+(parseInt(x.qty)||0)*(parseFloat(x.daysToSell)||0),0);
+  const avgDts=totalSold>0?wDays/totalSold:0;
+  const activeLots=lotsComputed.filter(l=>l._status!=='sold-out').length;
+
+  document.getElementById('kpi-grid').innerHTML=[
+    ['Total Revenue',fmtMoney(totalRev),'kpi-revenue',false],
+    ['Total COGS',fmtMoney(totalCOGS),'kpi-cogs',false],
+    ['Net Profit',fmtMoney(totalProfit),'kpi-profit',totalProfit<0],
+    ['Margin',fmtPct(margin),'kpi-margin',false],
+    ['Overall ROI',roi!==null?fmtPct(roi):'N/A','kpi-roi',false],
+    ['Sell-Through',fmtPct(stPct),'kpi-sellthrough',false],
+    ['Avg Days to Sell',fmtNum(avgDts,1),'kpi-dts',false],
+    ['Active Lots',activeLots,'kpi-lots',false],
+  ].map(([lbl,val,id,neg])=>`<div class="kpi-card"><div class="kpi-lbl">${lbl}</div><div class="kpi-val${neg?' neg':''}" id="${id}">${esc(String(val))}</div></div>`).join('');
+
+  renderMonthlyChart(salesComputed,document.getElementById('chart-monthly'));
+  const platData=computePlatformData(salesComputed);
+  renderHBar(platData,'platform','netProfit',document.getElementById('chart-platform-dash'),'Platform P&L');
+}
+
+function computePlatformData(salesComputed){
+  const m={};
+  salesComputed.forEach(s=>{
+    if(!m[s.platform]) m[s.platform]={platform:s.platform,units:0,revenue:0,cogs:0,fees:0,shipping:0,netProfit:0};
+    const p=m[s.platform];
+    p.units+=parseInt(s.qty)||0; p.revenue+=s.salePriceTotal||0;
+    p.cogs+=s.cogs||0; p.fees+=parseFloat(s.fees)||0;
+    p.shipping+=parseFloat(s.shipping)||0; p.netProfit+=s.netProfit||0;
+  });
+  return Object.values(m).sort((a,b)=>b.netProfit-a.netProfit);
+}
+
+function computeCategoryData(lotsComputed,salesComputed){
+  const catMap={};
+  state.lots.forEach(l=>{ catMap[l.id]=l.category||'Other'; });
+  const m={};
+  salesComputed.forEach(sale=>{
+    sale.layers.forEach(layer=>{
+      const cat=catMap[layer.lotId]||'Other';
+      if(!m[cat]) m[cat]={category:cat,units:0,revenue:0,cogs:0,fees:0,shipping:0,netProfit:0};
+      const c=m[cat];
+      const frac=sale.qty>0?layer.unitsConsumed/sale.qty:0;
+      c.units+=layer.unitsConsumed;
+      c.revenue+=sale.salePriceTotal*frac;
+      c.cogs+=layer.layerCost;
+      c.fees+=parseFloat(sale.fees)*frac;
+      c.shipping+=parseFloat(sale.shipping)*frac;
+      c.netProfit+=(sale.salePriceTotal*frac)-layer.layerCost-(parseFloat(sale.fees)*frac)-(parseFloat(sale.shipping)*frac);
+    });
+  });
+  return Object.values(m).sort((a,b)=>b.netProfit-a.netProfit);
+}
+
+function renderMonthlyChart(salesComputed,container){
+  if(!container) return;
+  const months=[];
+  const now=new Date();
+  for(let i=11;i>=0;i--){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    months.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`,label:d.toLocaleDateString('en-US',{month:'short'}),profit:0});
+  }
+  salesComputed.forEach(s=>{
+    const key=(s.date||'').slice(0,7);
+    const m=months.find(x=>x.key===key);
+    if(m) m.profit+=s.netProfit||0;
+  });
+  if(!months.some(m=>m.profit!==0)){ container.innerHTML='<div class="no-data">No sales recorded yet</div>'; return; }
+
+  const W=760,H=220,pL=70,pR=20,pT=24,pB=50,iW=W-pL-pR,iH=H-pT-pB;
+  const vals=months.map(m=>m.profit);
+  const minV=Math.min(0,...vals), maxV=Math.max(0,...vals);
+  const range=maxV-minV||1;
+  const yS=iH/range;
+  const zeroY=pT+(maxV/range)*iH;
+  const bW=Math.max(6,(iW/12)-4);
+  const slot=iW/12;
+
+  let bars='',vLabels='',xLabels='',gridLines='';
+  const tickCount=5;
+  for(let t=0;t<=tickCount;t++){
+    const tv=minV+(range/tickCount)*t;
+    const ty=pT+(maxV-tv)*yS;
+    gridLines+=`<line x1="${pL}" y1="${ty}" x2="${W-pR}" y2="${ty}" stroke="var(--bdr)" stroke-width="1" stroke-dasharray="${t===0||tv===0?'0':'4,3'}"/>`;
+    gridLines+=`<text x="${pL-6}" y="${ty+4}" text-anchor="end" font-size="10" fill="var(--ink3)">${fmtMoney(tv)}</text>`;
+  }
+
+  months.forEach((m,i)=>{
+    const cx=pL+i*slot+slot/2;
+    const bH=Math.abs(m.profit)*yS;
+    const bY=m.profit>=0?zeroY-bH:zeroY;
+    const col=m.profit>=0?'var(--c1)':'var(--c5)';
+    bars+=`<rect x="${cx-bW/2}" y="${bY}" width="${bW}" height="${Math.max(bH,0)}" fill="${col}" rx="3" opacity=".85"/>`;
+    if(Math.abs(m.profit)>0.01){
+      const ly=m.profit>=0?bY-4:bY+bH+12;
+      vLabels+=`<text x="${cx}" y="${ly}" text-anchor="middle" font-size="9" fill="var(--ink2)">${fmtMoney(m.profit)}</text>`;
+    }
+    xLabels+=`<text x="${cx}" y="${H-6}" text-anchor="middle" font-size="11" fill="var(--ink3)">${esc(m.label)}</text>`;
+  });
+
+  container.innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" id="chart-revenue" aria-label="Monthly net profit bar chart">${gridLines}<line x1="${pL}" y1="${zeroY}" x2="${W-pR}" y2="${zeroY}" stroke="var(--ink3)" stroke-width="1.5"/>${bars}${vLabels}${xLabels}</svg>`;
+}
+
+function renderHBar(data,labelKey,valKey,container,title){
+  if(!container) return;
+  if(!data||!data.length){ container.innerHTML='<div class="no-data">No data yet</div>'; return; }
+  const W=760,rowH=38,pL=130,pR=90,pT=8,pB=8,iW=W-pL-pR;
+  const H=pT+data.length*rowH+pB;
+  const maxAbs=Math.max(...data.map(d=>Math.abs(parseFloat(d[valKey])||0)),0.01);
+  let rows='';
+  data.forEach((d,i)=>{
+    const y=pT+i*rowH+rowH/2;
+    const val=parseFloat(d[valKey])||0;
+    const bW=Math.max(0,(Math.abs(val)/maxAbs)*(iW*0.88));
+    const col=val>=0?'var(--c1)':'var(--c5)';
+    rows+=`<text x="${pL-8}" y="${y+5}" text-anchor="end" font-size="12" fill="var(--ink)">${esc(String(d[labelKey]))}</text>`;
+    rows+=`<rect x="${pL}" y="${y-12}" width="${bW}" height="24" fill="${col}" rx="4" opacity=".85"/>`;
+    rows+=`<text x="${pL+bW+6}" y="${y+5}" text-anchor="start" font-size="11" fill="${val<0?'var(--c5)':'var(--ink2)'}">${fmtMoney(val)}</text>`;
+  });
+  container.innerHTML=`<svg class="chart" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" aria-label="${esc(title)}"><line x1="${pL}" y1="${pT}" x2="${pL}" y2="${H-pB}" stroke="var(--bdr)" stroke-width="1"/>${rows}</svg>`;
+}
+</script>
+
+<script>
+// ── INVENTORY ─────────────────────────────────────────────────────────────
+function renderInventory(lotsComputed){
+  const sortSel=document.getElementById('inv-sort');
+  if(sortSel) sortSel.value=state.invSort;
+  let lots=[...lotsComputed];
+  const s=state.invSort;
+  if(s==='date-asc') lots.sort((a,b)=>a.date<b.date?-1:1);
+  else if(s==='date-desc') lots.sort((a,b)=>a.date>b.date?-1:1);
+  else if(s==='status'){
+    const rank={dead:0,sitting:1,active:2,'sold-out':3};
+    lots.sort((a,b)=>(rank[a._status]??9)-(rank[b._status]??9));
+  }
+  else if(s==='remaining') lots.sort((a,b)=>b._remaining-a._remaining);
+  else if(s==='age') lots.sort((a,b)=>b._ageDays-a._ageDays);
+
+  const tbody=document.getElementById('inv-tbody');
+  if(!lots.length){ tbody.innerHTML='<tr><td colspan="11" class="no-data">No inventory lots yet. Add your first lot above.</td></tr>'; return; }
+
+  tbody.innerHTML=lots.map(l=>{
+    const badge={active:'<span class="badge b-active">Active</span>',sitting:'<span class="badge b-sitting">Sitting</span>',dead:'<span class="badge b-dead">Dead</span>','sold-out':'<span class="badge b-soldout">Sold Out</span>'}[l._status]||'';
+    return `<tr data-lot-id="${esc(l.id)}">
+      <td><strong>${esc(l.item)}</strong></td>
+      <td>${esc(l.source)}</td>
+      <td>${esc(l.date)}</td>
+      <td>${esc(l.category||'Other')}</td>
+      <td>${fmtMoney(l.costPerUnit)}</td>
+      <td>${parseInt(l.qty)||0}</td>
+      <td>${l._soldQty}</td>
+      <td><strong>${l._remaining}</strong></td>
+      <td>${l._ageDays}d</td>
+      <td>${badge}</td>
+      <td style="white-space:nowrap">
+        <button class="del-btn" data-edit-lot="${esc(l.id)}" title="Edit lot" aria-label="Edit lot ${esc(l.item)}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="del-btn" data-del-lot="${esc(l.id)}" title="Delete lot" aria-label="Delete lot ${esc(l.item)}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+</script>
+
+<script>
+// ── SALES ──────────────────────────────────────────────────────────────────
+function renderSales(lotsComputed,salesComputed){
+  const tbody=document.getElementById('sales-tbody');
+  if(!salesComputed.length){
+    tbody.innerHTML='<tr><td colspan="14" class="no-data">No sales recorded yet. Use the form above to record your first sale.</td></tr>';
+    return;
+  }
+  const rows=[...salesComputed].reverse(); // newest first
+  let html='';
+  rows.forEach(s=>{
+    const neg=s.netProfit<0;
+    const expanded=state.expandedSales.includes(s.id);
+    html+=`<tr data-sale-id="${esc(s.id)}" class="${neg?'row-neg':''}">
+      <td><button class="expand-btn${expanded?' open':''}" data-expand="${esc(s.id)}" aria-label="Toggle FIFO audit trail" title="FIFO audit trail">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="${expanded?'18 15 12 9 6 15':'6 9 12 15 18 9'}"/></svg>
+      </button></td>
+      <td>${esc(s.date)}</td>
+      <td><strong>${esc(s.item)}</strong></td>
+      <td>${esc(s.platform)}</td>
+      <td>${parseInt(s.qty)||0}</td>
+      <td>${fmtMoney(s.salePriceTotal)}</td>
+      <td>${fmtMoney(s.cogs)}</td>
+      <td>${fmtMoney(s.fees)}</td>
+      <td>${fmtMoney(s.shipping)}</td>
+      <td class="${neg?'neg-val':''}">${fmtMoney(s.netProfit)}</td>
+      <td class="${neg?'neg-val':''}">${fmtPct(s.marginPct)}</td>
+      <td>${s.roiPct!==null?fmtPct(s.roiPct):'N/A'}</td>
+      <td>${fmtNum(s.daysToSell,1)}d</td>
+      <td style="white-space:nowrap"><button class="del-btn" data-edit-sale="${esc(s.id)}" title="Edit sale" aria-label="Edit sale">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button><button class="del-btn" data-del-sale="${esc(s.id)}" title="Delete sale" aria-label="Delete sale">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button></td>
+    </tr>`;
+    if(expanded){
+      html+=`<tr class="audit-row"><td colspan="14"><div>
+        <div class="fifo-preview-title">FIFO Audit Trail &mdash; ${esc(s.item)}, ${parseInt(s.qty)} unit${s.qty!==1?'s':''}</div>`;
+      if(s.layers&&s.layers.length){
+        s.layers.forEach(l=>{
+          html+=`<div class="audit-layer">
+            <span><strong>${l.unitsConsumed} unit${l.unitsConsumed!==1?'s':''}</strong> from lot</span>
+            <span>${esc(l.lotSource)} &middot; ${esc(l.lotDate)}</span>
+            <span>@ ${fmtMoney(l.costPerUnit)}/unit</span>
+            <span>= ${fmtMoney(l.layerCost)}</span>
+            <span style="color:var(--ink3)">${l.layerDays}d from purchase</span>
+          </div>`;
+        });
+        html+=`<div class="audit-total">Total COGS: ${fmtMoney(s.cogs)} &middot; Net Profit: <span class="${s.netProfit<0?'neg-val':''}">${fmtMoney(s.netProfit)}</span></div>`;
+      } else {
+        html+=`<div style="color:var(--ink3);font-size:var(--fs-xs)">No lot layers found (item may not match any inventory lot).</div>`;
+      }
+      html+=`</div></td></tr>`;
+    }
+  });
+  tbody.innerHTML=html;
+}
+</script>
+
+<script>
+// ── REPORTS ────────────────────────────────────────────────────────────────
+function renderReports(lotsComputed,salesComputed){
+  const catData=computeCategoryData(lotsComputed,salesComputed);
+  const platData=computePlatformData(salesComputed);
+
+  // Category table
+  const catBody=document.getElementById('cat-tbody');
+  if(!catData.length){
+    catBody.innerHTML='<tr><td colspan="7" class="no-data">No sales data yet.</td></tr>';
+  } else {
+    catBody.innerHTML=catData.map(c=>`<tr>
+      <td><strong>${esc(c.category)}</strong></td>
+      <td>${c.units}</td>
+      <td>${fmtMoney(c.revenue)}</td>
+      <td>${fmtMoney(c.cogs)}</td>
+      <td>${fmtMoney(c.fees+c.shipping)}</td>
+      <td class="${c.netProfit<0?'neg-val':''}">${fmtMoney(c.netProfit)}</td>
+      <td>${c.revenue>0?fmtPct((c.netProfit/c.revenue)*100):'N/A'}</td>
+    </tr>`).join('');
+  }
+  renderHBar(catData,'category','netProfit',document.getElementById('chart-category-rep'),'Category net profit');
+
+  // Platform table
+  const platBody=document.getElementById('plat-tbody');
+  if(!platData.length){
+    platBody.innerHTML='<tr><td colspan="8" class="no-data">No sales data yet.</td></tr>';
+  } else {
+    platBody.innerHTML=platData.map(p=>`<tr>
+      <td><strong>${esc(p.platform)}</strong></td>
+      <td>${p.units}</td>
+      <td>${fmtMoney(p.revenue)}</td>
+      <td>${fmtMoney(p.cogs)}</td>
+      <td>${fmtMoney(p.fees)}</td>
+      <td>${fmtMoney(p.shipping)}</td>
+      <td class="${p.netProfit<0?'neg-val':''}">${fmtMoney(p.netProfit)}</td>
+      <td>${p.revenue>0?fmtPct((p.netProfit/p.revenue)*100):'N/A'}</td>
+    </tr>`).join('');
+  }
+  renderHBar(platData,'platform','netProfit',document.getElementById('chart-platform-rep'),'Platform net profit');
+}
+</script>
+
+<script>
+// ── LOT FORM ───────────────────────────────────────────────────────────────
+function validateField(id,errId,check,msg){
+  const el=document.getElementById(id), err=document.getElementById(errId);
+  if(!el) return true;
+  const bad=!check(el.value);
+  el.classList.toggle('err',bad);
+  if(err) err.textContent=bad?msg:'';
+  return !bad;
+}
+
+function initLotForm(){
+  const f=document.getElementById('lot-form');
+  // Prefill today
+  const dateEl=document.getElementById('lot-date');
+  if(dateEl&&!dateEl.value) dateEl.value=today();
+
+  f.addEventListener('submit',e=>{
+    e.preventDefault();
+    const item=document.getElementById('lot-item').value.trim();
+    const source=document.getElementById('lot-source').value.trim();
+    const date=document.getElementById('lot-date').value;
+    const cost=document.getElementById('lot-cost').value;
+    const qty=document.getElementById('lot-qty').value;
+    const category=document.getElementById('lot-cat').value;
+    const notes=document.getElementById('lot-notes').value.trim();
+    const editId=document.getElementById('lot-edit-id').value;
+
+    let ok=true;
+    ok=validateField('lot-item','lot-item-e',v=>v.trim().length>0,'Item name is required.')&&ok;
+    ok=validateField('lot-source','lot-source-e',v=>v.trim().length>0,'Source is required.')&&ok;
+    ok=validateField('lot-date','lot-date-e',v=>!!v,'Date is required.')&&ok;
+    ok=validateField('lot-cost','lot-cost-e',v=>v!==''&&parseFloat(v)>=0,'Enter a valid cost (0 or more).')&&ok;
+    ok=validateField('lot-qty','lot-qty-e',v=>v!==''&&parseInt(v)>=1,'Enter a quantity of at least 1.')&&ok;
+    if(!ok) return;
+
+    const lot={id:editId||uid(),item,source,date,category,costPerUnit:parseFloat(cost),qty:parseInt(qty),notes};
+    if(editId){
+      const idx=state.lots.findIndex(l=>l.id===editId);
+      if(idx>=0) state.lots[idx]=lot;
+    } else {
+      state.lots.push(lot);
+    }
+    document.getElementById('lot-edit-id').value='';
+    f.reset();
+    document.getElementById('lot-date').value=today();
+    document.getElementById('save-lot-btn').textContent='Save Lot';
+    scheduleSave(); render();
+    toast(editId?'Lot updated.':'Lot saved.');
+  });
+
+  document.getElementById('clear-lot-btn').addEventListener('click',()=>{
+    document.getElementById('lot-form').reset();
+    document.getElementById('lot-edit-id').value='';
+    document.getElementById('lot-date').value=today();
+    document.getElementById('save-lot-btn').textContent='Save Lot';
+    ['lot-item','lot-source','lot-date','lot-cost','lot-qty'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.classList.remove('err');
+    });
+    ['lot-item-e','lot-source-e','lot-date-e','lot-cost-e','lot-qty-e'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.textContent='';
+    });
+  });
+
+  // Live/blur validation
+  ['lot-item','lot-source','lot-date'].forEach(id=>{ document.getElementById(id)?.addEventListener('input',()=>clearErr(id)); });
+  document.getElementById('lot-cost')?.addEventListener('blur',()=>{
+    const v=document.getElementById('lot-cost').value;
+    if(v!==''&&parseFloat(v)<0){ document.getElementById('lot-cost').classList.add('err'); document.getElementById('lot-cost-e').textContent='Cost cannot be negative.'; }
+    else clearErr('lot-cost');
+  });
+  document.getElementById('lot-cost')?.addEventListener('input',()=>{
+    const v=document.getElementById('lot-cost').value;
+    if(v===''||parseFloat(v)>=0) clearErr('lot-cost');
+  });
+  document.getElementById('lot-qty')?.addEventListener('blur',()=>{
+    const v=document.getElementById('lot-qty').value;
+    if(v!==''&&parseInt(v)<1){ document.getElementById('lot-qty').classList.add('err'); document.getElementById('lot-qty-e').textContent='Quantity must be at least 1.'; }
+    else clearErr('lot-qty');
+  });
+}
+
+function clearErr(fieldId){
+  const errMap={'lot-item':'lot-item-e','lot-source':'lot-source-e','lot-date':'lot-date-e','lot-cost':'lot-cost-e','lot-qty':'lot-qty-e','sale-item':'sale-item-e','sale-date':'sale-date-e','sale-qty':'sale-qty-e','sale-price':'sale-price-e','sale-fees':'sale-fees-e'};
+  const el=document.getElementById(fieldId); if(el) el.classList.remove('err');
+  const err=document.getElementById(errMap[fieldId]); if(err) err.textContent='';
+}
+
+// ── SALE FORM ──────────────────────────────────────────────────────────────
+function initSaleForm(){
+  const dateEl=document.getElementById('sale-date');
+  if(dateEl&&!dateEl.value) dateEl.value=today();
+
+  // Autocomplete
+  const itemInput=document.getElementById('sale-item');
+  const acList=document.getElementById('sale-item-ac');
+
+  function getAvailableItems(){
+    const{lotsComputed}=computeDerived();
+    const items=[...new Set(lotsComputed.filter(l=>l._remaining>0).map(l=>l.item))];
+    return items.sort();
+  }
+
+  itemInput.addEventListener('input',()=>{
+    clearErr('sale-item');
+    updateFifoPreview();
+    const v=itemInput.value.trim().toLowerCase();
+    const items=getAvailableItems().filter(i=>i.toLowerCase().includes(v));
+    if(items.length&&v){
+      acList.innerHTML=items.map(i=>`<div class="ac-item" tabindex="-1">${esc(i)}</div>`).join('');
+      acList.style.display='block';
+    } else {
+      acList.style.display='none';
+    }
+  });
+  itemInput.addEventListener('focus',()=>{
+    if(!itemInput.value.trim()){
+      const items=getAvailableItems();
+      if(items.length){
+        acList.innerHTML=items.map(i=>`<div class="ac-item" tabindex="-1">${esc(i)}</div>`).join('');
+        acList.style.display='block';
+      }
+    }
+  });
+  acList.addEventListener('mousedown',e=>{
+    if(e.target.classList.contains('ac-item')){
+      itemInput.value=e.target.textContent;
+      acList.style.display='none';
+      clearErr('sale-item');
+      updateFifoPreview();
+    }
+  });
+  document.addEventListener('click',e=>{ if(!e.target.closest('.ac-wrap')) acList.style.display='none'; });
+
+  ['sale-date'].forEach(id=>{ document.getElementById(id)?.addEventListener('input',()=>{ clearErr(id); updateFifoPreview(); }); });
+  ['sale-qty','sale-price','sale-ship','sale-fees'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    el.addEventListener('input',()=>{ clearErr(id); updateFifoPreview(); });
+    el.addEventListener('blur',()=>{
+      const v=el.value;
+      if(v===''||parseFloat(v)>=0){ clearErr(id); return; }
+      const errEl=document.getElementById(id+'-e');
+      el.classList.add('err');
+      if(errEl) errEl.textContent='Value cannot be negative.';
+    });
+  });
+
+  function updateFifoPreview(){
+    const item=document.getElementById('sale-item').value.trim();
+    const qty=parseInt(document.getElementById('sale-qty').value)||0;
+    const price=parseFloat(document.getElementById('sale-price').value)||0;
+    const ship=parseFloat(document.getElementById('sale-ship').value)||0;
+    const fees=parseFloat(document.getElementById('sale-fees').value)||0;
+    const date=document.getElementById('sale-date').value||today();
+    const preview=document.getElementById('fifo-preview');
+    if(!item||!qty){ preview.innerHTML=''; return; }
+
+    const{error,available,layers,cogs}=fifoPreview(item,qty,date);
+    const spt=qty*price;
+    const np=error?null:spt-cogs-ship-fees;
+
+    if(error){
+      preview.innerHTML=`<div class="alert alert-err" role="alert">${esc(error)}</div>`;
+      const btn=document.getElementById('save-sale-btn'); if(btn) btn.disabled=true;
+      return;
+    }
+    const btn=document.getElementById('save-sale-btn'); if(btn) btn.disabled=false;
+    let layerHtml=layers.map(l=>`<div class="audit-layer">
+      <span>${l.consume} unit${l.consume!==1?'s':''} from ${esc(l.lot.source)} (${esc(l.lot.date)})</span>
+      <span>@ ${fmtMoney(l.lot.costPerUnit)}/unit = ${fmtMoney(l.layerCost)}</span>
+    </div>`).join('');
+    preview.innerHTML=`<div class="fifo-preview">
+      <div class="fifo-preview-title">FIFO Preview &mdash; ${esc(item)}</div>
+      ${layerHtml}
+      <div class="audit-total">COGS: ${fmtMoney(cogs)} &middot; Est. Net Profit: <span class="${np<0?'neg-val':''}">${np!==null?fmtMoney(np):'...'}</span> &middot; ${available} unit${available!==1?'s':''} available</div>
+    </div>`;
+  }
+
+  const f=document.getElementById('sale-form');
+  f.addEventListener('submit',e=>{
+    e.preventDefault();
+    const item=document.getElementById('sale-item').value.trim();
+    const date=document.getElementById('sale-date').value;
+    const qty=document.getElementById('sale-qty').value;
+    const price=document.getElementById('sale-price').value;
+    const platform=document.getElementById('sale-platform').value;
+    const ship=document.getElementById('sale-ship').value;
+    const fees=document.getElementById('sale-fees').value;
+    const editId=document.getElementById('sale-edit-id').value;
+
+    let ok=true;
+    ok=validateField('sale-item','sale-item-e',v=>v.trim().length>0,'Item name is required.')&&ok;
+    ok=validateField('sale-date','sale-date-e',v=>!!v,'Date is required.')&&ok;
+    ok=validateField('sale-qty','sale-qty-e',v=>v!==''&&parseInt(v)>=1,'Enter a quantity of at least 1.')&&ok;
+    ok=validateField('sale-price','sale-price-e',v=>v!==''&&parseFloat(v)>=0,'Enter a valid sale price (0 or more).')&&ok;
+    ok=validateField('sale-fees','sale-fees-e',v=>v===''||parseFloat(v)>=0,'Enter a valid fee amount.')&&ok;
+    ok=validateField('sale-ship','sale-ship-e',v=>v===''||parseFloat(v)>=0,'Enter a valid shipping amount.')&&ok;
+    if(!ok) return;
+
+    // Validate FIFO availability. When editing, exclude this sale's own units from the inventory tally
+    // (otherwise the record being edited would consume against itself and falsely block the update).
+    const qtyN=parseInt(qty);
+    let _editIdx=-1, _editSaved=null;
+    if(editId){ _editIdx=state.sales.findIndex(s=>s.id===editId); if(_editIdx>=0){ _editSaved=state.sales[_editIdx]; state.sales.splice(_editIdx,1); } }
+    const{error}=fifoPreview(item,qtyN,date);
+    if(_editSaved) state.sales.splice(_editIdx,0,_editSaved); // restore before any early return
+    if(error){
+      const errEl=document.getElementById('sale-item-e');
+      if(errEl) errEl.textContent=error;
+      document.getElementById('sale-item')?.classList.add('err');
+      return;
+    }
+
+    const sale={id:editId||uid(),date,item,platform,qty:qtyN,pricePerUnit:parseFloat(price)||0,shipping:parseFloat(ship)||0,fees:parseFloat(fees)||0};
+    if(editId){
+      const idx=state.sales.findIndex(s=>s.id===editId);
+      if(idx>=0) state.sales[idx]=sale;
+    } else {
+      state.sales.push(sale);
+    }
+    document.getElementById('sale-edit-id').value='';
+    f.reset();
+    document.getElementById('sale-date').value=today();
+    document.getElementById('save-sale-btn').textContent='Record Sale';
+    document.getElementById('fifo-preview').innerHTML='';
+    scheduleSave(); render();
+    toast(editId?'Sale updated.':'Sale recorded.');
+  });
+
+  document.getElementById('clear-sale-btn').addEventListener('click',()=>{
+    document.getElementById('sale-form').reset();
+    document.getElementById('sale-edit-id').value='';
+    document.getElementById('sale-date').value=today();
+    document.getElementById('save-sale-btn').textContent='Record Sale';
+    document.getElementById('fifo-preview').innerHTML='';
+  });
+}
+
+// ── EXPORT / IMPORT ────────────────────────────────────────────────────────
+function exportCSV(){
+  const{salesComputed}=computeDerived();
+  const cols=['Date','Item','Platform','Qty','Revenue','COGS','Fees','Shipping','Net Profit','Margin %','ROI %','Days to Sell'];
+  const rows=salesComputed.map(s=>[
+    s.date, s.item, s.platform, s.qty,
+    (s.salePriceTotal||0).toFixed(2),
+    (s.cogs||0).toFixed(2),
+    (parseFloat(s.fees)||0).toFixed(2),
+    (parseFloat(s.shipping)||0).toFixed(2),
+    (s.netProfit||0).toFixed(2),
+    (s.marginPct||0).toFixed(2),
+    s.roiPct!==null?(s.roiPct||0).toFixed(2):'N/A',
+    (s.daysToSell||0).toFixed(1),
+  ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  const csv=[cols.map(c=>`"${c}"`).join(','),...rows].join('\n');
+  dlFile(csv,'reseller-sales-export.csv','text/csv');
+}
+
+function exportJSON(){
+  dlFile(JSON.stringify({lots:state.lots,sales:state.sales,exported:new Date().toISOString()},null,2),'reseller-backup.json','application/json');
+}
+
+function dlFile(content,name,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));
+  a.download=name; a.click(); URL.revokeObjectURL(a.href);
+}
+
+function importJSON(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const msg=document.getElementById('json-msg');
+    try{
+      const p=JSON.parse(e.target.result);
+      if(!Array.isArray(p.lots)||!Array.isArray(p.sales)) throw new Error('missing lots/sales arrays');
+      // Validate each item has needed fields
+      // L-129: coerce field TYPES, not just presence — a backup with a non-string item/date (or a non-numeric
+      // qty/price) otherwise crashes computeDerived()/render() or silently poisons the math with NaN.
+      p.lots.forEach((l,i)=>{ if(!l.id) l.id=uid(); l.item=String(l.item==null?'':l.item); if(!l.item) throw new Error(`lot ${i} missing item`); l.date=String(l.date==null?'':l.date); l.source=String(l.source==null?'':l.source); l.category=String(l.category==null?'':l.category); l.notes=String(l.notes==null?'':l.notes); l.qty=+l.qty||0; l.costPerUnit=+l.costPerUnit||0; });
+      p.sales.forEach((s,i)=>{ if(!s.id) s.id=uid(); s.item=String(s.item==null?'':s.item); if(!s.item) throw new Error(`sale ${i} missing item`); s.date=String(s.date==null?'':s.date); s.qty=+s.qty||0; s.price=+s.price||0; s.fees=+s.fees||0; s.shipping=+s.shipping||0; });
+      // Reject oversold sales (qty > available FIFO inventory), matching the live form's FIFO gate so an
+      // imported oversold sale cannot inflate profit or mis-distribute the category/platform breakdowns.
+      {
+        const rem={};
+        p.lots.forEach(l=>{ rem[l.id]=parseInt(l.qty)||0; });
+        const sorted=[...p.sales].sort((a,b)=>a.date!==b.date?(a.date<b.date?-1:1):p.sales.indexOf(a)-p.sales.indexOf(b));
+        for(const sale of sorted){
+          const key=sale.item.trim().toLowerCase();
+          const itemLots=p.lots
+            .filter(l=>l.item.trim().toLowerCase()===key)
+            .sort((a,b)=>a.date!==b.date?(a.date<b.date?-1:1):p.lots.indexOf(a)-p.lots.indexOf(b));
+          let need=parseInt(sale.qty)||0;
+          for(const lot of itemLots){
+            if(need<=0) break;
+            const consume=Math.min(rem[lot.id]||0,need);
+            rem[lot.id]-=consume; need-=consume;
+          }
+          if(need>0) throw new Error(`oversold sale for "${sale.item}" (${need} more unit${need!==1?'s':''} than FIFO inventory)`);
+        }
+      }
+      if(!confirm(`Import will REPLACE all current data (${state.lots.length} lots, ${state.sales.length} sales). Continue?`)) return;
+      state.lots=p.lots; state.sales=p.sales;
+      if(!Array.isArray(state.expandedSales)) state.expandedSales=[];
+      scheduleSave(); render();
+      msg.innerHTML='<div class="alert alert-ok">Backup imported successfully.</div>';
+      toast('Backup imported.');
+    }catch(err){
+      msg.innerHTML=`<div class="alert alert-err">Import failed - file is not a valid backup (${esc(err.message)}).</div>`;
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── PASTE IMPORTER ─────────────────────────────────────────────────────────
+function parsePasteDate(s){
+  s=(s||'').trim();
+  if(!s) return '';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  const m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(m) return `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
+  const d=new Date(s);
+  if(!isNaN(d.getTime())) return d.toISOString().slice(0,10);
+  return '';
+}
+function parsePasteNum(s){
+  return parseFloat(String(s||'').trim().replace(/[$,]/g,''))||0;
+}
+const PASTE_HEADERS=['Item Name','Source','Date','Category','Cost/Unit','Qty','Notes'];
+
+function parsePaste(raw){
+  const lines=raw.split(/\r?\n/);
+  const sep=lines[0]?.includes('\t')?'\t':',';
+  const results=[],skipped=[];
+  // Only treat a recognizable header row as a header: first cell is exactly an item-column keyword AND the
+  // Cost/Unit + Qty columns are non-numeric. This stops a real item literally named "Item ..." (which has
+  // numeric cost/qty) from being silently dropped.
+  const isHeaderCell=v=>{ const h=(v||'').trim().toLowerCase(); return h==='item'||h==='item name'; };
+  // A header has a keyword first cell AND a non-numeric Qty column (a real data row always has Qty >= 1).
+  const isHeader=r=>isHeaderCell(r[0])&&!/\d/.test(String(r[5]||''));
+  lines.forEach((line,li)=>{
+    if(!line.trim()) return;
+    const fields=line.split(sep).map(f=>f.trim());
+    if(li===0&&isHeader(fields)){ return; }
+    const[name,source,dateRaw,category,costRaw,qtyRaw,notes]=fields;
+    if(!name){ skipped.push({line:li+1,reason:'Missing item name'}); return; }
+    const date=parsePasteDate(dateRaw);
+    if(!date){ skipped.push({line:li+1,reason:`Unrecognized date "${esc(dateRaw||'')}"`}); return; }
+    const cost=parsePasteNum(costRaw);
+    const qty=parseInt(String(qtyRaw||'').replace(/[$,]/g,''))||0;
+    if(qty<1){ skipped.push({line:li+1,reason:'Invalid quantity'}); return; }
+    results.push({id:uid(),item:name.trim(),source:(source||'').trim()||'Unknown',date,category:(category||'Other').trim(),costPerUnit:cost,qty,notes:(notes||'').trim()});
+  });
+  return{results,skipped};
+}
+
+function initPasteImporter(){
+  const textarea=document.getElementById('import-paste');
+  const preview=document.getElementById('paste-preview');
+  textarea.addEventListener('input',()=>{
+    const raw=textarea.value;
+    if(!raw.trim()){ preview.textContent='Paste data above to preview column mapping'; return; }
+    const lines=raw.split(/\r?\n/).filter(l=>l.trim());
+    const sep=lines[0]?.includes('\t')?'\t':',';
+    const firstRow=(lines[0]||'').split(sep).map(f=>f.trim());
+    const isHdr=firstRow[0]?.toLowerCase().includes('item');
+    const sampleRow=isHdr&&lines.length>1?lines[1].split(sep).map(f=>f.trim()):firstRow;
+    preview.innerHTML='<strong>Column mapping:</strong> '+PASTE_HEADERS.map((h,i)=>`${h}: <em>${esc(sampleRow[i]||'(empty)')}</em>`).join(' &middot; ');
+  });
+
+  document.getElementById('import-btn').addEventListener('click',()=>{
+    const raw=textarea.value;
+    if(!raw.trim()){ document.getElementById('paste-msg').innerHTML='<div class="alert alert-warn">Nothing to import.</div>'; return; }
+    const{results,skipped}=parsePaste(raw);
+    if(!results.length){
+      document.getElementById('paste-msg').innerHTML=`<div class="alert alert-err">No valid rows found. ${skipped.length} row(s) skipped.</div>`;
+      return;
+    }
+    if(!confirm(`Import ${results.length} lot(s) and APPEND to existing inventory? Skipped: ${skipped.length}`)) return;
+    state.lots.push(...results);
+    persist(); render();
+    let msg=`<div class="alert alert-ok">Imported ${results.length} lot(s).</div>`;
+    if(skipped.length) msg+=`<div class="alert alert-warn" style="margin-top:var(--sp-2)">${skipped.length} row(s) skipped: ${skipped.map(s=>`Line ${s.line}: ${esc(s.reason)}`).join('; ')}</div>`;
+    document.getElementById('paste-msg').innerHTML=msg;
+    textarea.value=''; preview.textContent='Paste data above to preview column mapping';
+  });
+
+  document.getElementById('dl-template-btn').addEventListener('click',()=>{
+    dlFile(PASTE_HEADERS.join('\t')+'\n'+'Vintage Denim Jacket\tGoodwill\t1/5/2026\tClothing\t8.00\t10\tGreat find','lot-import-template.csv','text/csv');
+  });
+}
+</script>
+
+<script>
+// ── EVENT DELEGATION ───────────────────────────────────────────────────────
+document.getElementById('inv-tbody').addEventListener('click',e=>{
+  const editBtn=e.target.closest('[data-edit-lot]');
+  if(editBtn){
+    const lot=state.lots.find(l=>l.id===editBtn.dataset.editLot);
+    if(!lot) return;
+    document.getElementById('lot-item').value=lot.item||'';
+    document.getElementById('lot-source').value=lot.source||'';
+    document.getElementById('lot-date').value=lot.date||'';
+    document.getElementById('lot-cat').value=lot.category||'Other';
+    document.getElementById('lot-cost').value=lot.costPerUnit;
+    document.getElementById('lot-qty').value=lot.qty;
+    document.getElementById('lot-notes').value=lot.notes||'';
+    document.getElementById('lot-edit-id').value=lot.id;
+    document.getElementById('save-lot-btn').textContent='Update Lot';
+    state.lotFormOpen=true; setColl('lot-hdr','lot-body',true);
+    document.getElementById('lot-hdr').scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('lot-item').focus();
+    return;
+  }
+  const delBtn=e.target.closest('[data-del-lot]');
+  if(delBtn){
+    const id=delBtn.dataset.delLot;
+    const lot=state.lots.find(l=>l.id===id);
+    if(!lot) return;
+    // Check if lot has sales
+    const hasSales=state.sales.some(s=>s.item.trim().toLowerCase()===lot.item.trim().toLowerCase());
+    const msg=hasSales?`Delete lot "${lot.item}"? This lot has associated sales. Deleting it will affect FIFO calculations. Continue?`:`Delete lot "${lot.item}"?`;
+    if(!confirm(msg)) return;
+    state.lots=state.lots.filter(l=>l.id!==id);
+    scheduleSave(); render(); toast('Lot deleted.');
+  }
+});
+
+document.getElementById('sales-tbody').addEventListener('click',e=>{
+  const editBtn=e.target.closest('[data-edit-sale]');
+  if(editBtn){
+    const sale=state.sales.find(s=>s.id===editBtn.dataset.editSale);
+    if(!sale) return;
+    document.getElementById('sale-date').value=sale.date||'';
+    document.getElementById('sale-item').value=sale.item||'';
+    document.getElementById('sale-platform').value=sale.platform||'Other';
+    document.getElementById('sale-qty').value=sale.qty;
+    document.getElementById('sale-price').value=sale.pricePerUnit;
+    document.getElementById('sale-ship').value=sale.shipping;
+    document.getElementById('sale-fees').value=sale.fees;
+    document.getElementById('sale-edit-id').value=sale.id;
+    document.getElementById('save-sale-btn').textContent='Update Sale';
+    state.saleFormOpen=true; setColl('sale-hdr','sale-body',true);
+    document.getElementById('sale-hdr').scrollIntoView({behavior:'smooth',block:'start'});
+    document.getElementById('sale-item').focus();
+    return;
+  }
+  const expandBtn=e.target.closest('[data-expand]');
+  if(expandBtn){
+    const id=expandBtn.dataset.expand;
+    const idx=state.expandedSales.indexOf(id);
+    if(idx>=0) state.expandedSales.splice(idx,1); else state.expandedSales.push(id);
+    scheduleSave(); render(); return;
+  }
+  const delBtn=e.target.closest('[data-del-sale]');
+  if(delBtn){
+    if(!confirm('Delete this sale? FIFO calculations will update.')) return;
+    const id=delBtn.dataset.delSale;
+    state.sales=state.sales.filter(s=>s.id!==id);
+    state.expandedSales=state.expandedSales.filter(x=>x!==id);
+    scheduleSave(); render(); toast('Sale deleted.');
+  }
+});
+
+document.getElementById('export-csv-btn').addEventListener('click',exportCSV);
+document.getElementById('export-json-btn').addEventListener('click',exportJSON);
+document.getElementById('import-json-file').addEventListener('change',e=>{ if(e.target.files[0]) importJSON(e.target.files[0]); e.target.value=''; });
+document.getElementById('reset-btn').addEventListener('click',()=>{
+  if(!confirm('Reset ALL data and restore the demo example? This cannot be undone.')) return;
+  state=defaultState(); scheduleSave(); render(); toast('Data reset to demo example.');
+});
+document.getElementById('inv-sort').addEventListener('change',e=>{ state.invSort=e.target.value; scheduleSave(); render(); });
+
+// ── FULL RENDER (replaces stub) ────────────────────────────────────────────
+render=function(){
+  const{lotsComputed,salesComputed}=computeDerived();
+  renderDashboard(lotsComputed,salesComputed);
+  renderInventory(lotsComputed,salesComputed);
+  renderSales(lotsComputed,salesComputed);
+  renderReports(lotsComputed,salesComputed);
+};
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+applyTheme(state.theme||'auto');
+switchTab(state.activeTab||'dashboard');
+setColl('lot-hdr','lot-body',state.lotFormOpen!==false);
+setColl('sale-hdr','sale-body',!!state.saleFormOpen);
+initLotForm();
+initSaleForm();
+initPasteImporter();
+const pd=document.getElementById('print-date');
+if(pd) pd.textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+render();
+// Only persist at load on a genuine first run (or after an unreadable save was set aside) so opening a
+// SECOND tab does not immediately overwrite the first tab's newer in-progress data with this tab's copy.
+if(_firstRun||_loadWarning) persist();
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Reseller Inventory &amp; Profit Tracker (FIFO). It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4525461737?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($25) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

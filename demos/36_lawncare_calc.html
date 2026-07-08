@@ -1,0 +1,2211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Lawn Care Route &amp; Job Profit Calculator</title>
+<style>
+/* === DESIGN TOKENS === */
+:root {
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+  --fs-xs: 13px; --fs-sm: 15px; --fs-md: 17px;
+  --fs-lg: 20px; --fs-xl: 26px; --fs-2xl: 34px;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px; --radius-xl: 24px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.07);
+  --transition: 150ms ease;
+
+  /* Light palette */
+  --bg: #f4f7fb;
+  --bg-card: #ffffff;
+  --bg-elevated: #f8fafc;
+  --border: #dce4ef;
+  --border-focus: #6B9BD1;
+  --text: #2B3A4A;
+  --text-muted: #637080;
+  --text-light: #8fa0b0;
+  --accent: #6B9BD1;
+  --accent-dark: #4a7db5;
+  --accent-bg: #eaf2fb;
+  --green: #28a745;
+  --green-bg: #e8f5ec;
+  --amber: #e6850a;
+  --amber-bg: #fef3e2;
+  --red: #d63031;
+  --red-bg: #fde8e8;
+  --drive-color: #b0bec5;
+  --winter-accent: #5dade2;
+  --nav-bg: #2B3A4A;
+  --nav-text: #e8f0f8;
+  --nav-active: #6B9BD1;
+}
+[data-theme="dark"] {
+  --bg: #0f1923;
+  --bg-card: #1a2535;
+  --bg-elevated: #1e2d40;
+  --border: #2a3d52;
+  --border-focus: #6B9BD1;
+  --text: #e2eaf4;
+  --text-muted: #8da3ba;
+  --text-light: #5a7390;
+  --accent: #6B9BD1;
+  --accent-dark: #88b5e0;
+  --accent-bg: #162438;
+  --green: #4ade80;
+  --green-bg: #0d2b1a;
+  --amber: #fbbf24;
+  --amber-bg: #2b1f08;
+  --red: #f87171;
+  --red-bg: #2b0f0f;
+  --drive-color: #3a5068;
+  --winter-accent: #5dade2;
+  --nav-bg: #0d1620;
+  --nav-text: #b8cfe0;
+  --nav-active: #6B9BD1;
+}
+
+/* === RESET + BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  line-height: 1.5;
+
+}
+a { color: var(--accent); text-decoration: none; }
+button { cursor: pointer; font-family: inherit; border: none; outline: none; }
+input, select, textarea {
+  font-family: inherit;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-3);
+  width: 100%;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(107,155,209,.18);
+}
+input.error { border-color: var(--red); }
+label {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: var(--sp-1);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+h1 { font-size: var(--fs-xl); font-weight: 700; }
+h2 { font-size: var(--fs-lg); font-weight: 700; }
+h3 { font-size: var(--fs-md); font-weight: 600; }
+
+/* === LAYOUT === */
+.app-wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* Top header */
+.app-header {
+  background: var(--nav-bg);
+  padding: var(--sp-4) var(--sp-6);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--sp-4);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+.app-header h1 {
+  color: var(--nav-text);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  display: flex; align-items: center; gap: var(--sp-2);
+}
+.app-header h1 svg { width: 22px; height: 22px; flex-shrink: 0; }
+.header-right { display: flex; align-items: center; gap: var(--sp-3); }
+
+/* Winter mode chip */
+.winter-chip {
+  display: flex; align-items: center; gap: var(--sp-1);
+  background: rgba(93,173,226,.15);
+  color: var(--winter-accent);
+  border: 1.5px solid rgba(93,173,226,.35);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-1) var(--sp-3);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.winter-chip.active {
+  background: var(--winter-accent);
+  color: #fff;
+  border-color: var(--winter-accent);
+}
+.winter-chip svg { width: 14px; height: 14px; }
+
+/* Theme toggle */
+.theme-btn {
+  background: rgba(255,255,255,.1);
+  color: var(--nav-text);
+  border: 1.5px solid rgba(255,255,255,.15);
+  border-radius: var(--radius-sm);
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition);
+}
+.theme-btn:hover { background: rgba(255,255,255,.2); }
+.theme-btn svg { width: 18px; height: 18px; }
+
+/* Nav tabs */
+.nav-tabs {
+  display: flex;
+  background: var(--nav-bg);
+  border-bottom: 2px solid rgba(107,155,209,.25);
+  padding: 0 var(--sp-6);
+  gap: 0;
+  overflow-x: auto;
+}
+.nav-tab {
+  display: flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  color: var(--nav-text);
+  opacity: .65;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all var(--transition);
+  white-space: nowrap;
+  background: none;
+}
+.nav-tab:hover { opacity: .9; }
+.nav-tab.active { color: var(--nav-active); opacity: 1; border-bottom-color: var(--nav-active); }
+.nav-tab svg { width: 16px; height: 16px; }
+
+/* Main content */
+.app-main { flex: 1; padding: var(--sp-6); max-width: 1200px; margin: 0 auto; width: 100%; }
+
+/* Panels */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-6);
+  transition: box-shadow var(--transition);
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-title {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--sp-4);
+  display: flex; align-items: center; gap: var(--sp-2);
+}
+.card-title svg { width: 18px; height: 18px; color: var(--accent); }
+
+/* Form grid */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); }
+.form-grid .full { grid-column: 1 / -1; }
+.field { display: flex; flex-direction: column; }
+.field-row { display: flex; gap: var(--sp-3); align-items: flex-start; }
+.input-error {
+  font-size: var(--fs-xs);
+  color: var(--red);
+  margin-top: var(--sp-1);
+  display: flex; align-items: center; gap: 4px;
+}
+.input-error svg { width: 12px; height: 12px; flex-shrink: 0; }
+.input-hint { font-size: var(--fs-xs); color: var(--text-light); margin-top: var(--sp-1); }
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-xl);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .03em;
+}
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-amber { background: var(--amber-bg); color: var(--amber); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+.badge-blue { background: var(--accent-bg); color: var(--accent-dark); }
+.badge-neutral { background: var(--bg-elevated); color: var(--text-muted); }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  transition: all var(--transition);
+  min-height: 38px;
+}
+.btn svg { width: 15px; height: 15px; }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--accent-dark); box-shadow: var(--shadow-sm); }
+.btn-primary:disabled { opacity: .45; cursor: not-allowed; }
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border); }
+.btn-danger {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1.5px solid rgba(214,48,49,.25);
+}
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-sm { padding: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); min-height: 30px; }
+.btn-green {
+  background: var(--green);
+  color: #fff;
+}
+.btn-green:hover { filter: brightness(.9); }
+
+/* Toggle switch */
+.toggle-wrap { display: flex; align-items: center; gap: var(--sp-2); }
+.toggle {
+  position: relative; width: 44px; height: 24px; cursor: pointer; flex-shrink: 0;
+}
+.toggle input { position: absolute; top: 0; left: 0; width: 44px; height: 24px; cursor: pointer; z-index: 2; margin: 0; opacity: 0.001; appearance: none; -webkit-appearance: none; }
+.toggle-track {
+  position: absolute; inset: 0;
+  background: var(--border);
+  border-radius: 12px;
+  transition: background var(--transition);
+}
+.toggle input:checked + .toggle-track { background: var(--accent); }
+.toggle-thumb {
+  position: absolute;
+  width: 18px; height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  top: 3px; left: 3px;
+  transition: transform var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+.toggle input:checked ~ .toggle-thumb { transform: translateX(20px); }
+
+/* Segment control */
+.segment-ctrl {
+  display: inline-flex;
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 2px;
+}
+.segment-btn {
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: 4px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  transition: all var(--transition);
+  min-height: 30px;
+}
+.segment-btn.active {
+  background: var(--bg-card);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Result box */
+.result-box {
+  background: var(--accent-bg);
+  border: 1.5px solid rgba(107,155,209,.3);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+}
+.result-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: var(--fs-sm);
+}
+.result-row .label { color: var(--text-muted); }
+.result-row .value {
+  font-weight: 700;
+  font-size: var(--fs-md);
+  transition: color var(--transition);
+}
+.result-row .value.positive { color: var(--green); }
+.result-row .value.negative { color: var(--red); }
+.result-divider { border: none; border-top: 1px solid rgba(107,155,209,.25); margin: var(--sp-1) 0; }
+
+/* Number pulse animation */
+@keyframes num-pulse {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.num-pulse { animation: num-pulse 220ms ease; }
+
+/* Stat strip */
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.stat-label { font-size: var(--fs-xs); color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-bottom: var(--sp-1); }
+.stat-value { font-size: var(--fs-xl); font-weight: 800; color: var(--text); line-height: 1.1; }
+.stat-value.green { color: var(--green); }
+.stat-value.amber { color: var(--amber); }
+.stat-value.red { color: var(--red); }
+.stat-sub { font-size: var(--fs-xs); color: var(--text-light); margin-top: 2px; }
+
+/* Jobs grid */
+.jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.job-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), border-color var(--transition);
+  overflow: hidden;
+}
+.job-card:hover { box-shadow: var(--shadow-md); border-color: var(--accent); }
+.job-card-header {
+  padding: var(--sp-4);
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-2);
+  cursor: pointer;
+}
+.job-card-name { font-weight: 700; font-size: var(--fs-md); }
+.job-card-meta { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+.job-card-actions { display: flex; gap: var(--sp-2); padding: 0 var(--sp-4) var(--sp-4); flex-wrap: wrap; }
+.job-breakdown {
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+  padding: var(--sp-4);
+  display: none;
+}
+.job-breakdown.open { display: block; }
+.breakdown-row {
+  display: flex; justify-content: space-between;
+  font-size: var(--fs-xs);
+  padding: 3px 0;
+  color: var(--text-muted);
+}
+.breakdown-row.total {
+  font-weight: 700;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  font-size: var(--fs-sm);
+}
+
+/* Drawer overlay */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 200;
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--transition);
+}
+.drawer-overlay.open { opacity: 1; pointer-events: all; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: min(480px, 100vw);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-lg);
+  z-index: 201;
+  transform: translateX(100%);
+  transition: transform 200ms ease, visibility 0s 200ms;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  visibility: hidden;
+}
+.drawer.open { transform: translateX(0); visibility: visible; transition: transform 200ms ease, visibility 0s; }
+.drawer-header {
+  padding: var(--sp-4) var(--sp-6);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.drawer-title { font-size: var(--fs-lg); font-weight: 700; }
+.drawer-body { flex: 1; overflow-y: auto; padding: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-4); }
+.drawer-footer {
+  padding: var(--sp-4) var(--sp-6);
+  border-top: 1px solid var(--border);
+  display: flex; gap: var(--sp-3); justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* Floor highlight */
+.floor-highlight {
+  background: linear-gradient(135deg, var(--green-bg), var(--accent-bg));
+  border: 2px solid var(--green);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  text-align: center;
+}
+.floor-amount {
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  color: var(--green);
+  line-height: 1;
+}
+.floor-label { font-size: var(--fs-xs); color: var(--text-muted); margin-top: var(--sp-1); }
+
+/* Route day */
+.route-list { display: flex; flex-direction: column; gap: var(--sp-3); margin-top: var(--sp-4); }
+.route-item {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+  display: flex; align-items: center; gap: var(--sp-3);
+  cursor: grab;
+  transition: box-shadow var(--transition), border-color var(--transition);
+  user-select: none;
+}
+.route-item:hover { box-shadow: var(--shadow-md); border-color: var(--accent); }
+.route-item.dragging { opacity: .5; box-shadow: var(--shadow-lg); }
+.route-item.drag-over { border-color: var(--accent); border-style: dashed; }
+.drag-handle { color: var(--text-light); flex-shrink: 0; cursor: grab; }
+.drag-handle svg { width: 16px; height: 16px; }
+.route-item-info { flex: 1; min-width: 0; }
+.route-item-name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.route-item-detail { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+.route-item-right { text-align: right; flex-shrink: 0; }
+.route-drive {
+  background: var(--bg-elevated);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-2) var(--sp-4);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* SVG timeline */
+#chart-route {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  display: block;
+  border-radius: var(--radius-md);
+  margin-top: var(--sp-4);
+}
+.chart-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  overflow-x: auto;
+}
+
+/* Clients tab */
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.client-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition);
+}
+.client-card:hover { box-shadow: var(--shadow-md); border-color: var(--accent); }
+.client-name { font-weight: 700; font-size: var(--fs-md); }
+.client-meta { font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+.client-actions { display: flex; gap: var(--sp-2); margin-top: var(--sp-3); }
+
+/* Settings */
+.settings-section { margin-bottom: var(--sp-6); }
+.settings-section h3 { font-size: var(--fs-md); font-weight: 700; margin-bottom: var(--sp-4); }
+
+/* Toast */
+.toast-container {
+  position: fixed; bottom: var(--sp-6); right: var(--sp-6);
+  z-index: 999;
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  pointer-events: none;
+}
+.toast {
+  background: var(--text);
+  color: var(--bg-card);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: var(--sp-2);
+  max-width: 320px;
+  animation: toast-in 200ms ease;
+  pointer-events: all;
+}
+.toast.warn { background: var(--amber); color: #fff; }
+.toast.error { background: var(--red); color: #fff; }
+.toast.success { background: var(--green); color: #fff; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: var(--sp-12) var(--sp-6);
+  color: var(--text-muted);
+}
+.empty-state svg { width: 48px; height: 48px; margin: 0 auto var(--sp-4); opacity: .35; }
+.empty-state p { font-size: var(--fs-sm); }
+
+/* Import section */
+.import-section { margin-top: var(--sp-4); }
+.import-section textarea {
+  min-height: 120px;
+  font-family: monospace;
+  font-size: var(--fs-xs);
+  resize: vertical;
+}
+.import-preview {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3);
+  font-size: var(--fs-xs);
+  font-family: monospace;
+  margin-top: var(--sp-2);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* Print styles */
+@media print {
+  .app-header, .nav-tabs, .no-print, .drawer, .drawer-overlay,
+  .toast-container, .btn, .theme-btn, .winter-chip { display: none !important; }
+  .panel { display: block !important; }
+  .panel:not(#panel-route) { display: none !important; }
+  body { background: #fff; color: #000; }
+  .card { box-shadow: none; border: 1px solid #ccc; }
+  .route-item { page-break-inside: avoid; }
+  .print-header { display: block !important; }
+  .stat-strip { grid-template-columns: repeat(4, 1fr); }
+  .chart-wrap { display: none; }
+  @page { margin: 1.5cm; }
+}
+.print-header {
+  display: none;
+  margin-bottom: var(--sp-6);
+  border-bottom: 2px solid #000;
+  padding-bottom: var(--sp-4);
+}
+.print-header h2 { font-size: 18pt; }
+.print-header p { font-size: 11pt; color: #444; }
+.print-footer {
+  display: none;
+  margin-top: var(--sp-6);
+  border-top: 1px solid #ccc;
+  padding-top: var(--sp-3);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+@media print { .print-footer { display: block !important; } }
+
+/* Route print table */
+.route-print-table { display: none; }
+@media print { .route-print-table { display: table !important; width: 100%; border-collapse: collapse; margin-top: var(--sp-4); } }
+.route-print-table th, .route-print-table td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; font-size: 10pt; }
+.route-print-table th { background: #f0f0f0; font-weight: 700; }
+
+/* Mobile */
+@media (max-width: 600px) {
+  .app-main { padding: var(--sp-3); }
+  .form-grid { grid-template-columns: 1fr; }
+  .jobs-grid, .clients-grid { grid-template-columns: 1fr; }
+  .stat-strip { grid-template-columns: 1fr 1fr; }
+  .app-header { padding: var(--sp-3); }
+  .app-header h1 { font-size: var(--fs-sm); }
+  .nav-tab { padding: var(--sp-3); }
+  .btn { min-height: 44px; padding: var(--sp-2) var(--sp-4); font-size: var(--fs-sm); }
+  input, select { min-height: 44px; font-size: 16px; }
+  .drawer { width: 100vw; }
+  .card { padding: var(--sp-4); }
+  .stat-value { font-size: var(--fs-lg); }
+}
+
+/* Section header */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--sp-4); flex-wrap: wrap; gap: var(--sp-2);
+}
+.section-actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+
+/* Divider */
+.divider { border: none; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
+
+/* App footer */
+.app-footer {
+  text-align: center;
+  padding: var(--sp-4) var(--sp-6);
+  font-size: var(--fs-xs);
+  color: var(--text-light);
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  margin-top: var(--sp-8);
+}
+
+/* Section label */
+.section-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--text-light);
+  margin: var(--sp-4) 0 var(--sp-2);
+}
+</style>
+</head>
+<body>
+<div class="app-wrapper">
+  <!-- Header -->
+  <header class="app-header">
+    <h1>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      Lawn Care Route &amp; Job Profit Calculator
+    </h1>
+    <div class="header-right">
+      <button class="btn btn-sm" id="btn-print" title="Print work order" style="background:rgba(255,255,255,.12);color:var(--nav-text);border:1.5px solid rgba(255,255,255,.2);min-height:32px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print
+      </button>
+      <button class="winter-chip" id="winter-toggle" title="Toggle snow removal mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="2" x2="12" y2="22"/><path d="M17 7l-5 5-5-5"/><path d="M17 17l-5-5-5 5"/><path d="M2 12h20"/><path d="M7 4.5l10 15M17 4.5L7 19.5"/></svg>
+        Snow Mode
+      </button>
+      <button class="theme-btn" id="theme-toggle" title="Toggle dark/light theme" aria-label="Toggle theme">
+        <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" id="tab-jobs" data-panel="panel-jobs" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Jobs
+    </button>
+    <button class="nav-tab" id="tab-route" data-panel="panel-route" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Route Day
+    </button>
+    <button class="nav-tab" id="tab-clients" data-panel="panel-clients" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Clients
+    </button>
+    <button class="nav-tab" id="tab-settings" data-panel="panel-settings" role="tab">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <!-- Main -->
+  <main class="app-main">
+    <!-- JOBS PANEL -->
+    <div id="panel-jobs" class="panel active">
+      <div class="section-header">
+        <h2>Jobs</h2>
+        <div class="section-actions">
+          <button class="btn btn-secondary btn-sm no-print" id="btn-add-to-route-selected" style="display:none">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Add Selected to Route
+          </button>
+          <button class="btn btn-primary no-print" id="btn-new-job">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Job
+          </button>
+        </div>
+      </div>
+      <div id="jobs-grid" class="jobs-grid"></div>
+    </div>
+
+    <!-- ROUTE PANEL -->
+    <div id="panel-route" class="panel">
+      <!-- Print header (only visible when printing) -->
+      <div class="print-header">
+        <h2>Route Work Order</h2>
+        <p id="print-date-line">Date: —</p>
+      </div>
+
+      <div class="stat-strip" id="route-stats">
+        <div class="stat-card">
+          <div class="stat-label">Revenue</div>
+          <div class="stat-value" id="stat-revenue">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Profit</div>
+          <div class="stat-value" id="stat-profit">$0.00</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Margin</div>
+          <div class="stat-value" id="stat-margin">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Effective $/hr</div>
+          <div class="stat-value" id="stat-rate">—</div>
+        </div>
+      </div>
+
+      <div class="section-header no-print">
+        <div style="display:flex;align-items:center;gap:var(--sp-3)">
+          <label style="margin:0;text-transform:none;font-size:var(--fs-sm);font-weight:600" for="route-date">Date:</label>
+          <input type="date" id="route-date" style="width:auto" aria-label="Route date">
+        </div>
+        <div class="section-actions">
+          <button class="btn btn-secondary btn-sm" id="btn-clear-route">Clear Route</button>
+        </div>
+      </div>
+
+      <div class="chart-wrap no-print">
+        <div class="section-label">Timeline</div>
+        <svg id="chart-route" viewBox="0 0 800 60" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div id="route-list" class="route-list"></div>
+
+      <!-- Print table -->
+      <table class="route-print-table">
+        <thead>
+          <tr><th>#</th><th>Client</th><th>Size / Time</th><th>Drive</th><th>Price</th><th>Cost</th><th>Profit</th><th>Margin</th></tr>
+        </thead>
+        <tbody id="route-print-body"></tbody>
+        <tfoot id="route-print-foot"></tfoot>
+      </table>
+
+      <div class="print-footer">
+        Lawn Care Route &amp; Job Profit Calculator &middot; jonsDesignerShop
+      </div>
+    </div>
+
+    <!-- CLIENTS PANEL -->
+    <div id="panel-clients" class="panel">
+      <div class="section-header">
+        <h2>Saved Clients</h2>
+        <button class="btn btn-primary no-print" id="btn-new-client">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Client
+        </button>
+      </div>
+
+      <!-- Paste importer -->
+      <div class="card import-section no-print">
+        <div class="card-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Paste-From-Spreadsheet Import
+        </div>
+        <p style="font-size:var(--fs-xs);color:var(--text-muted);margin-bottom:var(--sp-3)">
+          Paste rows from any spreadsheet. Columns: <strong>Name, Address Note, Default Sqft, Default Material Cost</strong> (header row optional).
+        </p>
+        <div class="field">
+          <label for="import-paste">Paste rows here (tab- or comma-separated):</label>
+          <textarea id="import-paste" placeholder="Oak Lane Residence&#9;123 Oak Ln&#9;5500&#9;18.00&#10;Pine St Property&#9;456 Pine St&#9;3200&#9;12.00"></textarea>
+        </div>
+        <div id="import-preview" class="import-preview" style="display:none"></div>
+        <div style="display:flex;gap:var(--sp-3);margin-top:var(--sp-3);flex-wrap:wrap">
+          <button class="btn btn-secondary btn-sm" id="btn-csv-template">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download CSV Template
+          </button>
+          <button class="btn btn-primary btn-sm" id="import-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Import Clients
+          </button>
+        </div>
+      </div>
+
+      <div id="clients-grid" class="clients-grid"></div>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div id="panel-settings" class="panel">
+      <h2 style="margin-bottom:var(--sp-6)">Settings</h2>
+
+      <div class="card settings-section">
+        <h3>Default Rates</h3>
+        <div class="form-grid">
+          <div class="field">
+            <label for="set-wage">Crew Wage ($/hr per person)</label>
+            <input type="number" id="set-wage" min="0" step="0.5" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="set-equip">Equipment Rate ($/hr)</label>
+            <input type="number" id="set-equip" min="0" step="0.5" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="set-productivity">Productivity (sqft/hr)</label>
+            <input type="number" id="set-productivity" min="1" step="100" inputmode="decimal">
+          </div>
+          <div class="field">
+            <label for="set-winter-mult">Winter Multiplier</label>
+            <input type="number" id="set-winter-mult" min="0.1" max="1" step="0.05" inputmode="decimal">
+            <span class="input-hint">Applied to productivity in snow removal mode (default 0.65)</span>
+          </div>
+          <div class="field">
+            <label for="set-target-margin">Target Margin (%)</label>
+            <input type="number" id="set-target-margin" min="0" max="99" step="1" inputmode="decimal">
+          </div>
+        </div>
+      </div>
+
+      <div class="card settings-section">
+        <h3>Appearance</h3>
+        <div style="display:flex;align-items:center;gap:var(--sp-3)">
+          <label class="toggle" for="set-theme">
+            <input type="checkbox" id="set-theme">
+            <span class="toggle-track"></span>
+            <span class="toggle-thumb"></span>
+          </label>
+          <span>Dark Mode</span>
+        </div>
+      </div>
+
+      <div class="card settings-section">
+        <h3>Data Management</h3>
+        <div style="display:flex;gap:var(--sp-3);flex-wrap:wrap">
+          <button class="btn btn-secondary no-print" id="btn-export">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export JSON Backup
+          </button>
+          <button class="btn btn-secondary no-print" id="btn-import-json">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Import JSON Backup
+          </button>
+          <input type="file" id="file-import" accept=".json" style="display:none">
+          <button class="btn btn-secondary no-print" id="btn-reset">Reset to Example Data</button>
+          <button class="btn btn-danger no-print" id="btn-clear-all">Clear All Data</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    Lawn Care Route &amp; Job Profit Calculator &middot; jonsDesignerShop
+  </footer>
+</div>
+
+<!-- Drawer -->
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer" id="job-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+  <div class="drawer-header">
+    <span class="drawer-title" id="drawer-title">New Job</span>
+    <button class="btn btn-secondary btn-sm" id="btn-close-drawer" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-footer">
+    <button class="btn btn-secondary" id="btn-cancel-drawer">Cancel</button>
+    <button class="btn btn-primary" id="btn-save-job">Save Job</button>
+  </div>
+</div>
+
+<!-- Client drawer -->
+<div class="drawer" id="client-drawer" role="dialog" aria-modal="true" aria-labelledby="client-drawer-title" style="z-index:202">
+  <div class="drawer-header">
+    <span class="drawer-title" id="client-drawer-title">New Client</span>
+    <button class="btn btn-secondary btn-sm" id="btn-close-client-drawer" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-body" id="client-drawer-body"></div>
+  <div class="drawer-footer">
+    <button class="btn btn-secondary" id="btn-cancel-client">Cancel</button>
+    <button class="btn btn-primary" id="btn-save-client">Save Client</button>
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+'use strict';
+const KEY = 'lawncare-calc-v1:state';
+
+// === DEFAULT STATE ===
+function defaultState() {
+  return {
+    settings: {
+      wage_hr: 22,
+      equip_rate_hr: 12,
+      productivity_sqft_hr: 6000,
+      winter_multiplier: 0.65,
+      target_margin_pct: 40,
+      dark_mode: false,
+      winter_mode: false
+    },
+    jobs: [
+      { id: 'job-a', name: 'Oak Lane Residence', client_id: null,
+        mode: 'sqft', area_sqft: 6000, duration_min: 60,
+        crew_size: 1, wage_hr: 22, equip_rate_hr: 12,
+        material_cost: 18, job_price: 85, drive_min: 10,
+        service_type: 'mow', address_note: '123 Oak Ln' },
+      { id: 'job-b', name: 'Pine Street Property', client_id: null,
+        mode: 'time', area_sqft: 3500, duration_min: 45,
+        crew_size: 1, wage_hr: 22, equip_rate_hr: 12,
+        material_cost: 0, job_price: 65, drive_min: 8,
+        service_type: 'mow', address_note: '456 Pine St' },
+      { id: 'job-c', name: 'Maple Grove Estate', client_id: null,
+        mode: 'sqft', area_sqft: 9000, duration_min: 90,
+        crew_size: 1, wage_hr: 22, equip_rate_hr: 12,
+        material_cost: 25, job_price: 125, drive_min: 15,
+        service_type: 'mow', address_note: '789 Maple Dr' }
+    ],
+    clients: [
+      { id: 'c-1', name: 'Oak Lane Residence', address_note: '123 Oak Ln', default_sqft: 6000, default_material_cost: 18 },
+      { id: 'c-2', name: 'Pine Street Property', address_note: '456 Pine St', default_sqft: 3500, default_material_cost: 0 },
+      { id: 'c-3', name: 'Maple Grove Estate', address_note: '789 Maple Dr', default_sqft: 9000, default_material_cost: 25 }
+    ],
+    route: ['job-a', 'job-b', 'job-c'],
+    route_date: new Date().toISOString().slice(0, 10),
+    expanded_jobs: [],
+    active_tab: 'panel-jobs'
+  };
+}
+
+// === STATE ===
+let state = loadState();
+let saveTimer = null;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    if (typeof parsed !== 'object' || parsed === null) throw new Error('not object');
+    const def = defaultState();
+    const merged = {
+      ...def,
+      ...parsed,
+      settings: { ...def.settings, ...(parsed.settings || {}) }
+    };
+    if (!Array.isArray(merged.jobs)) merged.jobs = def.jobs;
+    if (!Array.isArray(merged.clients)) merged.clients = def.clients;
+    if (!Array.isArray(merged.route)) merged.route = def.route;
+    if (!Array.isArray(merged.expanded_jobs)) merged.expanded_jobs = [];
+    return merged;
+  } catch(e) {
+    try { localStorage.setItem(KEY + '__corrupt-backup', localStorage.getItem(KEY) || ''); } catch(_) {}
+    showToast('Saved data could not be read -- loaded example data instead.', 'warn');
+    return defaultState();
+  }
+}
+
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(persistState, 300);
+}
+
+function persistState() {
+  if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch(e) {
+    showToast('Could not save data (storage full or private mode). Your changes may be lost.', 'warn');
+    try { localStorage.setItem(KEY + '__backup', JSON.stringify(state)); } catch(_) {}
+  }
+}
+
+// Flush on page hide
+document.addEventListener('pagehide', persistState);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') persistState(); });
+
+// Two-tab safety
+window.addEventListener('storage', e => {
+  if (e.key === KEY) showToast('Data changed in another tab. Reload to see latest.', 'warn');
+});
+
+// === UTILITIES ===
+function esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function escAttr(str) { return esc(str); }
+
+function fmt$(n) {
+  if (!isFinite(n)) return '--';
+  return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function fmtPct(n) {
+  if (!isFinite(n)) return '--';
+  return n.toFixed(2) + '%';
+}
+function fmtHr(h) {
+  if (!isFinite(h)) return '--';
+  return h.toFixed(2) + ' hr';
+}
+function fmtNum(n) {
+  if (!isFinite(n)) return '--';
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+function genId() { return 'id-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6); }
+
+function pulse(el) {
+  if (!el) return;
+  el.classList.remove('num-pulse');
+  void el.offsetWidth;
+  el.classList.add('num-pulse');
+}
+
+// === TOAST ===
+function showToast(msg, type='', duration=3500) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity 300ms'; setTimeout(()=>t.remove(), 300); }, duration);
+}
+
+// === FORMULAS ===
+function calcJob(job) {
+  const s = state.settings;
+  const productivity = s.winter_mode
+    ? s.productivity_sqft_hr * s.winter_multiplier
+    : s.productivity_sqft_hr;
+
+  const crew = Math.max(1, Number(job.crew_size) || 1);
+  const wage = Number(job.wage_hr) || 0;
+  const equip = Number(job.equip_rate_hr) || 0;
+  const mat = Number(job.material_cost) || 0;
+  const price = Number(job.job_price);
+  const drive = Math.max(0, Number(job.drive_min) || 0);
+
+  let job_duration_hr;
+  if (job.mode === 'sqft') {
+    if (!productivity || productivity <= 0) return { error: 'zero-productivity' };
+    job_duration_hr = (Number(job.area_sqft) || 0) / productivity;
+  } else {
+    job_duration_hr = (Number(job.duration_min) || 0) / 60;
+  }
+
+  const labor_cost = crew * wage * job_duration_hr;
+  const equipment_cost = equip * job_duration_hr;
+  const total_job_cost = labor_cost + equipment_cost + mat;
+  const drive_hr = drive / 60;
+  const drive_cost = drive_hr * (crew * wage + equip);
+
+  const has_price = !isNaN(price) && price !== null && String(job.job_price).trim() !== '';
+  const job_profit = has_price ? price - total_job_cost : NaN;
+  const job_margin_pct = (has_price && price > 0) ? (job_profit / price) * 100 : NaN;
+
+  const target = Number(s.target_margin_pct) || 0;
+  let price_floor;
+  if (target >= 100) {
+    price_floor = Infinity;
+  } else {
+    price_floor = total_job_cost / (1 - target / 100);
+  }
+
+  return {
+    job_duration_hr, labor_cost, equipment_cost, total_job_cost,
+    drive_cost, job_profit, job_margin_pct, price_floor,
+    crew, wage, equip, mat, price: has_price ? price : NaN,
+    drive_hr, has_price
+  };
+}
+
+function calcRoute() {
+  const jobs = state.route
+    .map(id => state.jobs.find(j => j.id === id))
+    .filter(Boolean);
+
+  let total_revenue = 0, total_job_cost = 0, total_drive_cost = 0;
+  let total_billable_hr = 0, total_drive_hr = 0;
+  const rows = [];
+
+  for (const job of jobs) {
+    const c = calcJob(job);
+    if (c.error) { rows.push({ job, calc: c }); continue; }
+    total_revenue += c.has_price ? c.price : 0;
+    total_job_cost += c.total_job_cost;
+    total_drive_cost += c.drive_cost;
+    total_billable_hr += c.job_duration_hr;
+    total_drive_hr += c.drive_hr;
+    rows.push({ job, calc: c });
+  }
+
+  const route_profit = total_revenue - total_job_cost - total_drive_cost;
+  const route_margin = total_revenue > 0 ? (route_profit / total_revenue) * 100 : NaN;
+  const total_hr = total_billable_hr + total_drive_hr;
+  const effective_hourly_rate = total_hr > 0 ? total_revenue / total_hr : NaN;
+
+  return { rows, total_revenue, total_job_cost, total_drive_cost, route_profit, route_margin, total_billable_hr, total_drive_hr, effective_hourly_rate };
+}
+
+// === MARGIN BADGE ===
+function marginBadge(pct) {
+  const target = Number(state.settings.target_margin_pct) || 0;
+  if (!isFinite(pct)) return '<span class="badge badge-neutral">N/A</span>';
+  if (pct >= target) return '<span class="badge badge-green">' + fmtPct(pct) + '</span>';
+  if (pct >= target - 10) return '<span class="badge badge-amber">' + fmtPct(pct) + '</span>';
+  return '<span class="badge badge-red">' + fmtPct(pct) + '</span>';
+}
+
+// === RENDER JOBS PANEL ===
+function renderJobs() {
+  const grid = document.getElementById('jobs-grid');
+  const s = state.settings;
+  const winterLabel = s.winter_mode ? 'Snow Removal' : 'Mow';
+
+  if (!state.jobs.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><p>No jobs yet. Click "New Job" to add your first stop.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = state.jobs.map(job => {
+    const c = calcJob(job);
+    const expanded = state.expanded_jobs.includes(job.id);
+    const onRoute = state.route.includes(job.id);
+
+    let sizeStr = job.mode === 'sqft'
+      ? (Number(job.area_sqft) || 0).toLocaleString() + ' sqft'
+      : (Number(job.duration_min) || 0) + ' min';
+    if (state.settings.winter_mode) sizeStr += ' (Snow)';
+
+    const profitClass = c.error ? '' : (c.job_profit >= 0 ? 'positive' : 'negative');
+
+    return `<div class="job-card" data-job-id="${escAttr(job.id)}">
+      <div class="job-card-header" data-expand="${escAttr(job.id)}">
+        <div>
+          <div class="job-card-name">${esc(job.name)}</div>
+          <div class="job-card-meta">${esc(sizeStr)} &middot; ${esc(job.address_note || '')}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          ${c.error ? '<span class="badge badge-neutral">Error</span>' : marginBadge(c.job_margin_pct)}
+          <div style="font-size:var(--fs-xs);color:var(--text-muted);margin-top:2px">${c.error ? '--' : (c.has_price ? fmt$(c.job_profit) : '--')}</div>
+        </div>
+      </div>
+      <div class="job-breakdown ${expanded ? 'open' : ''}" id="breakdown-${escAttr(job.id)}">
+        ${c.error ? '<div style="color:var(--red);font-size:var(--fs-xs)">Set productivity rate in Settings to calculate.</div>' : `
+        <div class="breakdown-row"><span>Duration</span><span>${fmtHr(c.job_duration_hr)}</span></div>
+        <div class="breakdown-row"><span>Labor (${job.crew_size} x $${Number(job.wage_hr).toFixed(2)}/hr)</span><span>${fmt$(c.labor_cost)}</span></div>
+        <div class="breakdown-row"><span>Equipment ($${Number(job.equip_rate_hr).toFixed(2)}/hr)</span><span>${fmt$(c.equipment_cost)}</span></div>
+        <div class="breakdown-row"><span>Materials</span><span>${fmt$(c.mat)}</span></div>
+        <div class="breakdown-row total"><span>Job Cost</span><span>${fmt$(c.total_job_cost)}</span></div>
+        <div class="breakdown-row"><span>Drive Cost (${job.drive_min} min)</span><span>${fmt$(c.drive_cost)}</span></div>
+        <div class="breakdown-row total"><span>Price</span><span>${c.has_price ? fmt$(c.price) : '--'}</span></div>
+        <div class="breakdown-row total"><span>Profit</span><span class="${profitClass}">${c.has_price ? fmt$(c.job_profit) : '--'}</span></div>
+        <div class="breakdown-row"><span>Margin</span><span>${(c.has_price && isFinite(c.job_margin_pct)) ? fmtPct(c.job_margin_pct) : '--'}</span></div>
+        <hr class="divider">
+        <div class="breakdown-row"><span>Price Floor (${s.target_margin_pct}% target)</span><span style="color:var(--green);font-weight:700">${c.price_floor === Infinity ? 'No price covers 100%+ margin' : fmt$(c.price_floor)}</span></div>
+        `}
+      </div>
+      <div class="job-card-actions">
+        <button class="btn btn-primary btn-sm" data-add-route="${escAttr(job.id)}" ${onRoute ? 'style="opacity:.5"' : ''}>
+          ${onRoute ? 'On Route' : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Add to Route'}
+        </button>
+        <button class="btn btn-secondary btn-sm" data-edit-job="${escAttr(job.id)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+        <button class="btn btn-danger btn-sm" data-delete-job="${escAttr(job.id)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// === RENDER ROUTE PANEL ===
+function renderRoute() {
+  const r = calcRoute();
+
+  // Stats
+  const statProfit = document.getElementById('stat-profit');
+  const statMargin = document.getElementById('stat-margin');
+  const statRate = document.getElementById('stat-rate');
+  const statRevenue = document.getElementById('stat-revenue');
+
+  const profitVal = isFinite(r.route_profit) ? r.route_profit : 0;
+  const marginVal = r.route_margin;
+  const rateVal = r.effective_hourly_rate;
+
+  if (statRevenue) { statRevenue.textContent = fmt$(r.total_revenue); pulse(statRevenue); }
+  if (statProfit) {
+    statProfit.textContent = fmt$(profitVal);
+    statProfit.className = 'stat-value ' + (profitVal >= 0 ? 'green' : 'red');
+    pulse(statProfit);
+  }
+  if (statMargin) {
+    const target = Number(state.settings.target_margin_pct) || 0;
+    statMargin.textContent = isFinite(marginVal) ? fmtPct(marginVal) : '--';
+    if (isFinite(marginVal)) {
+      statMargin.className = 'stat-value ' + (marginVal >= target ? 'green' : marginVal >= target - 10 ? 'amber' : 'red');
+    } else {
+      statMargin.className = 'stat-value';
+    }
+    pulse(statMargin);
+  }
+  if (statRate) { statRate.textContent = isFinite(rateVal) ? fmt$(rateVal) + '/hr' : '--'; pulse(statRate); }
+
+  // Date
+  const dateEl = document.getElementById('route-date');
+  if (dateEl && dateEl.value !== state.route_date) dateEl.value = state.route_date || '';
+  const printDate = document.getElementById('print-date-line');
+  if (printDate) printDate.textContent = 'Date: ' + (state.route_date || new Date().toLocaleDateString());
+
+  // Timeline SVG
+  renderRouteChart(r);
+
+  // Route list
+  const list = document.getElementById('route-list');
+  if (!r.rows.length) {
+    list.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg><p>No jobs on today\'s route. Add jobs from the Jobs tab.</p></div>';
+  } else {
+    list.innerHTML = r.rows.map((row, i) => {
+      const { job, calc: c } = row;
+      if (c.error) return `<div class="route-item"><span>${esc(job.name)}</span><span class="badge badge-neutral">Setup required</span></div>`;
+      const sizeStr = job.mode === 'sqft' ? (Number(job.area_sqft)||0).toLocaleString() + ' sqft' : (Number(job.duration_min)||0) + ' min';
+      const profitClass = c.job_profit >= 0 ? 'positive' : 'negative';
+      return `
+        ${i > 0 && c.drive_hr > 0 ? `<div class="route-drive">Drive: ${job.drive_min} min &rarr; ${fmt$(c.drive_cost)} cost</div>` : ''}
+        <div class="route-item" draggable="true" data-route-idx="${i}" data-route-id="${escAttr(job.id)}">
+          <div class="drag-handle" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+          <div class="route-item-info">
+            <div class="route-item-name">${esc(job.name)}</div>
+            <div class="route-item-detail">${esc(sizeStr)} &middot; ${fmtHr(c.job_duration_hr)}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--sp-3)">
+            ${marginBadge(c.job_margin_pct)}
+            <div class="route-item-right">
+              <div style="font-weight:700">${c.has_price ? fmt$(c.price) : '--'}</div>
+              <div style="font-size:var(--fs-xs);color:var(--text-muted)" class="${profitClass}">${c.has_price ? fmt$(c.job_profit) : '--'}</div>
+            </div>
+            <button class="btn btn-danger btn-sm" data-remove-route="${escAttr(job.id)}" aria-label="Remove from route">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    initDragDrop();
+  }
+
+  // Print table
+  renderPrintTable(r);
+}
+
+function renderPrintTable(r) {
+  const body = document.getElementById('route-print-body');
+  const foot = document.getElementById('route-print-foot');
+  if (!body || !foot) return;
+
+  body.innerHTML = r.rows.map((row, i) => {
+    const { job, calc: c } = row;
+    const sizeStr = job.mode === 'sqft' ? (Number(job.area_sqft)||0).toLocaleString() + ' sqft' : (Number(job.duration_min)||0) + ' min';
+    return `<tr>
+      <td>${i+1}</td>
+      <td>${esc(job.name)}</td>
+      <td>${esc(sizeStr)}</td>
+      <td>${job.drive_min} min${c.error ? '' : ' (' + fmt$(c.drive_cost) + ')'}</td>
+      <td>${c.has_price ? fmt$(c.price) : '--'}</td>
+      <td>${c.error ? '--' : fmt$(c.total_job_cost)}</td>
+      <td>${(c.has_price && !c.error) ? fmt$(c.job_profit) : '--'}</td>
+      <td>${(c.has_price && !c.error) ? fmtPct(c.job_margin_pct) : '--'}</td>
+    </tr>`;
+  }).join('');
+
+  // Drive time is a route-level cost: each stop's drive dollars show in the Drive column above, and this
+  // bridge row folds their sum into the route Cost (and out of Profit) so BOTH columns foot to the TOTALS
+  // ($153.50 job cost + $18.70 drive = $172.20; $121.50 pre-drive profit - $18.70 = $102.80). This is a
+  // DISPLAY-only reconciliation — calcJob's per-row cost/profit/margin and the route TOTALS are untouched.
+  foot.innerHTML = `<tr style="color:#555">
+    <td colspan="5" style="text-align:right">Drive time, all stops</td>
+    <td>${fmt$(r.total_drive_cost)}</td>
+    <td>-${fmt$(r.total_drive_cost)}</td>
+    <td></td>
+  </tr>
+  <tr style="font-weight:700;background:#f0f0f0">
+    <td colspan="4">TOTALS</td>
+    <td>${fmt$(r.total_revenue)}</td>
+    <td>${fmt$(r.total_job_cost + r.total_drive_cost)}</td>
+    <td>${fmt$(r.route_profit)}</td>
+    <td>${isFinite(r.route_margin) ? fmtPct(r.route_margin) : '--'}</td>
+  </tr>`;
+}
+
+// === SVG TIMELINE CHART ===
+function renderRouteChart(r) {
+  const svg = document.getElementById('chart-route');
+  if (!svg) return;
+
+  if (!r.rows.length) { svg.innerHTML = ''; return; }
+
+  const W = 800, H = 60;
+  const totalHr = r.total_billable_hr + r.total_drive_hr;
+  if (totalHr <= 0) { svg.innerHTML = ''; return; }
+
+  const target = Number(state.settings.target_margin_pct) || 0;
+  const PAD = 4;
+  const barH = 32, barY = (H - barH) / 2;
+  let x = PAD;
+  const scaleX = (W - 2 * PAD) / totalHr;
+
+  let segs = '';
+  let labels = '';
+
+  for (let i = 0; i < r.rows.length; i++) {
+    const { job, calc: c } = r.rows[i];
+    if (c.error) continue;
+
+    // Drive segment
+    if (c.drive_hr > 0) {
+      const driveW = c.drive_hr * scaleX;
+      segs += `<rect x="${x}" y="${barY}" width="${driveW}" height="${barH}" rx="4" fill="var(--drive-color)" opacity=".7"/>`;
+      x += driveW;
+    }
+
+    // Job segment
+    const jobW = c.job_duration_hr * scaleX;
+    const col = !c.has_price ? 'var(--text-light)' :
+      c.job_margin_pct >= target ? 'var(--green)' :
+      c.job_margin_pct >= target - 10 ? 'var(--amber)' : 'var(--red)';
+
+    segs += `<rect x="${x}" y="${barY}" width="${jobW}" height="${barH}" rx="4" fill="${col}" opacity=".85"/>`;
+
+    // Label (only if wide enough)
+    if (jobW > 40) {
+      const truncName = job.name.length > 14 ? job.name.slice(0,13)+'…' : job.name;
+      labels += `<text x="${x + jobW/2}" y="${H/2 + 5}" text-anchor="middle" font-family="inherit" font-size="11" font-weight="600" fill="#fff" style="pointer-events:none">${esc(truncName)}</text>`;
+    }
+    x += jobW;
+  }
+
+  svg.innerHTML = `<g>${segs}${labels}</g>
+    <text x="4" y="${H-4}" font-size="9" fill="var(--text-light)" font-family="inherit">Start</text>
+    <text x="${W-4}" y="${H-4}" font-size="9" fill="var(--text-light)" font-family="inherit" text-anchor="end">${fmtHr(totalHr)}</text>`;
+}
+
+// === RENDER CLIENTS PANEL ===
+function renderClients() {
+  const grid = document.getElementById('clients-grid');
+  if (!state.clients.length) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No clients saved. Add clients or import from a spreadsheet.</p></div>';
+    return;
+  }
+  grid.innerHTML = state.clients.map(c => `
+    <div class="client-card">
+      <div class="client-name">${esc(c.name)}</div>
+      <div class="client-meta">${esc(c.address_note || '')} &middot; ${c.default_sqft ? (Number(c.default_sqft).toLocaleString() + ' sqft') : ''} &middot; Materials: ${c.default_material_cost ? fmt$(Number(c.default_material_cost)) : '--'}</div>
+      <div class="client-actions">
+        <button class="btn btn-primary btn-sm" data-use-client="${escAttr(c.id)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Job From Client
+        </button>
+        <button class="btn btn-secondary btn-sm" data-edit-client="${escAttr(c.id)}">Edit</button>
+        <button class="btn btn-danger btn-sm" data-delete-client="${escAttr(c.id)}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// === RENDER SETTINGS ===
+function renderSettings() {
+  const s = state.settings;
+  const fields = [
+    ['set-wage', s.wage_hr],
+    ['set-equip', s.equip_rate_hr],
+    ['set-productivity', s.productivity_sqft_hr],
+    ['set-winter-mult', s.winter_multiplier],
+    ['set-target-margin', s.target_margin_pct]
+  ];
+  for (const [id, val] of fields) {
+    const el = document.getElementById(id);
+    if (el && el !== document.activeElement) el.value = val;
+  }
+  const themeEl = document.getElementById('set-theme');
+  if (themeEl) themeEl.checked = s.dark_mode;
+}
+
+// === MAIN RENDER ===
+function render() {
+  // Apply theme
+  document.documentElement.setAttribute('data-theme', state.settings.dark_mode ? 'dark' : 'light');
+  const sun = document.getElementById('icon-sun');
+  const moon = document.getElementById('icon-moon');
+  if (sun) sun.style.display = state.settings.dark_mode ? 'none' : '';
+  if (moon) moon.style.display = state.settings.dark_mode ? '' : 'none';
+
+  // Winter mode chip
+  const wc = document.getElementById('winter-toggle');
+  if (wc) wc.classList.toggle('active', !!state.settings.winter_mode);
+
+  // Active tab
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const activePanel = document.getElementById(state.active_tab || 'panel-jobs');
+  if (activePanel) activePanel.classList.add('active');
+  const activeTab = document.querySelector(`[data-panel="${state.active_tab || 'panel-jobs'}"]`);
+  if (activeTab) activeTab.classList.add('active');
+
+  renderJobs();
+  renderRoute();
+  renderClients();
+  renderSettings();
+}
+
+// === JOB DRAWER ===
+let editingJobId = null;
+
+function openJobDrawer(jobData) {
+  editingJobId = jobData ? jobData.id : null;
+  const s = state.settings;
+  const j = jobData || {
+    name: '', address_note: '',
+    mode: 'sqft', area_sqft: '', duration_min: '',
+    crew_size: 1,
+    wage_hr: s.wage_hr,
+    equip_rate_hr: s.equip_rate_hr,
+    material_cost: '', job_price: '', drive_min: 0,
+    service_type: 'mow'
+  };
+
+  document.getElementById('drawer-title').textContent = editingJobId ? 'Edit Job' : 'New Job';
+
+  const winterLabel = state.settings.winter_mode ? 'Snow Removal (Winter)' : 'Lawn Mowing';
+  const matLabel = state.settings.winter_mode ? 'Deicer / Salt ($)' : 'Materials ($)';
+
+  document.getElementById('drawer-body').innerHTML = `
+    <div class="field">
+      <label for="dj-name">Client / Job Name *</label>
+      <input type="text" id="dj-name" value="${escAttr(j.name)}" placeholder="Oak Lane Residence" autocomplete="off">
+      <div class="input-error" id="err-dj-name" role="alert" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Name is required
+      </div>
+    </div>
+    <div class="field">
+      <label for="dj-address">Address / Note</label>
+      <input type="text" id="dj-address" value="${escAttr(j.address_note || '')}" placeholder="123 Oak Lane" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>Service Mode</label>
+      <div class="segment-ctrl" role="group">
+        <button type="button" class="segment-btn ${j.service_type !== 'snow' ? 'active' : ''}" id="svc-mow" data-svc="mow">Mow / Landscape</button>
+        <button type="button" class="segment-btn ${j.service_type === 'snow' ? 'active' : ''}" id="svc-snow" data-svc="snow">Snow Removal</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Duration Method</label>
+      <div class="segment-ctrl" role="group">
+        <button type="button" class="segment-btn ${j.mode === 'sqft' ? 'active' : ''}" id="mode-sqft" data-mode="sqft">Sqft Area</button>
+        <button type="button" class="segment-btn ${j.mode === 'time' ? 'active' : ''}" id="mode-time" data-mode="time">Direct Minutes</button>
+      </div>
+    </div>
+
+    <div id="sqft-row" class="field" ${j.mode !== 'sqft' ? 'style="display:none"' : ''}>
+      <label for="dj-sqft">Job Area (sqft)</label>
+      <input type="number" id="dj-sqft" value="${escAttr(j.area_sqft)}" min="0" step="100" inputmode="decimal" placeholder="6000">
+      <span class="input-hint">Productivity: ${state.settings.winter_mode ? (state.settings.productivity_sqft_hr * state.settings.winter_multiplier).toFixed(0) : state.settings.productivity_sqft_hr} sqft/hr ${state.settings.winter_mode ? '(winter adjusted)' : ''}</span>
+    </div>
+    <div id="time-row" class="field" ${j.mode !== 'time' ? 'style="display:none"' : ''}>
+      <label for="dj-minutes">Job Duration (minutes)</label>
+      <input type="number" id="dj-minutes" value="${escAttr(j.duration_min)}" min="0" step="5" inputmode="decimal" placeholder="60">
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="dj-crew">Crew Size</label>
+        <input type="number" id="dj-crew" value="${escAttr(j.crew_size)}" min="1" step="1" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label for="dj-wage">Wage ($/hr per person)</label>
+        <input type="number" id="dj-wage" value="${escAttr(j.wage_hr)}" min="0" step="0.5" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label for="dj-equip">Equipment Rate ($/hr)</label>
+        <input type="number" id="dj-equip" value="${escAttr(j.equip_rate_hr)}" min="0" step="0.5" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label for="dj-mat">${esc(matLabel)}</label>
+        <input type="number" id="dj-mat" value="${escAttr(j.material_cost)}" min="0" step="0.5" inputmode="decimal" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label for="dj-price">Job Price ($)</label>
+        <input type="number" id="dj-price" value="${escAttr(j.job_price)}" min="0" step="1" inputmode="decimal" placeholder="85.00">
+        <div class="input-error" id="err-dj-price" role="alert" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Price cannot be negative
+        </div>
+      </div>
+      <div class="field">
+        <label for="dj-drive">Drive Time From Previous Stop (min)</label>
+        <input type="number" id="dj-drive" value="${escAttr(j.drive_min)}" min="0" step="1" inputmode="decimal">
+        <div class="input-error" id="err-dj-drive" role="alert" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Drive time cannot be negative
+        </div>
+      </div>
+    </div>
+
+    <div class="floor-highlight" id="drawer-floor">
+      <div class="floor-amount" id="drawer-floor-val">--</div>
+      <div class="floor-label">Minimum price to hit ${state.settings.target_margin_pct}% margin</div>
+    </div>
+
+    <div class="result-box" id="drawer-results">
+      <div class="result-row"><span class="label">Duration</span><span class="value" id="dr-dur">--</span></div>
+      <div class="result-row"><span class="label">Labor Cost</span><span class="value" id="dr-labor">--</span></div>
+      <div class="result-row"><span class="label">Equipment Cost</span><span class="value" id="dr-equip">--</span></div>
+      <div class="result-row"><span class="label">Materials</span><span class="value" id="dr-mat">--</span></div>
+      <hr class="result-divider">
+      <div class="result-row"><span class="label">Total Job Cost</span><span class="value" id="dr-cost">--</span></div>
+      <div class="result-row"><span class="label">Drive Cost</span><span class="value" id="dr-drive-cost">--</span></div>
+      <hr class="result-divider">
+      <div class="result-row"><span class="label">Profit</span><span class="value" id="dr-profit">--</span></div>
+      <div class="result-row"><span class="label">Margin</span><span class="value" id="dr-margin">--</span></div>
+    </div>
+  `;
+
+  // Segment controls
+  document.querySelectorAll('[data-svc]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-svc]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      calcDrawer();
+    });
+  });
+  document.querySelectorAll('[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const isSqft = btn.dataset.mode === 'sqft';
+      document.getElementById('sqft-row').style.display = isSqft ? '' : 'none';
+      document.getElementById('time-row').style.display = isSqft ? 'none' : '';
+      calcDrawer();
+    });
+  });
+
+  // Live calc on input
+  document.getElementById('drawer-body').querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('input', calcDrawer);
+  });
+
+  calcDrawer();
+  showDrawer();
+}
+
+function getDrawerJob() {
+  const getVal = id => document.getElementById(id)?.value ?? '';
+  const modeSqft = document.querySelector('[data-mode].active')?.dataset.mode === 'sqft';
+  const svc = document.querySelector('[data-svc].active')?.dataset.svc || 'mow';
+  return {
+    id: editingJobId || genId(),
+    name: getVal('dj-name').trim(),
+    address_note: getVal('dj-address').trim(),
+    service_type: svc,
+    mode: modeSqft ? 'sqft' : 'time',
+    area_sqft: Number(getVal('dj-sqft')) || 0,
+    duration_min: Number(getVal('dj-minutes')) || 0,
+    crew_size: Math.max(1, Number(getVal('dj-crew')) || 1),
+    wage_hr: Number(getVal('dj-wage')) || 0,
+    equip_rate_hr: Number(getVal('dj-equip')) || 0,
+    material_cost: Number(getVal('dj-mat')) || 0,
+    job_price: getVal('dj-price').trim() === '' ? '' : Number(getVal('dj-price')),
+    drive_min: Math.max(0, Number(getVal('dj-drive')) || 0),
+    client_id: null
+  };
+}
+
+function calcDrawer() {
+  const job = getDrawerJob();
+  const c = calcJob(job);
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const setClass = (id, cls) => { const el = document.getElementById(id); if (el) el.className = 'value ' + cls; };
+
+  if (c.error) {
+    ['dr-dur','dr-labor','dr-equip','dr-mat','dr-cost','dr-drive-cost','dr-profit','dr-margin'].forEach(id => set(id,'--'));
+    set('drawer-floor-val', '--');
+    return;
+  }
+
+  set('dr-dur', fmtHr(c.job_duration_hr));
+  set('dr-labor', fmt$(c.labor_cost));
+  set('dr-equip', fmt$(c.equipment_cost));
+  set('dr-mat', fmt$(c.mat));
+  set('dr-cost', fmt$(c.total_job_cost));
+  set('dr-drive-cost', fmt$(c.drive_cost));
+
+  if (c.has_price) {
+    set('dr-profit', fmt$(c.job_profit));
+    set('dr-margin', isFinite(c.job_margin_pct) ? fmtPct(c.job_margin_pct) : 'N/A');
+    setClass('dr-profit', c.job_profit >= 0 ? 'positive' : 'negative');
+  } else {
+    set('dr-profit', '--');
+    set('dr-margin', '--');
+  }
+
+  const floorEl = document.getElementById('drawer-floor-val');
+  if (floorEl) {
+    if (c.price_floor === Infinity) {
+      floorEl.textContent = 'No price covers 100%+ margin';
+      floorEl.style.fontSize = 'var(--fs-sm)';
+    } else {
+      floorEl.textContent = fmt$(c.price_floor);
+      floorEl.style.fontSize = '';
+    }
+  }
+
+  // Inline validation
+  const price = Number(document.getElementById('dj-price')?.value);
+  const priceErr = document.getElementById('err-dj-price');
+  const drive = Number(document.getElementById('dj-drive')?.value);
+  const driveErr = document.getElementById('err-dj-drive');
+  if (priceErr) {
+    const bad = document.getElementById('dj-price')?.value.trim() !== '' && price < 0;
+    priceErr.style.display = bad ? '' : 'none';
+    document.getElementById('dj-price')?.classList.toggle('error', bad);
+  }
+  if (driveErr) {
+    const bad = drive < 0;
+    driveErr.style.display = bad ? '' : 'none';
+    document.getElementById('dj-drive')?.classList.toggle('error', bad);
+  }
+}
+
+function validateDrawer() {
+  let ok = true;
+  const name = document.getElementById('dj-name')?.value.trim();
+  const nameErr = document.getElementById('err-dj-name');
+  if (!name) {
+    if (nameErr) nameErr.style.display = '';
+    document.getElementById('dj-name')?.classList.add('error');
+    ok = false;
+  } else {
+    if (nameErr) nameErr.style.display = 'none';
+    document.getElementById('dj-name')?.classList.remove('error');
+  }
+  const price = document.getElementById('dj-price')?.value.trim();
+  const priceErr = document.getElementById('err-dj-price');
+  if (price !== '' && Number(price) < 0) {
+    if (priceErr) priceErr.style.display = '';
+    ok = false;
+  }
+  const drive = Number(document.getElementById('dj-drive')?.value);
+  const driveErr = document.getElementById('err-dj-drive');
+  if (drive < 0) {
+    if (driveErr) driveErr.style.display = '';
+    ok = false;
+  }
+  return ok;
+}
+
+function showDrawer() {
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('job-drawer').classList.add('open');
+  document.getElementById('dj-name')?.focus();
+}
+function hideDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('open');
+  document.getElementById('job-drawer').classList.remove('open');
+}
+
+// === CLIENT DRAWER ===
+let editingClientId = null;
+
+function openClientDrawer(clientData) {
+  editingClientId = clientData ? clientData.id : null;
+  const c = clientData || { name: '', address_note: '', default_sqft: '', default_material_cost: '' };
+  document.getElementById('client-drawer-title').textContent = editingClientId ? 'Edit Client' : 'New Client';
+  document.getElementById('client-drawer-body').innerHTML = `
+    <div class="field">
+      <label for="dc-name">Client Name *</label>
+      <input type="text" id="dc-name" value="${escAttr(c.name)}" placeholder="Oak Lane Residence" autocomplete="off">
+      <div class="input-error" id="err-dc-name" role="alert" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Name is required
+      </div>
+    </div>
+    <div class="field">
+      <label for="dc-address">Address / Note</label>
+      <input type="text" id="dc-address" value="${escAttr(c.address_note || '')}" placeholder="123 Oak Lane" autocomplete="off">
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="dc-sqft">Default Sqft</label>
+        <input type="number" id="dc-sqft" value="${escAttr(c.default_sqft)}" min="0" step="100" inputmode="decimal" placeholder="5000">
+      </div>
+      <div class="field">
+        <label for="dc-mat">Default Material Cost ($)</label>
+        <input type="number" id="dc-mat" value="${escAttr(c.default_material_cost)}" min="0" step="1" inputmode="decimal" placeholder="15.00">
+      </div>
+    </div>
+  `;
+  document.getElementById('client-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('open');
+  document.getElementById('dc-name')?.focus();
+}
+function hideClientDrawer() {
+  document.getElementById('client-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('open');
+}
+
+// === DRAG AND DROP ===
+let dragSrcIdx = null;
+
+function initDragDrop() {
+  const items = document.querySelectorAll('.route-item[draggable]');
+  items.forEach(item => {
+    item.addEventListener('dragstart', e => {
+      dragSrcIdx = parseInt(item.dataset.routeIdx);
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => item.classList.add('dragging'), 0);
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      document.querySelectorAll('.route-item').forEach(i => i.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      document.querySelectorAll('.route-item').forEach(i => i.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      const tgtIdx = parseInt(item.dataset.routeIdx);
+      if (dragSrcIdx !== null && dragSrcIdx !== tgtIdx) {
+        const newRoute = [...state.route];
+        const [moved] = newRoute.splice(dragSrcIdx, 1);
+        newRoute.splice(tgtIdx, 0, moved);
+        state.route = newRoute;
+        scheduleSave();
+        render();
+      }
+      dragSrcIdx = null;
+    });
+  });
+}
+
+// === IMPORT (paste from spreadsheet) ===
+function parsePaste(raw) {
+  const lines = raw.split(/\r?\n/);
+  const results = [], skipped = [];
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const sep = line.includes('\t') ? '\t' : ',';
+    const cols = line.split(sep).map(c => c.trim().replace(/^"|"$/g, '').trim());
+    const name = cols[0] || '';
+    if (!name || /^(name|client|customer)/i.test(name)) { skipped.push({ line, reason: 'header or no name' }); continue; }
+    const sqft = parseFloat((cols[2]||'').replace(/[$,]/g, '')) || 0;
+    const mat = parseFloat((cols[3]||'').replace(/[$,]/g, '')) || 0;
+    results.push({ id: genId(), name, address_note: cols[1] || '', default_sqft: sqft, default_material_cost: mat });
+  }
+  return { results, skipped };
+}
+
+// === EVENT DELEGATION ===
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-panel]');
+  if (t) {
+    state.active_tab = t.dataset.panel;
+    scheduleSave();
+    render();
+    return;
+  }
+
+  if (e.target.closest('#btn-new-job')) {
+    openJobDrawer(null);
+    return;
+  }
+
+  if (e.target.closest('#btn-save-job')) {
+    if (!validateDrawer()) return;
+    const job = getDrawerJob();
+    if (editingJobId) {
+      const idx = state.jobs.findIndex(j => j.id === editingJobId);
+      if (idx >= 0) state.jobs[idx] = job;
+    } else {
+      state.jobs.push(job);
+    }
+    hideDrawer();
+    scheduleSave();
+    render();
+    showToast(editingJobId ? 'Job updated.' : 'Job added.', 'success');
+    return;
+  }
+
+  if (e.target.closest('#btn-cancel-drawer') || e.target.closest('#btn-close-drawer')) {
+    hideDrawer();
+    return;
+  }
+
+  const editJob = e.target.closest('[data-edit-job]');
+  if (editJob) {
+    const job = state.jobs.find(j => j.id === editJob.dataset.editJob);
+    if (job) openJobDrawer(job);
+    return;
+  }
+
+  const delJob = e.target.closest('[data-delete-job]');
+  if (delJob) {
+    state.jobs = state.jobs.filter(j => j.id !== delJob.dataset.deleteJob);
+    state.route = state.route.filter(id => id !== delJob.dataset.deleteJob);
+    scheduleSave();
+    render();
+    showToast('Job removed.', '');
+    return;
+  }
+
+  const addRoute = e.target.closest('[data-add-route]');
+  if (addRoute) {
+    const id = addRoute.dataset.addRoute;
+    if (!state.route.includes(id)) {
+      state.route.push(id);
+      scheduleSave();
+      render();
+      showToast('Added to route.', 'success');
+    }
+    return;
+  }
+
+  const removeRoute = e.target.closest('[data-remove-route]');
+  if (removeRoute) {
+    state.route = state.route.filter(id => id !== removeRoute.dataset.removeRoute);
+    scheduleSave();
+    render();
+    return;
+  }
+
+  const expandBtn = e.target.closest('[data-expand]');
+  if (expandBtn) {
+    const id = expandBtn.dataset.expand;
+    if (state.expanded_jobs.includes(id)) {
+      state.expanded_jobs = state.expanded_jobs.filter(x => x !== id);
+    } else {
+      state.expanded_jobs.push(id);
+    }
+    // Toggle inline without full re-render
+    const bd = document.getElementById('breakdown-' + id);
+    if (bd) bd.classList.toggle('open', state.expanded_jobs.includes(id));
+    scheduleSave();
+    return;
+  }
+
+  // Client actions
+  if (e.target.closest('#btn-new-client')) { openClientDrawer(null); return; }
+  if (e.target.closest('#btn-cancel-client') || e.target.closest('#btn-close-client-drawer')) { hideClientDrawer(); return; }
+
+  if (e.target.closest('#btn-save-client')) {
+    const name = document.getElementById('dc-name')?.value.trim();
+    if (!name) {
+      document.getElementById('err-dc-name').style.display = '';
+      document.getElementById('dc-name')?.classList.add('error');
+      return;
+    }
+    const client = {
+      id: editingClientId || genId(),
+      name,
+      address_note: document.getElementById('dc-address')?.value.trim() || '',
+      default_sqft: Number(document.getElementById('dc-sqft')?.value) || 0,
+      default_material_cost: Number(document.getElementById('dc-mat')?.value) || 0
+    };
+    if (editingClientId) {
+      const idx = state.clients.findIndex(c => c.id === editingClientId);
+      if (idx >= 0) state.clients[idx] = client;
+    } else {
+      state.clients.push(client);
+    }
+    hideClientDrawer();
+    scheduleSave();
+    render();
+    showToast(editingClientId ? 'Client updated.' : 'Client added.', 'success');
+    return;
+  }
+
+  const editClient = e.target.closest('[data-edit-client]');
+  if (editClient) {
+    const c = state.clients.find(x => x.id === editClient.dataset.editClient);
+    if (c) openClientDrawer(c);
+    return;
+  }
+
+  const delClient = e.target.closest('[data-delete-client]');
+  if (delClient) {
+    state.clients = state.clients.filter(c => c.id !== delClient.dataset.deleteClient);
+    scheduleSave();
+    render();
+    showToast('Client removed.', '');
+    return;
+  }
+
+  const useClient = e.target.closest('[data-use-client]');
+  if (useClient) {
+    const c = state.clients.find(x => x.id === useClient.dataset.useClient);
+    if (c) {
+      const s = state.settings;
+      openJobDrawer({
+        id: null,
+        name: c.name,
+        address_note: c.address_note,
+        mode: 'sqft',
+        area_sqft: c.default_sqft || 0,
+        duration_min: 60,
+        crew_size: 1,
+        wage_hr: s.wage_hr,
+        equip_rate_hr: s.equip_rate_hr,
+        material_cost: c.default_material_cost || 0,
+        job_price: '',
+        drive_min: 0,
+        service_type: 'mow'
+      });
+    }
+    return;
+  }
+
+  // Theme toggle
+  if (e.target.closest('#theme-toggle')) {
+    state.settings.dark_mode = !state.settings.dark_mode;
+    scheduleSave();
+    render();
+    return;
+  }
+
+  // Winter toggle
+  if (e.target.closest('#winter-toggle')) {
+    state.settings.winter_mode = !state.settings.winter_mode;
+    scheduleSave();
+    render();
+    return;
+  }
+
+  // Print
+  if (e.target.closest('#btn-print')) {
+    state.active_tab = 'panel-route';
+    render();
+    setTimeout(() => window.print(), 80);
+    return;
+  }
+
+  // Clear route
+  if (e.target.closest('#btn-clear-route')) {
+    if (confirm('Remove all jobs from today\'s route? Your saved jobs will not be deleted.')) {
+      state.route = [];
+      scheduleSave();
+      render();
+    }
+    return;
+  }
+
+  // Settings buttons
+  if (e.target.closest('#btn-export')) {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'lawncare-calc-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    showToast('Backup downloaded.', 'success');
+    return;
+  }
+
+  if (e.target.closest('#btn-import-json')) {
+    document.getElementById('file-import').click();
+    return;
+  }
+
+  if (e.target.closest('#btn-reset')) {
+    if (confirm('This will replace your current data with the example data. Your current jobs, clients, and route will be lost. Continue?')) {
+      state = defaultState();
+      persistState();
+      render();
+      showToast('Example data loaded.', 'success');
+    }
+    return;
+  }
+
+  if (e.target.closest('#btn-clear-all')) {
+    if (confirm('This will permanently delete ALL your saved jobs, clients, and route. This cannot be undone. Continue?')) {
+      state = defaultState();
+      state.jobs = [];
+      state.clients = [];
+      state.route = [];
+      persistState();
+      render();
+      showToast('All data cleared.', '');
+    }
+    return;
+  }
+
+  // Import CSV template
+  if (e.target.closest('#btn-csv-template')) {
+    const csv = 'Name,Address Note,Default Sqft,Default Material Cost\nOak Lane Residence,123 Oak Ln,6000,18.00\nPine Street Property,456 Pine St,3500,12.00\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'clients-template.csv';
+    a.click();
+    return;
+  }
+
+  // Import paste button
+  if (e.target.closest('#import-btn')) {
+    const raw = document.getElementById('import-paste')?.value || '';
+    if (!raw.trim()) { showToast('Paste rows first.', 'warn'); return; }
+    const { results, skipped } = parsePaste(raw);
+    if (!results.length) { showToast('No valid rows found to import.', 'warn'); return; }
+    if (!confirm(`Import ${results.length} client(s)? This will add them to your existing clients (no data will be deleted).`)) return;
+    // Dedupe by name
+    let added = 0;
+    for (const r of results) {
+      if (!state.clients.find(c => c.name.toLowerCase() === r.name.toLowerCase())) {
+        state.clients.push(r);
+        added++;
+      }
+    }
+    scheduleSave();
+    render();
+    const skipMsg = skipped.length ? ` (${skipped.length} skipped)` : '';
+    showToast(`Imported ${added} client(s).${skipMsg}`, 'success');
+    document.getElementById('import-paste').value = '';
+    document.getElementById('import-preview').style.display = 'none';
+    return;
+  }
+});
+
+// Paste preview
+document.addEventListener('input', e => {
+  if (e.target.id === 'import-paste') {
+    const raw = e.target.value;
+    if (!raw.trim()) { document.getElementById('import-preview').style.display = 'none'; return; }
+    const { results } = parsePaste(raw);
+    const prev = document.getElementById('import-preview');
+    prev.style.display = '';
+    prev.textContent = results.slice(0, 5).map(r => `${r.name} | ${r.address_note} | ${r.default_sqft} sqft | $${Number(r.default_material_cost).toFixed(2)}`).join('\n') + (results.length > 5 ? `\n... and ${results.length - 5} more` : '');
+  }
+
+  // Settings inputs
+  const settingsMap = {
+    'set-wage': 'wage_hr', 'set-equip': 'equip_rate_hr',
+    'set-productivity': 'productivity_sqft_hr', 'set-winter-mult': 'winter_multiplier',
+    'set-target-margin': 'target_margin_pct'
+  };
+  if (settingsMap[e.target.id]) {
+    const val = parseFloat(e.target.value);
+    if (!isNaN(val)) {
+      state.settings[settingsMap[e.target.id]] = val;
+      scheduleSave();
+      renderRoute();
+      if (document.getElementById('job-drawer')?.classList.contains('open')) {
+        calcDrawer();
+      }
+    }
+  }
+
+  if (e.target.id === 'set-theme') {
+    state.settings.dark_mode = e.target.checked;
+    scheduleSave();
+    render();
+  }
+});
+
+// Route date
+document.addEventListener('change', e => {
+  if (e.target.id === 'route-date') {
+    state.route_date = e.target.value;
+    scheduleSave();
+    const printDate = document.getElementById('print-date-line');
+    if (printDate) printDate.textContent = 'Date: ' + (state.route_date || '');
+  }
+  if (e.target.id === 'set-theme') {
+    state.settings.dark_mode = e.target.checked;
+    scheduleSave();
+    render();
+  }
+});
+
+// JSON file import
+document.getElementById('file-import').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      if (typeof parsed !== 'object' || parsed === null) throw new Error('not object');
+      if (!confirm('Import backup? This will replace ALL your current data (jobs, clients, route, settings). Continue?')) {
+        this.value = '';
+        return;
+      }
+      const def = defaultState();
+      const merged = { ...def, ...parsed, settings: { ...def.settings, ...(parsed.settings || {}) } };
+      if (!Array.isArray(merged.jobs)) merged.jobs = [];
+      if (!Array.isArray(merged.clients)) merged.clients = [];
+      if (!Array.isArray(merged.route)) merged.route = [];
+      state = merged;
+      persistState();
+      render();
+      showToast('Backup restored.', 'success');
+    } catch(e) {
+      showToast('Invalid JSON file. Could not import.', 'error');
+    }
+    this.value = '';
+  };
+  reader.readAsText(file);
+});
+
+// Respect prefers-color-scheme on first load (no saved preference)
+(function() {
+  const saved = localStorage.getItem(KEY);
+  if (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    state.settings.dark_mode = true;
+  }
+})();
+
+// === INITIAL RENDER ===
+render();
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Lawn Care Route &amp; Job Profit Calculator. It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4527315206?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($16) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

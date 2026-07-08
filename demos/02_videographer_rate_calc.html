@@ -1,0 +1,1936 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Videographer Day Rate &amp; Gear Cost Calculator</title>
+<style>
+/* === DESIGN TOKENS === */
+:root {
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+  --fs-xs: 13px; --fs-sm: 15px; --fs-md: 17px; --fs-lg: 20px;
+  --fs-xl: 26px; --fs-2xl: 34px;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.12);
+  /* light palette */
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-2: #f7fafc;
+  --border: #d8e2ec;
+  --border-focus: #6B9BD1;
+  --accent: #6B9BD1;
+  --accent-dark: #4a7ab5;
+  --accent-light: #e8f1fa;
+  --ink: #2B3A4A;
+  --ink-2: #4a6070;
+  --ink-3: #7a9ab0;
+  --success: #3a9e6a;
+  --success-bg: #e8f7ef;
+  --warn: #e07a2a;
+  --warn-bg: #fef3e8;
+  --error: #c0392b;
+  --error-bg: #fdecea;
+  --tag-draft: #7a9ab0;
+  --tag-sent: #6B9BD1;
+  --tag-accepted: #3a9e6a;
+  --tag-declined: #c0392b;
+  --donut-net: #6B9BD1;
+  --donut-overhead: #f4a261;
+  --donut-gear: #e76f51;
+  --donut-tax: #9b59b6;
+  --bar-body: #6B9BD1;
+  --bar-lens: #3a9e6a;
+  --bar-lighting: #f4a261;
+  --bar-audio: #e76f51;
+  --bar-other: #9b59b6;
+  --transition: 150ms ease;
+}
+[data-theme="dark"] {
+  --bg: #0f1923;
+  --surface: #1a2535;
+  --surface-2: #1e2d40;
+  --border: #2d4058;
+  --border-focus: #6B9BD1;
+  --accent: #6B9BD1;
+  --accent-dark: #8cb4dd;
+  --accent-light: #1e2d40;
+  --ink: #e8f1fa;
+  --ink-2: #9bbdd6;
+  --ink-3: #5a7a96;
+  --success: #4ec98a;
+  --success-bg: #0e2a1e;
+  --warn: #f0a04a;
+  --warn-bg: #2a1c0a;
+  --error: #e05a4a;
+  --error-bg: #2a100e;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.30);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.35);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.40);
+}
+
+/* === RESET & BASE === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: var(--fs-sm); }
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; font-size: var(--fs-sm); }
+a { color: var(--accent); }
+
+/* === LAYOUT === */
+.app-wrapper { max-width: 1100px; margin: 0 auto; padding: var(--sp-4); }
+
+/* === TOP BAR === */
+.top-bar {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--sp-4);
+  flex-wrap: wrap;
+}
+.top-bar h1 {
+  font-size: var(--fs-md); font-weight: 700; color: var(--ink);
+  flex: 1; min-width: 200px;
+  display: flex; align-items: center; gap: var(--sp-2);
+}
+.top-bar h1 svg { flex-shrink: 0; }
+.top-bar-actions { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+
+/* === BUTTONS === */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  padding: 8px 14px; border-radius: var(--radius-sm);
+  font-size: var(--fs-xs); font-weight: 600; border: none;
+  transition: all var(--transition); white-space: nowrap;
+  min-height: 36px;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+.btn-danger { background: var(--error-bg); color: var(--error); border: 1px solid transparent; }
+.btn-danger:hover { background: var(--error); color: #fff; }
+.btn-ghost { background: transparent; color: var(--ink-3); border: 1px solid var(--border); }
+.btn-ghost:hover { color: var(--ink); border-color: var(--ink-3); }
+.btn-sm { padding: 5px 10px; font-size: var(--fs-xs); min-height: 30px; }
+.btn-icon { padding: 8px; min-width: 36px; justify-content: center; }
+
+/* === TABS === */
+.tab-nav {
+  display: flex; gap: var(--sp-1);
+  background: var(--surface);
+  padding: var(--sp-2);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--sp-4);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-btn {
+  flex: 1; min-width: 130px; padding: 10px 16px;
+  background: transparent; border: none; border-radius: var(--radius-sm);
+  font-size: var(--fs-xs); font-weight: 600; color: var(--ink-2);
+  transition: all var(--transition); white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: var(--sp-2);
+  min-height: 44px;
+}
+.tab-btn:hover { background: var(--accent-light); color: var(--accent); }
+.tab-btn.active { background: var(--accent); color: #fff; box-shadow: var(--shadow-sm); }
+
+/* === PANELS === */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* === CARDS === */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-4);
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--sp-4); flex-wrap: wrap; gap: var(--sp-2);
+}
+.card-title { font-size: var(--fs-md); font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: var(--sp-2); }
+.section-divider { border: none; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
+
+/* === FORM ELEMENTS === */
+.form-group { display: flex; flex-direction: column; gap: var(--sp-1); margin-bottom: var(--sp-3); }
+.form-label { font-size: var(--fs-xs); font-weight: 600; color: var(--ink-2); }
+.form-input, .form-select, .form-textarea {
+  padding: 9px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface);
+  color: var(--ink); font-size: var(--fs-sm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  width: 100%;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none; border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(107,155,209,.15);
+}
+.form-input.error, .form-select.error { border-color: var(--error); }
+.form-textarea { resize: vertical; min-height: 80px; }
+.input-error {
+  font-size: var(--fs-xs); color: var(--error); margin-top: 2px;
+  display: flex; align-items: center; gap: 4px;
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--sp-3); }
+
+/* === TABLE === */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-md); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: var(--fs-xs); }
+thead tr { background: var(--surface-2); }
+th { padding: 10px 12px; text-align: left; font-weight: 700; color: var(--ink-2); font-size: var(--fs-xs); white-space: nowrap; border-bottom: 1px solid var(--border); }
+td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--accent-light); }
+.td-input { padding: 4px 6px; }
+.td-input .form-input, .td-input .form-select { padding: 6px 8px; font-size: var(--fs-xs); }
+.cell-cost { font-weight: 700; color: var(--accent); white-space: nowrap; }
+.cell-right { text-align: right; }
+
+/* === RESULTS / CALLOUTS === */
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-4); margin-bottom: var(--sp-4); }
+.result-card {
+  background: var(--accent-light); border: 2px solid var(--accent);
+  border-radius: var(--radius-lg); padding: var(--sp-4);
+  text-align: center; transition: all var(--transition);
+}
+.result-card.highlight { background: var(--accent); color: #fff; }
+.result-card.highlight .result-label, .result-card.highlight .result-half-label { color: rgba(255,255,255,.8); }
+.result-label { font-size: var(--fs-xs); font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: var(--sp-1); }
+.result-value {
+  font-size: var(--fs-2xl); font-weight: 800; color: var(--accent);
+  line-height: 1.1; margin-bottom: var(--sp-1);
+  transition: all 200ms ease;
+}
+.result-card.highlight .result-value { color: #fff; }
+.result-half { font-size: var(--fs-sm); color: var(--ink-2); }
+.result-half-label { font-size: var(--fs-xs); color: var(--ink-3); }
+.pulse { animation: pulse-anim 200ms ease; }
+@keyframes pulse-anim {
+  0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); }
+}
+.callout-box {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: var(--sp-4);
+  display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+}
+.callout-num { font-size: var(--fs-xl); font-weight: 800; color: var(--accent); }
+.callout-label { font-size: var(--fs-xs); color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+
+/* === DONUT / BAR CHART === */
+.chart-area { display: flex; gap: var(--sp-4); align-items: flex-start; flex-wrap: wrap; }
+.chart-svg-wrap { flex: 0 0 200px; }
+.chart-svg-wrap svg { width: 100%; height: auto; overflow: visible; }
+.chart-legend { flex: 1; min-width: 160px; }
+.legend-item { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); font-size: var(--fs-xs); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-label { color: var(--ink-2); flex: 1; }
+.legend-value { font-weight: 700; color: var(--ink); }
+.bar-chart-wrap svg { width: 100%; height: auto; overflow: visible; }
+
+/* === OVERHEAD ROWS === */
+.overhead-row { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2); flex-wrap: wrap; }
+.overhead-row .form-input { flex: 1; min-width: 120px; }
+.overhead-label-input { flex: 2; min-width: 160px; }
+
+/* === QUOTE SECTION === */
+.quote-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface-2); padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-sm); cursor: pointer;
+  border: 1px solid var(--border); margin-bottom: var(--sp-2);
+  font-weight: 700; font-size: var(--fs-sm); color: var(--ink);
+  transition: background var(--transition);
+}
+.quote-section-header:hover { background: var(--accent-light); }
+.quote-section-body { margin-bottom: var(--sp-4); }
+.quote-section-subtotal {
+  text-align: right; font-size: var(--fs-sm); font-weight: 700;
+  color: var(--accent); padding: var(--sp-2) var(--sp-3);
+}
+
+/* === SUMMARY BLOCK === */
+.summary-block {
+  background: var(--surface-2); border-radius: var(--radius-md);
+  padding: var(--sp-4); border: 1px solid var(--border);
+}
+.summary-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--sp-2) 0; border-bottom: 1px solid var(--border);
+  font-size: var(--fs-sm);
+}
+.summary-row:last-child { border-bottom: none; }
+.summary-row.total { font-weight: 800; font-size: var(--fs-lg); color: var(--accent); }
+.summary-row label { font-size: var(--fs-xs); color: var(--ink-2); margin-right: var(--sp-2); }
+
+/* === STATUS BADGE === */
+.status-badge {
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+}
+.status-draft { background: #e8eef4; color: var(--tag-draft); }
+.status-sent { background: var(--accent-light); color: var(--tag-sent); }
+.status-accepted { background: var(--success-bg); color: var(--tag-accepted); }
+.status-declined { background: var(--error-bg); color: var(--tag-declined); }
+
+/* === PRESET BAR === */
+.preset-bar {
+  display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--surface-2); border-radius: var(--radius-md);
+  border: 1px solid var(--border); margin-bottom: var(--sp-4);
+  font-size: var(--fs-xs); color: var(--ink-2);
+}
+.preset-bar select { font-size: var(--fs-xs); padding: 5px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface); color: var(--ink); }
+
+/* === SAVE INDICATOR === */
+.save-indicator {
+  font-size: var(--fs-xs); color: var(--ink-3);
+  display: flex; align-items: center; gap: 4px;
+  transition: color var(--transition);
+}
+.save-indicator.saved { color: var(--success); }
+.save-indicator.saving { color: var(--warn); }
+
+/* === TOAST === */
+.toast-container { position: fixed; bottom: var(--sp-4); right: var(--sp-4); z-index: 9999; display: flex; flex-direction: column; gap: var(--sp-2); pointer-events: none; }
+.toast {
+  padding: var(--sp-3) var(--sp-4); border-radius: var(--radius-md);
+  background: var(--ink); color: #fff; font-size: var(--fs-xs);
+  box-shadow: var(--shadow-lg); max-width: 320px;
+  animation: toast-in 200ms ease forwards;
+  pointer-events: auto;
+}
+.toast.error { background: var(--error); }
+.toast.success { background: var(--success); }
+.toast.warn { background: var(--warn); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* === THEME TOGGLE === */
+#theme-toggle {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 999px; padding: 6px 12px; font-size: var(--fs-xs);
+  color: var(--ink-2); display: flex; align-items: center; gap: var(--sp-1);
+  transition: all var(--transition); min-height: 36px;
+}
+#theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+/* === MODAL === */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.5); z-index: 1000;
+  align-items: center; justify-content: center; padding: var(--sp-4);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius-lg);
+  padding: var(--sp-6); max-width: 560px; width: 100%;
+  box-shadow: var(--shadow-lg); max-height: 90vh; overflow-y: auto;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--sp-4); }
+.modal-title { font-size: var(--fs-md); font-weight: 700; }
+.modal-close { background: none; border: none; font-size: 20px; color: var(--ink-3); cursor: pointer; padding: 4px; }
+
+/* === NOTE BOX === */
+.note-box {
+  background: var(--warn-bg); border: 1px solid var(--warn);
+  border-radius: var(--radius-sm); padding: var(--sp-3);
+  font-size: var(--fs-xs); color: var(--warn);
+}
+
+/* === PRINT === */
+@media print {
+  .no-print, .top-bar, .tab-nav, .preset-bar, .toast-container, .modal-overlay,
+  .btn, button, .add-row-btn, .remove-row-btn, .section-actions, .tab-btn,
+  #theme-toggle, .save-indicator, .chart-area { display: none !important; }
+  [data-print-hidden] { display: none !important; }
+  body { background: #fff !important; color: #000 !important; }
+  .panel { display: block !important; }
+  .panel:not(#panel-quote) { display: none !important; }
+  #panel-quote { display: block !important; }
+  .card { box-shadow: none !important; border: 1px solid #ccc; break-inside: avoid; }
+  .app-wrapper { max-width: 100%; padding: 0; }
+  .print-header { display: block !important; }
+  .summary-block { border: 1px solid #ccc; }
+  td, th { border: 1px solid #ccc !important; }
+  .quote-section-body { display: block !important; }
+}
+.print-header { display: none; font-size: var(--fs-lg); font-weight: 800; margin-bottom: var(--sp-4); }
+.print-footer { display: none; font-size: var(--fs-xs); color: var(--ink-3); margin-top: var(--sp-4); text-align: center; border-top: 1px solid var(--border); padding-top: var(--sp-3); }
+@media print { .print-footer { display: block !important; } }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .dayrate-grid { grid-template-columns: 1fr !important; }
+  .result-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .form-row, .form-row-3 { grid-template-columns: 1fr; }
+  .result-grid { grid-template-columns: 1fr; }
+  .chart-area { flex-direction: column; }
+  .chart-svg-wrap { flex: none; width: 200px; margin: 0 auto; }
+  .top-bar h1 { font-size: var(--fs-sm); }
+  .card { padding: var(--sp-4); }
+}
+@media (max-width: 390px) {
+  .btn { min-height: 44px; padding: 10px 14px; }
+  .form-input, .form-select, .form-textarea { min-height: 44px; font-size: var(--fs-sm); }
+  .tab-btn { min-height: 44px; font-size: var(--fs-sm); }
+  td, th { min-height: 44px; }
+  .td-input .form-input, .td-input .form-select { min-height: 44px; }
+}
+</style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- TOP BAR -->
+  <header class="top-bar" role="banner">
+    <h1>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 10l-4 4l6 6l4-14l-14 4l4 2l0 0z"/><circle cx="8" cy="8" r="3"/></svg>
+      Videographer Day Rate &amp; Gear Cost Calculator
+    </h1>
+    <div class="top-bar-actions">
+      <span class="save-indicator" id="save-indicator" aria-live="polite">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Saved
+      </span>
+      <button class="btn btn-ghost btn-sm" id="btn-export" title="Export JSON backup">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+      <button class="btn btn-ghost btn-sm" id="btn-import-open" title="Import JSON backup">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3" transform="rotate(180 12 9)"/></svg>
+        Import
+      </button>
+      <button id="theme-toggle" aria-label="Toggle dark/light theme">
+        <svg id="theme-icon-light" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <svg id="theme-icon-dark" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <span id="theme-label">Light</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PRESET BAR -->
+  <div class="preset-bar no-print">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+    <span>Presets:</span>
+    <select id="preset-select" aria-label="Load a saved preset">
+      <option value="">-- select preset --</option>
+    </select>
+    <button class="btn btn-secondary btn-sm" id="btn-preset-load">Load</button>
+    <button class="btn btn-secondary btn-sm" id="btn-preset-save">Save current as...</button>
+    <button class="btn btn-danger btn-sm" id="btn-preset-delete">Delete</button>
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-secondary btn-sm" id="btn-print-quote" title="Print quote">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6,9 6,2 18,2 18,9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print Quote
+    </button>
+    <button class="btn btn-ghost btn-sm" id="btn-reset" title="Reset to worked example">Reset example</button>
+  </div>
+
+  <!-- TABS -->
+  <nav class="tab-nav" role="tablist" aria-label="Calculator sections">
+    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-gear" id="tab-gear" data-tab="gear">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M4.93 4.93l1.41 1.41M18.66 18.66l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+      Gear Amortization
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-dayrate" id="tab-dayrate" data-tab="dayrate">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      Day Rate Builder
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-quote" id="tab-quote" data-tab="quote">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>
+      Project Quote
+    </button>
+  </nav>
+
+  <!-- PANEL: GEAR AMORTIZATION -->
+  <div class="panel active" id="panel-gear" role="tabpanel" aria-labelledby="tab-gear">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M4.93 4.93l1.41 1.41M18.66 18.66l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+          Gear List &amp; Amortization
+        </div>
+        <button class="btn btn-primary btn-sm" id="btn-add-gear" aria-label="Add gear item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </button>
+      </div>
+      <p style="font-size:var(--fs-xs);color:var(--ink-3);margin-bottom:var(--sp-3);">Enter each piece of gear you own. The per-shoot cost shows how much each item "costs" you on every job, based on how many shoots you expect it to last.</p>
+      <div class="table-wrap">
+        <table id="gear-table" aria-label="Gear amortization table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>Purchase Price</th>
+              <th>Lifespan (shoots)</th>
+              <th>Per-Shoot Cost</th>
+              <th aria-label="Actions"></th>
+            </tr>
+          </thead>
+          <tbody id="gear-tbody"></tbody>
+          <tfoot>
+            <tr>
+              <td colspan="4" style="text-align:right;font-weight:700;padding:10px 12px;color:var(--ink-2);font-size:var(--fs-xs);">Total gear cost per shoot:</td>
+              <td class="cell-cost" style="padding:10px 12px;" id="gear-total-per-shoot">$0.00</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" style="margin-bottom:var(--sp-4);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Cost by Category
+      </div>
+      <div id="gear-bar-chart-wrap" class="bar-chart-wrap">
+        <svg id="chart-gear-bar" width="100%" height="120" viewBox="0 0 600 120" aria-label="Gear cost by category bar chart"></svg>
+      </div>
+      <div id="gear-legend" class="chart-legend" style="margin-top:var(--sp-3);display:flex;flex-wrap:wrap;gap:var(--sp-3);"></div>
+    </div>
+  </div>
+
+  <!-- PANEL: DAY RATE BUILDER -->
+  <div class="panel" id="panel-dayrate" role="tabpanel" aria-labelledby="tab-dayrate">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);" class="dayrate-grid">
+      <!-- Inputs left column -->
+      <div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:var(--sp-4);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Income &amp; Days
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="target-net">Target annual NET income ($)</label>
+            <input class="form-input" type="number" id="target-net" min="0" step="1000" placeholder="60000" aria-describedby="target-net-err">
+            <span class="input-error" id="target-net-err" role="alert"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="billable-days">Billable shoot days per year</label>
+            <input class="form-input" type="number" id="billable-days" min="1" max="365" step="1" placeholder="80" aria-describedby="billable-days-err">
+            <span class="input-error" id="billable-days-err" role="alert"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="tax-pct">Tax set-aside %</label>
+            <div style="display:flex;align-items:center;gap:var(--sp-2);">
+              <input class="form-input" type="range" id="tax-slider" min="0" max="60" step="1" style="flex:1" aria-label="Tax set-aside percentage slider">
+              <input class="form-input" type="number" id="tax-pct" min="0" max="99" step="1" style="width:80px" placeholder="30" aria-describedby="tax-pct-err">
+              <span>%</span>
+            </div>
+            <span class="input-error" id="tax-pct-err" role="alert"></span>
+            <span id="tax-zero-note" class="note-box" style="display:none;margin-top:4px;">No tax set-aside included.</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              Overhead Line Items
+            </div>
+            <button class="btn btn-primary btn-sm" id="btn-add-overhead">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add
+            </button>
+          </div>
+          <p style="font-size:var(--fs-xs);color:var(--ink-3);margin-bottom:var(--sp-3);">Annual costs (insurance, subscriptions, storage, etc.) that must be covered before you net anything.</p>
+          <div id="overhead-rows"></div>
+          <div style="display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--ink-2);padding-top:var(--sp-2);border-top:1px solid var(--border);margin-top:var(--sp-2);">
+            <span>Total annual overhead:</span>
+            <strong id="overhead-total">$0.00</strong>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:var(--sp-3);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M4.93 4.93l1.41 1.41M18.66 18.66l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
+            Gear Recovery (from Gear tab)
+          </div>
+          <div class="callout-box">
+            <div>
+              <div class="callout-num" id="annual-gear-recovery">$0.00</div>
+              <div class="callout-label">Annual gear recovery</div>
+            </div>
+            <div style="font-size:var(--fs-xs);color:var(--ink-3);">Based on <span id="gear-per-shoot-ref">$0.00</span>/shoot x <span id="billable-days-ref">0</span> days</div>
+          </div>
+        </div>
+      </div>
+      <!-- Results right column -->
+      <div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:var(--sp-4);">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Your Day Rates
+          </div>
+          <div id="no-rate-note" class="note-box" style="display:none;margin-bottom:var(--sp-3);">Add income target or overhead to see a rate.</div>
+          <div id="no-days-note" class="note-box" style="display:none;margin-bottom:var(--sp-3);">Enter billable days &gt; 0.</div>
+          <div class="result-grid">
+            <div class="result-card">
+              <div class="result-label">Minimum Day Rate</div>
+              <div class="result-value" id="min-day-rate">$0.00</div>
+              <div class="result-half"><span id="min-half-rate">$0.00</span></div>
+              <div class="result-half-label">half-day (60%)</div>
+            </div>
+            <div class="result-card highlight">
+              <div class="result-label">Recommended Day Rate</div>
+              <div class="result-value" id="rec-day-rate">$0.00</div>
+              <div class="result-half"><span id="rec-half-rate">$0.00</span></div>
+              <div class="result-half-label">half-day (60%)</div>
+            </div>
+          </div>
+          <div style="font-size:var(--fs-xs);color:var(--ink-3);margin-bottom:var(--sp-4);">Recommended = minimum + 20% sustainability buffer. Half-day is 60% (setup and travel are fixed costs).</div>
+          <hr class="section-divider">
+          <div class="card-title" style="margin-bottom:var(--sp-3);">Gross Income Breakdown</div>
+          <div style="font-size:var(--fs-xs);color:var(--ink-2);margin-bottom:var(--sp-3);">
+            You need <strong id="gross-needed-display">$0.00</strong> gross per year to hit your target net.
+          </div>
+          <div class="chart-area">
+            <div class="chart-svg-wrap">
+              <svg id="chart-donut" width="200" height="200" viewBox="0 0 200 200" aria-label="Gross income breakdown donut chart"></svg>
+            </div>
+            <div class="chart-legend" id="donut-legend"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: PROJECT QUOTE -->
+  <div class="panel" id="panel-quote" role="tabpanel" aria-labelledby="tab-quote">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+          Quote Details
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+          <label class="form-label" for="quote-status" style="margin:0">Status:</label>
+          <select class="form-select" id="quote-status" style="width:auto" aria-label="Quote status">
+            <option value="draft">Draft</option>
+            <option value="sent">Sent</option>
+            <option value="accepted">Accepted</option>
+            <option value="declined">Declined</option>
+          </select>
+          <span class="status-badge" id="status-badge">Draft</span>
+        </div>
+      </div>
+      <div class="print-header" id="print-header-content"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="client-name">Client Name</label>
+          <input class="form-input" type="text" id="client-name" placeholder="Acme Marketing Co." maxlength="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="project-name">Project Name</label>
+          <input class="form-input" type="text" id="project-name" placeholder="Brand Story Video Series" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quote-number">Quote Number</label>
+          <input class="form-input" type="text" id="quote-number" placeholder="QT-2024-001" maxlength="40">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quote-date">Quote Date</label>
+          <input class="form-input" type="date" id="quote-date">
+        </div>
+      </div>
+    </div>
+
+    <!-- Pre-Production Section -->
+    <div class="card" id="quote-section-pre">
+      <div class="quote-section-header" id="qsec-header-pre" role="button" aria-expanded="true" tabindex="0">
+        <span>Pre-Production</span>
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+          <span id="subtotal-pre" class="cell-cost">$0.00</span>
+          <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18,15 12,9 6,15"/></svg>
+        </div>
+      </div>
+      <div class="quote-section-body" id="qsec-body-pre">
+        <div class="table-wrap">
+          <table aria-label="Pre-Production line items">
+            <thead><tr><th>Description</th><th>Qty</th><th>Unit Rate ($)</th><th>Total</th><th class="no-print"></th></tr></thead>
+            <tbody id="tbody-pre"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm no-print" style="margin-top:var(--sp-2);" data-section="pre" id="btn-add-pre">+ Add line item</button>
+      </div>
+    </div>
+
+    <!-- Production Section -->
+    <div class="card" id="quote-section-prod">
+      <div class="quote-section-header" id="qsec-header-prod" role="button" aria-expanded="true" tabindex="0">
+        <span>Production</span>
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+          <span id="subtotal-prod" class="cell-cost">$0.00</span>
+          <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18,15 12,9 6,15"/></svg>
+        </div>
+      </div>
+      <div class="quote-section-body" id="qsec-body-prod">
+        <div class="table-wrap">
+          <table aria-label="Production line items">
+            <thead><tr><th>Description</th><th>Qty</th><th>Unit Rate ($)</th><th>Total</th><th class="no-print"></th></tr></thead>
+            <tbody id="tbody-prod"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm no-print" style="margin-top:var(--sp-2);" data-section="prod" id="btn-add-prod">+ Add line item</button>
+      </div>
+    </div>
+
+    <!-- Post-Production Section -->
+    <div class="card" id="quote-section-post">
+      <div class="quote-section-header" id="qsec-header-post" role="button" aria-expanded="true" tabindex="0">
+        <span>Post-Production</span>
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+          <span id="subtotal-post" class="cell-cost">$0.00</span>
+          <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18,15 12,9 6,15"/></svg>
+        </div>
+      </div>
+      <div class="quote-section-body" id="qsec-body-post">
+        <div class="table-wrap">
+          <table aria-label="Post-Production line items">
+            <thead><tr><th>Description</th><th>Qty</th><th>Unit Rate ($)</th><th>Total</th><th class="no-print"></th></tr></thead>
+            <tbody id="tbody-post"></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary btn-sm no-print" style="margin-top:var(--sp-2);" data-section="post" id="btn-add-post">+ Add line item</button>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card">
+      <h2 class="card-title" style="margin-bottom:var(--sp-4);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Quote Summary
+      </h2>
+      <div class="summary-block">
+        <div class="summary-row"><span>Pre-Production</span><span id="sum-pre">$0.00</span></div>
+        <div class="summary-row"><span>Production</span><span id="sum-prod">$0.00</span></div>
+        <div class="summary-row"><span>Post-Production</span><span id="sum-post">$0.00</span></div>
+        <div class="summary-row"><strong>Subtotal</strong><strong id="sum-subtotal">$0.00</strong></div>
+        <div class="summary-row no-print">
+          <span>Discount:
+            <select id="discount-type" class="form-select" style="display:inline-block;width:auto;padding:4px 8px;font-size:var(--fs-xs);margin:0 4px;" aria-label="Discount type">
+              <option value="pct">%</option>
+              <option value="flat">$</option>
+            </select>
+            <input class="form-input" type="number" id="discount-value" min="0" step="0.01" style="display:inline-block;width:80px;padding:4px 8px;font-size:var(--fs-xs);" placeholder="0" aria-label="Discount value">
+          </span>
+          <span id="discount-amount-display">-$0.00</span>
+        </div>
+        <div class="summary-row print-only-discount" style="display:none;"><span id="print-discount-label">Discount</span><span id="print-discount-val">-$0.00</span></div>
+        <div class="summary-row"><span>After discount</span><span id="sum-after-discount">$0.00</span></div>
+        <div class="summary-row no-print">
+          <span>Quote tax:
+            <input class="form-input" type="number" id="quote-tax-pct" min="0" max="99" step="0.1" style="display:inline-block;width:80px;padding:4px 8px;font-size:var(--fs-xs);margin-left:4px;" placeholder="0" aria-label="Quote tax percentage">
+            %
+          </span>
+          <span id="tax-amount-display">+$0.00</span>
+        </div>
+        <div class="summary-row print-only-tax" style="display:none;"><span id="print-tax-label">Tax</span><span id="print-tax-val">+$0.00</span></div>
+        <div class="summary-row total"><strong>Grand Total</strong><strong id="quote-grand-total">$0.00</strong></div>
+      </div>
+      <div class="form-row" style="margin-top:var(--sp-4);">
+        <div class="form-group">
+          <label class="form-label" for="payment-terms">Payment Terms</label>
+          <textarea class="form-textarea" id="payment-terms" rows="3" placeholder="50% deposit on booking, 50% on delivery. Payment due within 14 days of invoice."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="scope-notes">Scope &amp; Notes</label>
+          <textarea class="form-textarea" id="scope-notes" rows="3" placeholder="This quote includes one full shoot day, rough cut review, and final delivery in 1080p H.264."></textarea>
+        </div>
+      </div>
+      <div class="print-footer">Videographer Day Rate &amp; Gear Cost Calculator - jonsDesignerShop | For professional use only - verify rates with a qualified accountant.</div>
+    </div>
+  </div>
+
+  <!-- Import modal -->
+  <div class="modal-overlay" id="modal-import" role="dialog" aria-modal="true" aria-labelledby="modal-import-title">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-import-title">Import JSON Backup</div>
+        <button class="modal-close" id="modal-import-close" aria-label="Close">&times;</button>
+      </div>
+      <p style="font-size:var(--fs-xs);color:var(--ink-2);margin-bottom:var(--sp-3);">Select a .json file previously exported from this calculator. All current data will be replaced after confirmation.</p>
+      <input type="file" id="import-file-input" accept=".json" style="margin-bottom:var(--sp-3);" aria-label="Select JSON file to import">
+      <div id="import-error" class="input-error" role="alert" style="margin-bottom:var(--sp-3);"></div>
+      <div style="display:flex;gap:var(--sp-2);justify-content:flex-end;">
+        <button class="btn btn-secondary" id="btn-import-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-import-confirm">Import</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Preset save modal -->
+  <div class="modal-overlay" id="modal-preset" role="dialog" aria-modal="true" aria-labelledby="modal-preset-title">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-preset-title">Save Preset</div>
+        <button class="modal-close" id="modal-preset-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="preset-name-input">Preset name</label>
+        <input class="form-input" type="text" id="preset-name-input" placeholder="e.g. Wedding Season 2024" maxlength="60">
+      </div>
+      <div style="display:flex;gap:var(--sp-2);justify-content:flex-end;margin-top:var(--sp-3);">
+        <button class="btn btn-secondary" id="btn-preset-modal-cancel">Cancel</button>
+        <button class="btn btn-primary" id="btn-preset-modal-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .app-wrapper -->
+
+<div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+// ============================================================
+// STATE SCHEMA + DEFAULTS
+// ============================================================
+const STORAGE_KEY = 'videographer-rate-calc-v1:state';
+
+function defaultState() {
+  return {
+    theme: 'light',
+    activeTab: 'gear',
+    gear: [
+      { id: 'g1', name: 'Canon EOS R5C', category: 'Body', price: 3800, lifespan: 100 },
+      { id: 'g2', name: 'Sigma 24-70mm f/2.8', category: 'Lens', price: 1100, lifespan: 150 },
+      { id: 'g3', name: 'Rode Wireless GO II', category: 'Audio', price: 299, lifespan: 200 },
+      { id: 'g4', name: 'Aputure 120D II', category: 'Lighting', price: 745, lifespan: 80 },
+      { id: 'g5', name: 'DJI Ronin RS3', category: 'Other', price: 580, lifespan: 120 },
+    ],
+    targetNet: 60000,
+    billableDays: 80,
+    taxPct: 30,
+    overhead: [
+      { id: 'o1', label: 'Liability insurance', annual: 2400 },
+      { id: 'o2', label: 'Software subscriptions', annual: 600 },
+      { id: 'o3', label: 'Cloud storage', annual: 600 },
+      { id: 'o4', label: 'Miscellaneous', annual: 1200 },
+    ],
+    quote: {
+      clientName: 'Acme Marketing Co.',
+      projectName: 'Brand Story Video Series',
+      quoteNumber: 'QT-2024-001',
+      quoteDate: new Date().toISOString().slice(0, 10),
+      status: 'draft',
+      discountType: 'pct',
+      discountValue: 10,
+      quoteTaxPct: 0,
+      paymentTerms: '50% deposit on booking, 50% on final delivery. Payment due within 14 days of invoice.',
+      scopeNotes: 'This quote covers one full shoot day, rough cut review, and final delivery in 1080p H.264 within 3 weeks.',
+      pre: [
+        { id: 'p1', desc: 'Project planning & brief review', qty: 2, rate: 150 },
+        { id: 'p2', desc: 'Storyboard & shot list', qty: 1, rate: 200 },
+        { id: 'p3', desc: 'Location scout', qty: 1, rate: 150 },
+      ],
+      prod: [
+        { id: 'pr1', desc: 'Shoot day (full)', qty: 1, rate: 1224.04 },
+        { id: 'pr2', desc: 'B-roll operator', qty: 1, rate: 400 },
+        { id: 'pr3', desc: 'Travel & mileage', qty: 1, rate: 150 },
+        { id: 'pr4', desc: 'Equipment rental (drone)', qty: 1, rate: 250 },
+      ],
+      post: [
+        { id: 'po1', desc: 'Video editing', qty: 10, rate: 85 },
+        { id: 'po2', desc: 'Color grading', qty: 3, rate: 95 },
+        { id: 'po3', desc: 'Audio mixing & music sync', qty: 2, rate: 95 },
+        { id: 'po4', desc: 'Delivery & file prep', qty: 1, rate: 75 },
+      ],
+    },
+    collapsedSections: {},
+    presets: {},
+  };
+}
+
+// ============================================================
+// STATE LOAD / SAVE
+// ============================================================
+let state = loadState();
+let saveTimer = null;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    const def = defaultState();
+    // Merge: new version fields added to defaults
+    const merged = {
+      ...def,
+      ...parsed,
+      quote: { ...def.quote, ...(parsed.quote || {}) },
+      presets: { ...(parsed.presets || {}) },
+      collapsedSections: { ...(parsed.collapsedSections || {}) },
+    };
+    // Shape validation for arrays
+    if (!Array.isArray(merged.gear)) merged.gear = def.gear;
+    if (!Array.isArray(merged.overhead)) merged.overhead = def.overhead;
+    if (!Array.isArray(merged.quote.pre)) merged.quote.pre = def.quote.pre;
+    if (!Array.isArray(merged.quote.prod)) merged.quote.prod = def.quote.prod;
+    if (!Array.isArray(merged.quote.post)) merged.quote.post = def.quote.post;
+    return merged;
+  } catch (e) {
+    try { localStorage.setItem(STORAGE_KEY + '__corrupt-backup', localStorage.getItem(STORAGE_KEY)); } catch (_) {}
+    showToast('Could not read saved data - your backup is stored in ' + STORAGE_KEY + '__corrupt-backup. Starting fresh.', 'warn', 6000);
+    return defaultState();
+  }
+}
+
+function saveState() {
+  setSaveIndicator('saving');
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    setSaveIndicator('saved');
+  } catch (e) {
+    showToast('Could not save: storage may be full or disabled. Your data was not saved.', 'error');
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 300);
+}
+
+function flushSave() {
+  clearTimeout(saveTimer);
+  saveState();
+}
+
+window.addEventListener('pagehide', flushSave);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSave(); });
+
+// Two-tab safety
+window.addEventListener('storage', e => {
+  if (e.key === STORAGE_KEY) {
+    showToast('Your data was changed in another tab. Reload to see the latest and avoid overwriting it.', 'warn', 8000);
+  }
+});
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escAttr(str) { return esc(str); }
+
+function fmt(n, decimals = 2) {
+  if (!isFinite(n) || isNaN(n)) return '$0.00';
+  return '$' + Math.abs(n).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function fmtN(n, decimals = 2) {
+  if (!isFinite(n) || isNaN(n)) return '0.00';
+  return n.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function safeNum(v, fallback = 0) {
+  const n = parseFloat(v);
+  return isFinite(n) ? n : fallback;
+}
+
+function uid() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function setSaveIndicator(s) {
+  const el = document.getElementById('save-indicator');
+  if (!el) return;
+  el.className = 'save-indicator ' + s;
+  el.querySelector('span') && (el.querySelector('span').textContent = s === 'saving' ? 'Saving...' : 'Saved');
+}
+
+function showToast(msg, type = '', duration = 4000) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ' ' + type : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 300ms'; setTimeout(() => t.remove(), 320); }, duration);
+}
+
+function pulseElement(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('pulse');
+  void el.offsetWidth;
+  el.classList.add('pulse');
+}
+
+// ============================================================
+// CALCULATIONS
+// ============================================================
+function calcGear() {
+  const items = Array.isArray(state.gear) ? state.gear : [];
+  return items.map(g => {
+    const price = Math.max(0, safeNum(g.price, 0));
+    const life = Math.max(1, safeNum(g.lifespan, 1));
+    return { ...g, costPerShoot: price / life };
+  });
+}
+
+function totalGearPerShoot() {
+  return calcGear().reduce((s, g) => s + g.costPerShoot, 0);
+}
+
+function totalOverhead() {
+  return (Array.isArray(state.overhead) ? state.overhead : [])
+    .reduce((s, o) => s + Math.max(0, safeNum(o.annual, 0)), 0);
+}
+
+function calcDayRate() {
+  const targetNet = Math.max(0, safeNum(state.targetNet, 0));
+  const days = Math.max(0, safeNum(state.billableDays, 0));
+  const rawTax = Math.max(0, safeNum(state.taxPct, 0));
+  const taxPct = rawTax < 1 ? Math.min(0.99, rawTax) : Math.min(0.99, rawTax / 100);
+  const overhead = totalOverhead();
+  const gearPerShoot = totalGearPerShoot();
+  const annualGearRecovery = gearPerShoot * days;
+  const denom = 1 - taxPct;
+  const grossNeeded = denom > 0 ? (targetNet + overhead + annualGearRecovery) / denom : 0;
+  const minDay = days > 0 ? grossNeeded / days : 0;
+  const minHalf = minDay * 0.60;
+  const recDay = minDay * 1.20;
+  const recHalf = recDay * 0.60;
+  return { targetNet, overhead, annualGearRecovery, grossNeeded, minDay, minHalf, recDay, recHalf, days, taxPct };
+}
+
+function calcQuote() {
+  const q = state.quote;
+  const sumSection = (rows) => (Array.isArray(rows) ? rows : []).reduce((s, r) => {
+    const qty = Math.max(0, safeNum(r.qty, 0));
+    const rate = Math.max(0, safeNum(r.rate, 0));
+    return s + qty * rate;
+  }, 0);
+  const preSub = sumSection(q.pre);
+  const prodSub = sumSection(q.prod);
+  const postSub = sumSection(q.post);
+  const subtotal = preSub + prodSub + postSub;
+  let discAmt = 0;
+  if (q.discountType === 'pct') {
+    const rawDisc = Math.min(100, Math.max(0, safeNum(q.discountValue, 0)));
+    const discFactor = rawDisc < 1 ? rawDisc : rawDisc / 100;
+    discAmt = subtotal * discFactor;
+  } else {
+    discAmt = Math.max(0, safeNum(q.discountValue, 0));
+  }
+  discAmt = Math.min(discAmt, subtotal);
+  const afterDiscount = subtotal - discAmt;
+  const rawQTax = Math.max(0, safeNum(q.quoteTaxPct, 0));
+  const qTaxFactor = rawQTax < 1 ? rawQTax : rawQTax / 100;
+  const taxAmt = afterDiscount * qTaxFactor;
+  const total = afterDiscount + taxAmt;
+  return { preSub, prodSub, postSub, subtotal, discAmt, afterDiscount, taxAmt, total };
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  renderTheme();
+  renderGear();
+  renderDayRate();
+  renderQuote();
+  renderPresets();
+}
+
+function renderTheme() {
+  document.documentElement.setAttribute('data-theme', state.theme);
+  const icon_l = document.getElementById('theme-icon-light');
+  const icon_d = document.getElementById('theme-icon-dark');
+  const label = document.getElementById('theme-label');
+  if (!icon_l || !icon_d || !label) return;
+  if (state.theme === 'dark') {
+    icon_l.style.display = 'none'; icon_d.style.display = 'inline'; label.textContent = 'Dark';
+  } else {
+    icon_l.style.display = 'inline'; icon_d.style.display = 'none'; label.textContent = 'Light';
+  }
+}
+
+function renderTab() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    const active = btn.dataset.tab === state.activeTab;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.panel').forEach(panel => {
+    panel.classList.toggle('active', panel.id === 'panel-' + state.activeTab);
+  });
+}
+
+function renderGear() {
+  const tbody = document.getElementById('gear-tbody');
+  if (!tbody) return;
+  const items = calcGear();
+  const categories = ['Body', 'Lens', 'Lighting', 'Audio', 'Other'];
+
+  tbody.innerHTML = items.map(g => {
+    const lifeErr = safeNum(g.lifespan, 0) <= 0 ? 'Enter expected shoots &gt; 0' : '';
+    const priceErr = safeNum(g.price, 0) < 0 ? 'Must be 0 or more' : '';
+    return `<tr data-id="${escAttr(g.id)}">
+      <td class="td-input"><input class="form-input${priceErr ? ' error' : ''}" type="text" data-field="name" value="${escAttr(g.name)}" aria-label="Gear item name" style="min-width:140px;"></td>
+      <td class="td-input"><select class="form-select" data-field="category" aria-label="Gear category">
+        ${categories.map(c => `<option value="${escAttr(c)}"${g.category === c ? ' selected' : ''}>${esc(c)}</option>`).join('')}
+      </select></td>
+      <td class="td-input">
+        <input class="form-input${priceErr ? ' error' : ''}" type="number" data-field="price" value="${safeNum(g.price, 0)}" min="0" step="50" aria-label="Purchase price" style="min-width:90px;">
+        ${priceErr ? `<span class="input-error" role="alert">${priceErr}</span>` : ''}
+      </td>
+      <td class="td-input">
+        <input class="form-input${lifeErr ? ' error' : ''}" type="number" data-field="lifespan" value="${safeNum(g.lifespan, 1)}" min="1" step="10" aria-label="Lifespan in shoots" style="min-width:80px;">
+        ${lifeErr ? `<span class="input-error" role="alert">${lifeErr}</span>` : ''}
+      </td>
+      <td class="cell-cost">${fmt(g.costPerShoot)}</td>
+      <td><button class="btn btn-danger btn-sm btn-icon remove-row-btn" data-remove="gear" data-id="${escAttr(g.id)}" aria-label="Remove ${escAttr(g.name)}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14a2,2,0,0,1-2,2H8a2,2,0,0,1-2-2L5,6"/><path d="M10,11v6M14,11v6"/><path d="M9,6V4a1,1,0,0,1,1-1h4a1,1,0,0,1,1,1v2"/></svg>
+      </button></td>
+    </tr>`;
+  }).join('');
+
+  const total = totalGearPerShoot();
+  const totalEl = document.getElementById('gear-total-per-shoot');
+  if (totalEl) totalEl.textContent = fmt(total);
+
+  renderGearChart(items);
+}
+
+function renderGearChart(items) {
+  const colorMap = { Body: 'var(--bar-body)', Lens: 'var(--bar-lens)', Lighting: 'var(--bar-lighting)', Audio: 'var(--bar-audio)', Other: 'var(--bar-other)' };
+  const cats = {};
+  items.forEach(g => { cats[g.category] = (cats[g.category] || 0) + g.costPerShoot; });
+  const entries = Object.entries(cats).filter(([,v]) => v > 0).sort((a,b) => b[1]-a[1]);
+  const svg = document.getElementById('chart-gear-bar');
+  const legend = document.getElementById('gear-legend');
+  if (!svg || !legend) return;
+
+  if (!entries.length) {
+    svg.innerHTML = '<text x="10" y="30" fill="var(--ink-3)" font-size="13">No gear entered</text>';
+    legend.innerHTML = '';
+    return;
+  }
+
+  const max = entries[0][1];
+  const W = 600, BAR_H = 18, GAP = 10, LEFT = 110, RIGHT = 20, LABEL_W = LEFT - 8;
+  const svgH = entries.length * (BAR_H + GAP) + 10;
+  svg.setAttribute('viewBox', `0 0 ${W} ${svgH}`);
+  svg.setAttribute('height', svgH);
+
+  svg.innerHTML = entries.map(([cat, val], i) => {
+    const y = i * (BAR_H + GAP);
+    const barW = max > 0 ? (val / max) * (W - LEFT - RIGHT) : 0;
+    const color = colorMap[cat] || 'var(--accent)';
+    return `<text x="${LABEL_W}" y="${y + BAR_H - 3}" text-anchor="end" fill="var(--ink-2)" font-size="12" font-family="inherit">${esc(cat)}</text>
+      <rect x="${LEFT}" y="${y}" width="${barW}" height="${BAR_H}" rx="4" fill="${color}" opacity="0.85"/>
+      <text x="${LEFT + barW + 6}" y="${y + BAR_H - 3}" fill="var(--ink)" font-size="12" font-weight="700" font-family="inherit">${fmt(val)}</text>`;
+  }).join('');
+
+  legend.innerHTML = entries.map(([cat, val]) => {
+    const color = colorMap[cat] || 'var(--accent)';
+    return `<div class="legend-item"><span class="legend-dot" style="background:${color}"></span><span class="legend-label">${esc(cat)}</span><span class="legend-value">${fmt(val)}/shoot</span></div>`;
+  }).join('');
+}
+
+function renderDayRate() {
+  const dr = calcDayRate();
+  const ge = document.getElementById('annual-gear-recovery');
+  if (ge) ge.textContent = fmt(dr.annualGearRecovery);
+  const gps = document.getElementById('gear-per-shoot-ref');
+  if (gps) gps.textContent = fmt(totalGearPerShoot());
+  const bdr = document.getElementById('billable-days-ref');
+  if (bdr) bdr.textContent = safeNum(state.billableDays, 0);
+  const oh = document.getElementById('overhead-total');
+  if (oh) oh.textContent = fmt(dr.overhead);
+  const gnd = document.getElementById('gross-needed-display');
+  if (gnd) gnd.textContent = fmt(dr.grossNeeded);
+
+  const showNoDays = dr.days <= 0;
+  const showNoRate = !showNoDays && dr.grossNeeded <= 0;
+  document.getElementById('no-days-note').style.display = showNoDays ? 'block' : 'none';
+  document.getElementById('no-rate-note').style.display = showNoRate ? 'block' : 'none';
+  document.getElementById('tax-zero-note').style.display = dr.taxPct === 0 ? 'block' : 'none';
+
+  const minEl = document.getElementById('min-day-rate');
+  const recEl = document.getElementById('rec-day-rate');
+  if (minEl) {
+    const newVal = showNoDays ? '--' : fmt(dr.minDay);
+    if (minEl.textContent !== newVal) { minEl.textContent = newVal; pulseElement('min-day-rate'); }
+  }
+  if (recEl) {
+    const newVal = showNoDays ? '--' : fmt(dr.recDay);
+    if (recEl.textContent !== newVal) { recEl.textContent = newVal; pulseElement('rec-day-rate'); }
+  }
+  const mhEl = document.getElementById('min-half-rate');
+  if (mhEl) mhEl.textContent = showNoDays ? '--' : fmt(dr.minHalf);
+  const rhEl = document.getElementById('rec-half-rate');
+  if (rhEl) rhEl.textContent = showNoDays ? '--' : fmt(dr.recHalf);
+
+  renderOverheadRows();
+  renderDonut(dr);
+
+  // Validation
+  const billableErr = document.getElementById('billable-days-err');
+  if (billableErr) billableErr.textContent = dr.days <= 0 ? 'Enter billable days > 0' : '';
+  const taxErr = document.getElementById('tax-pct-err');
+  if (taxErr) taxErr.textContent = safeNum(state.taxPct, 0) >= 100 ? 'Tax rate must be under 100%' : '';
+  const targetErr = document.getElementById('target-net-err');
+  if (targetErr) targetErr.textContent = safeNum(state.targetNet, 0) < 0 ? 'Must be 0 or more' : '';
+}
+
+function renderOverheadRows() {
+  const container = document.getElementById('overhead-rows');
+  if (!container) return;
+  const rows = Array.isArray(state.overhead) ? state.overhead : [];
+  container.innerHTML = rows.map(o => {
+    const annualErr = safeNum(o.annual, 0) < 0 ? 'Must be 0 or more' : '';
+    return `<div class="overhead-row" data-id="${escAttr(o.id)}">
+      <input class="form-input overhead-label-input" type="text" data-field="label" value="${escAttr(o.label)}" placeholder="e.g. Insurance" aria-label="Overhead item label">
+      <input class="form-input${annualErr ? ' error' : ''}" type="number" data-field="annual" value="${safeNum(o.annual, 0)}" min="0" step="100" placeholder="Annual cost" aria-label="Annual cost" style="width:120px;">
+      ${annualErr ? `<span class="input-error" role="alert">${annualErr}</span>` : ''}
+      <button class="btn btn-danger btn-sm btn-icon remove-row-btn" data-remove="overhead" data-id="${escAttr(o.id)}" aria-label="Remove ${escAttr(o.label)}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function renderDonut(dr) {
+  const svg = document.getElementById('chart-donut');
+  const legend = document.getElementById('donut-legend');
+  if (!svg || !legend) return;
+
+  const gross = dr.grossNeeded;
+  if (gross <= 0) {
+    svg.innerHTML = '<circle cx="100" cy="100" r="70" fill="none" stroke="var(--border)" stroke-width="28"/><text x="100" y="108" text-anchor="middle" fill="var(--ink-3)" font-size="13" font-family="inherit">No data</text>';
+    legend.innerHTML = '';
+    return;
+  }
+
+  const segments = [
+    { label: 'Net Income', value: dr.targetNet, color: 'var(--donut-net)' },
+    { label: 'Overhead', value: dr.overhead, color: 'var(--donut-overhead)' },
+    { label: 'Gear Recovery', value: dr.annualGearRecovery, color: 'var(--donut-gear)' },
+    { label: 'Tax Set-aside', value: gross - dr.targetNet - dr.overhead - dr.annualGearRecovery, color: 'var(--donut-tax)' },
+  ].filter(s => s.value > 0);
+
+  const CX = 100, CY = 100, R = 70, STROKE = 28;
+  const circ = 2 * Math.PI * R;
+  let cumPct = 0;
+
+  const paths = segments.map(s => {
+    const pct = s.value / gross;
+    const dash = pct * circ;
+    const gap = circ - dash;
+    const startAngle = cumPct * 360 - 90;
+    cumPct += pct;
+    // rotate positions the start of the stroke; dashoffset=0 means stroke starts at 3 o'clock in element coords,
+    // then the rotation maps that to the correct cumulative angle from 12 o'clock
+    return `<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${s.color}" stroke-width="${STROKE}"
+      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="0"
+      transform="rotate(${startAngle.toFixed(2)} ${CX} ${CY})"
+      opacity="0.9"/>`;
+  });
+
+  svg.innerHTML = paths.join('') +
+    `<text x="${CX}" y="${CY - 8}" text-anchor="middle" fill="var(--ink)" font-size="11" font-family="inherit" font-weight="600">Gross</text>` +
+    `<text x="${CX}" y="${CY + 10}" text-anchor="middle" fill="var(--ink)" font-size="13" font-family="inherit" font-weight="800">${fmt(gross)}</text>`;
+
+  legend.innerHTML = segments.map(s =>
+    `<div class="legend-item"><span class="legend-dot" style="background:${s.color}"></span><span class="legend-label">${esc(s.label)}</span><span class="legend-value">${fmt(s.value)} (${(s.value / gross * 100).toFixed(1)}%)</span></div>`
+  ).join('');
+}
+
+function renderQuote() {
+  const q = state.quote;
+  const calc = calcQuote();
+
+  // Header fields (only if not focused to avoid caret jumping)
+  function setIfUnfocused(id, val) {
+    const el = document.getElementById(id);
+    if (el && el !== document.activeElement) el.value = val;
+  }
+  setIfUnfocused('client-name', q.clientName || '');
+  setIfUnfocused('project-name', q.projectName || '');
+  setIfUnfocused('quote-number', q.quoteNumber || '');
+  setIfUnfocused('quote-date', q.quoteDate || '');
+  setIfUnfocused('payment-terms', q.paymentTerms || '');
+  setIfUnfocused('scope-notes', q.scopeNotes || '');
+  const qs = document.getElementById('quote-status');
+  if (qs && qs !== document.activeElement) qs.value = q.status || 'draft';
+  const badge = document.getElementById('status-badge');
+  if (badge) {
+    badge.textContent = (q.status || 'draft').charAt(0).toUpperCase() + (q.status || 'draft').slice(1);
+    badge.className = 'status-badge status-' + (q.status || 'draft');
+  }
+
+  renderQuoteSection('pre', q.pre);
+  renderQuoteSection('prod', q.prod);
+  renderQuoteSection('post', q.post);
+
+  // Summary
+  ['pre','prod','post'].forEach(s => {
+    const el = document.getElementById('subtotal-' + s);
+    if (el) el.textContent = fmt(calc[s+'Sub'] || 0);
+    const sel = document.getElementById('sum-' + s);
+    if (sel) sel.textContent = fmt(calc[s+'Sub'] || 0);
+  });
+  document.getElementById('sum-subtotal').textContent = fmt(calc.subtotal);
+  document.getElementById('discount-amount-display').textContent = '-' + fmt(calc.discAmt);
+  document.getElementById('sum-after-discount').textContent = fmt(calc.afterDiscount);
+  document.getElementById('tax-amount-display').textContent = '+' + fmt(calc.taxAmt);
+  const gt = document.getElementById('quote-grand-total');
+  if (gt) { const newV = fmt(calc.total); if (gt.textContent !== newV) { gt.textContent = newV; pulseElement('quote-grand-total'); } }
+
+  setIfUnfocused('discount-value', q.discountValue || 0);
+  const dtEl = document.getElementById('discount-type');
+  if (dtEl && dtEl !== document.activeElement) dtEl.value = q.discountType || 'pct';
+  setIfUnfocused('quote-tax-pct', q.quoteTaxPct || 0);
+
+  // Print header
+  const ph = document.getElementById('print-header-content');
+  if (ph) {
+    ph.innerHTML = `<div style="font-size:22px;font-weight:800;margin-bottom:4px;">${esc(q.clientName || 'Client')}</div>
+      <div style="font-size:14px;color:#555;">${esc(q.projectName || 'Project')} &nbsp;|&nbsp; Quote #${esc(q.quoteNumber || '')} &nbsp;|&nbsp; ${esc(q.quoteDate || '')} &nbsp;|&nbsp; Status: ${esc((q.status||'draft').toUpperCase())}</div>`;
+  }
+
+  // Print-only discount/tax lines
+  const pdl = document.getElementById('print-discount-label');
+  if (pdl) pdl.textContent = 'Discount (' + (q.discountType === 'pct' ? (q.discountValue||0) + '%' : 'fixed') + ')';
+  const pdv = document.getElementById('print-discount-val');
+  if (pdv) pdv.textContent = '-' + fmt(calc.discAmt);
+  const ptl = document.getElementById('print-tax-label');
+  if (ptl) ptl.textContent = 'Tax (' + (q.quoteTaxPct||0) + '%)';
+  const ptv = document.getElementById('print-tax-val');
+  if (ptv) ptv.textContent = '+' + fmt(calc.taxAmt);
+
+  if (calc.discAmt > 0) {
+    const row = document.querySelector('.print-only-discount');
+    if (row) row.style.display = '';
+  }
+  if (calc.taxAmt > 0) {
+    const row = document.querySelector('.print-only-tax');
+    if (row) row.style.display = '';
+  }
+
+  renderCollapsedSections();
+}
+
+function renderQuoteSection(sec, rows) {
+  const tbody = document.getElementById('tbody-' + sec);
+  if (!tbody) return;
+  const arr = Array.isArray(rows) ? rows : [];
+  tbody.innerHTML = arr.map(r => {
+    const qty = Math.max(0, safeNum(r.qty, 0));
+    const rate = Math.max(0, safeNum(r.rate, 0));
+    const total = qty * rate;
+    return `<tr data-id="${escAttr(r.id)}" data-section="${escAttr(sec)}">
+      <td class="td-input"><input class="form-input" type="text" data-field="desc" value="${escAttr(r.desc)}" aria-label="Line item description" style="min-width:160px;"></td>
+      <td class="td-input"><input class="form-input" type="number" data-field="qty" value="${qty}" min="0" step="0.5" aria-label="Quantity" style="width:70px;"></td>
+      <td class="td-input"><input class="form-input" type="number" data-field="rate" value="${rate}" min="0" step="25" aria-label="Unit rate" style="width:100px;"></td>
+      <td class="cell-cost cell-right" style="white-space:nowrap;padding:8px 12px;">${fmt(total)}</td>
+      <td class="no-print"><button class="btn btn-danger btn-sm btn-icon remove-row-btn" data-remove="quote-${escAttr(sec)}" data-id="${escAttr(r.id)}" aria-label="Remove line item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button></td>
+    </tr>`;
+  }).join('');
+}
+
+function renderCollapsedSections() {
+  ['pre','prod','post'].forEach(sec => {
+    const isCollapsed = state.collapsedSections[sec];
+    const body = document.getElementById('qsec-body-' + sec);
+    const header = document.getElementById('qsec-header-' + sec);
+    if (body) body.style.display = isCollapsed ? 'none' : '';
+    if (header) {
+      header.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+      const chevron = header.querySelector('.chevron-icon');
+      if (chevron) chevron.style.transform = isCollapsed ? 'rotate(180deg)' : '';
+    }
+  });
+}
+
+function renderPresets() {
+  const sel = document.getElementById('preset-select');
+  if (!sel) return;
+  const presets = state.presets || {};
+  const names = Object.keys(presets).sort();
+  sel.innerHTML = '<option value="">-- select preset --</option>' +
+    names.map(n => `<option value="${escAttr(n)}">${esc(n)}</option>`).join('');
+}
+
+// ============================================================
+// EVENTS
+// ============================================================
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.activeTab = btn.dataset.tab;
+    renderTab();
+    scheduleSave();
+  });
+});
+
+// Theme toggle
+document.getElementById('theme-toggle').addEventListener('click', () => {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  renderTheme();
+  scheduleSave();
+});
+
+// Auto-detect system theme on first load
+if (!localStorage.getItem(STORAGE_KEY)) {
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    state.theme = 'dark';
+  }
+}
+
+// Day rate inputs
+function bindDayRateInput(id, field, isFloat) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.value = state[field];
+  el.addEventListener('input', () => {
+    const v = isFloat ? parseFloat(el.value) : parseInt(el.value, 10);
+    state[field] = isFinite(v) ? Math.max(0, v) : 0;
+    if (id === 'tax-pct') {
+      const slider = document.getElementById('tax-slider');
+      if (slider) slider.value = state.taxPct;
+    }
+    renderDayRate();
+    scheduleSave();
+  });
+}
+bindDayRateInput('target-net', 'targetNet', false);
+bindDayRateInput('billable-days', 'billableDays', false);
+bindDayRateInput('tax-pct', 'taxPct', true);
+
+const taxSlider = document.getElementById('tax-slider');
+if (taxSlider) {
+  taxSlider.value = state.taxPct;
+  taxSlider.addEventListener('input', () => {
+    state.taxPct = parseInt(taxSlider.value, 10);
+    const tp = document.getElementById('tax-pct');
+    if (tp) tp.value = state.taxPct;
+    renderDayRate();
+    scheduleSave();
+  });
+}
+
+// Targeted day rate output update (no innerHTML rebuild of inputs)
+function updateDayRateOutputs() {
+  const dr = calcDayRate();
+  const ge = document.getElementById('annual-gear-recovery');
+  if (ge) ge.textContent = fmt(dr.annualGearRecovery);
+  const gps = document.getElementById('gear-per-shoot-ref');
+  if (gps) gps.textContent = fmt(totalGearPerShoot());
+  const bdr = document.getElementById('billable-days-ref');
+  if (bdr) bdr.textContent = safeNum(state.billableDays, 0);
+  const oh = document.getElementById('overhead-total');
+  if (oh) oh.textContent = fmt(dr.overhead);
+  const gnd = document.getElementById('gross-needed-display');
+  if (gnd) gnd.textContent = fmt(dr.grossNeeded);
+  const showNoDays = dr.days <= 0;
+  const showNoRate = !showNoDays && dr.grossNeeded <= 0;
+  document.getElementById('no-days-note').style.display = showNoDays ? 'block' : 'none';
+  document.getElementById('no-rate-note').style.display = showNoRate ? 'block' : 'none';
+  document.getElementById('tax-zero-note').style.display = dr.taxPct === 0 ? 'block' : 'none';
+  const minEl = document.getElementById('min-day-rate');
+  const recEl = document.getElementById('rec-day-rate');
+  if (minEl) { const v = showNoDays ? '--' : fmt(dr.minDay); if (minEl.textContent !== v) { minEl.textContent = v; pulseElement('min-day-rate'); } }
+  if (recEl) { const v = showNoDays ? '--' : fmt(dr.recDay); if (recEl.textContent !== v) { recEl.textContent = v; pulseElement('rec-day-rate'); } }
+  const mhEl = document.getElementById('min-half-rate'); if (mhEl) mhEl.textContent = showNoDays ? '--' : fmt(dr.minHalf);
+  const rhEl = document.getElementById('rec-half-rate'); if (rhEl) rhEl.textContent = showNoDays ? '--' : fmt(dr.recHalf);
+  document.getElementById('billable-days-err').textContent = dr.days <= 0 ? 'Enter billable days > 0' : '';
+  document.getElementById('tax-pct-err').textContent = safeNum(state.taxPct, 0) >= 100 ? 'Tax rate must be under 100%' : '';
+  document.getElementById('target-net-err').textContent = safeNum(state.targetNet, 0) < 0 ? 'Must be 0 or more' : '';
+  renderDonut(dr);
+}
+
+// Gear table delegation -- targeted updates to avoid focus loss
+document.getElementById('gear-tbody').addEventListener('input', e => {
+  const tr = e.target.closest('tr[data-id]');
+  if (!tr) return;
+  const id = tr.dataset.id;
+  const field = e.target.dataset.field;
+  if (!field) return;
+  const gear = Array.isArray(state.gear) ? state.gear : [];
+  const item = gear.find(g => g.id === id);
+  if (!item) return;
+  if (field === 'name' || field === 'category') {
+    item[field] = e.target.value;
+  } else {
+    item[field] = safeNum(e.target.value, 0);
+  }
+  // Update only the per-shoot cost cell in this row
+  const price = Math.max(0, safeNum(item.price, 0));
+  const life = Math.max(1, safeNum(item.lifespan, 1));
+  const costPerShoot = price / life;
+  const costCell = tr.querySelector('.cell-cost');
+  if (costCell) costCell.textContent = fmt(costPerShoot);
+  // Show/hide lifespan error inline
+  const lifeInput = tr.querySelector('[data-field="lifespan"]');
+  if (lifeInput) {
+    const lifeErr = safeNum(item.lifespan, 0) <= 0;
+    lifeInput.classList.toggle('error', lifeErr);
+    let errSpan = lifeInput.parentElement.querySelector('.input-error');
+    if (lifeErr && !errSpan) {
+      errSpan = document.createElement('span');
+      errSpan.className = 'input-error'; errSpan.setAttribute('role', 'alert');
+      errSpan.textContent = 'Enter expected shoots > 0';
+      lifeInput.parentElement.appendChild(errSpan);
+    } else if (!lifeErr && errSpan) { errSpan.remove(); }
+  }
+  // Show/hide price error
+  const priceInput = tr.querySelector('[data-field="price"]');
+  if (priceInput) {
+    const priceErr = safeNum(item.price, 0) < 0;
+    priceInput.classList.toggle('error', priceErr);
+    let errSpan = priceInput.parentElement.querySelector('.input-error');
+    if (priceErr && !errSpan) {
+      errSpan = document.createElement('span');
+      errSpan.className = 'input-error'; errSpan.setAttribute('role', 'alert');
+      errSpan.textContent = 'Must be 0 or more';
+      priceInput.parentElement.appendChild(errSpan);
+    } else if (!priceErr && errSpan) { errSpan.remove(); }
+  }
+  // Update table footer total
+  const totalEl = document.getElementById('gear-total-per-shoot');
+  if (totalEl) totalEl.textContent = fmt(totalGearPerShoot());
+  // Re-render chart (SVG, no interactive elements)
+  renderGearChart(calcGear());
+  updateDayRateOutputs();
+  scheduleSave();
+});
+
+document.getElementById('btn-add-gear').addEventListener('click', () => {
+  if (!Array.isArray(state.gear)) state.gear = [];
+  state.gear.push({ id: uid(), name: 'New item', category: 'Other', price: 0, lifespan: 100 });
+  renderGear();
+  updateDayRateOutputs();
+  scheduleSave();
+});
+
+// Overhead delegation -- targeted updates to avoid focus loss
+document.getElementById('overhead-rows').addEventListener('input', e => {
+  const row = e.target.closest('[data-id]');
+  if (!row) return;
+  const id = row.dataset.id;
+  const field = e.target.dataset.field;
+  if (!field) return;
+  const oh = Array.isArray(state.overhead) ? state.overhead : [];
+  const item = oh.find(o => o.id === id);
+  if (!item) return;
+  if (field === 'label') {
+    item.label = e.target.value;
+  } else {
+    const v = safeNum(e.target.value, 0);
+    item[field] = v;
+    const annualErr = v < 0;
+    e.target.classList.toggle('error', annualErr);
+    let errSpan = row.querySelector('.input-error');
+    if (annualErr && !errSpan) {
+      errSpan = document.createElement('span');
+      errSpan.className = 'input-error'; errSpan.setAttribute('role', 'alert');
+      errSpan.textContent = 'Must be 0 or more';
+      row.appendChild(errSpan);
+    } else if (!annualErr && errSpan) { errSpan.remove(); }
+  }
+  // Update total only, don't re-render inputs
+  const ohEl = document.getElementById('overhead-total');
+  if (ohEl) ohEl.textContent = fmt(totalOverhead());
+  updateDayRateOutputs();
+  scheduleSave();
+});
+
+document.getElementById('btn-add-overhead').addEventListener('click', () => {
+  if (!Array.isArray(state.overhead)) state.overhead = [];
+  state.overhead.push({ id: uid(), label: 'New expense', annual: 0 });
+  renderOverheadRows();
+  updateDayRateOutputs();
+  scheduleSave();
+});
+
+// Update just quote summary numbers without rebuilding row inputs
+function updateQuoteSummary() {
+  const calc = calcQuote();
+  ['pre','prod','post'].forEach(s => {
+    const subtEl = document.getElementById('subtotal-' + s);
+    if (subtEl) subtEl.textContent = fmt(calc[s + 'Sub'] || 0);
+    const sumEl = document.getElementById('sum-' + s);
+    if (sumEl) sumEl.textContent = fmt(calc[s + 'Sub'] || 0);
+  });
+  document.getElementById('sum-subtotal').textContent = fmt(calc.subtotal);
+  document.getElementById('discount-amount-display').textContent = '-' + fmt(calc.discAmt);
+  document.getElementById('sum-after-discount').textContent = fmt(calc.afterDiscount);
+  document.getElementById('tax-amount-display').textContent = '+' + fmt(calc.taxAmt);
+  const gt = document.getElementById('quote-grand-total');
+  if (gt) { const v = fmt(calc.total); if (gt.textContent !== v) { gt.textContent = v; pulseElement('quote-grand-total'); } }
+  const pdv = document.getElementById('print-discount-val'); if (pdv) pdv.textContent = '-' + fmt(calc.discAmt);
+  const ptv = document.getElementById('print-tax-val'); if (ptv) ptv.textContent = '+' + fmt(calc.taxAmt);
+}
+
+// Quote section inputs -- targeted line-total updates to avoid focus loss
+['pre','prod','post'].forEach(sec => {
+  const tbody = document.getElementById('tbody-' + sec);
+  if (!tbody) return;
+  tbody.addEventListener('input', e => {
+    const tr = e.target.closest('tr[data-id]');
+    if (!tr) return;
+    const id = tr.dataset.id;
+    const field = e.target.dataset.field;
+    if (!field) return;
+    const arr = Array.isArray(state.quote[sec]) ? state.quote[sec] : [];
+    const item = arr.find(r => r.id === id);
+    if (!item) return;
+    if (field === 'desc') {
+      item.desc = e.target.value;
+      // no recalculation needed
+    } else {
+      item[field] = Math.max(0, safeNum(e.target.value, 0));
+      // Update this row's line total cell only
+      const qty = Math.max(0, safeNum(item.qty, 0));
+      const rate = Math.max(0, safeNum(item.rate, 0));
+      const lineTotal = qty * rate;
+      const costCell = tr.querySelector('.cell-cost');
+      if (costCell) costCell.textContent = fmt(lineTotal);
+      updateQuoteSummary();
+    }
+    scheduleSave();
+  });
+  const addBtn = document.getElementById('btn-add-' + sec);
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      if (!Array.isArray(state.quote[sec])) state.quote[sec] = [];
+      state.quote[sec].push({ id: uid(), desc: 'New item', qty: 1, rate: 0 });
+      renderQuoteSection(sec, state.quote[sec]);
+      updateQuoteSummary();
+      scheduleSave();
+    });
+  }
+});
+
+// Quote header fields
+['client-name','project-name','quote-number','quote-date','payment-terms','scope-notes'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const fieldMap = { 'client-name':'clientName','project-name':'projectName','quote-number':'quoteNumber','quote-date':'quoteDate','payment-terms':'paymentTerms','scope-notes':'scopeNotes' };
+  el.addEventListener('input', () => {
+    state.quote[fieldMap[id]] = el.value;
+    // Update print header text without rebuilding quote sections
+    const q = state.quote;
+    const ph = document.getElementById('print-header-content');
+    if (ph) {
+      ph.innerHTML = `<div style="font-size:22px;font-weight:800;margin-bottom:4px;">${esc(q.clientName || 'Client')}</div>
+        <div style="font-size:14px;color:#555;">${esc(q.projectName || 'Project')} &nbsp;|&nbsp; Quote #${esc(q.quoteNumber || '')} &nbsp;|&nbsp; ${esc(q.quoteDate || '')} &nbsp;|&nbsp; Status: ${esc((q.status||'draft').toUpperCase())}</div>`;
+    }
+    scheduleSave();
+  });
+});
+
+document.getElementById('quote-status').addEventListener('change', e => {
+  state.quote.status = e.target.value;
+  const badge = document.getElementById('status-badge');
+  if (badge) {
+    badge.textContent = (e.target.value).charAt(0).toUpperCase() + e.target.value.slice(1);
+    badge.className = 'status-badge status-' + e.target.value;
+  }
+  scheduleSave();
+});
+
+document.getElementById('discount-type').addEventListener('change', e => {
+  state.quote.discountType = e.target.value;
+  const pdl = document.getElementById('print-discount-label');
+  if (pdl) pdl.textContent = 'Discount (' + (state.quote.discountType === 'pct' ? (state.quote.discountValue||0) + '%' : 'fixed') + ')';
+  updateQuoteSummary();
+  scheduleSave();
+});
+
+document.getElementById('discount-value').addEventListener('input', e => {
+  state.quote.discountValue = Math.max(0, safeNum(e.target.value, 0));
+  const pdl = document.getElementById('print-discount-label');
+  if (pdl) pdl.textContent = 'Discount (' + (state.quote.discountType === 'pct' ? (state.quote.discountValue||0) + '%' : 'fixed') + ')';
+  updateQuoteSummary();
+  scheduleSave();
+});
+
+document.getElementById('quote-tax-pct').addEventListener('input', e => {
+  state.quote.quoteTaxPct = Math.max(0, Math.min(99, safeNum(e.target.value, 0)));
+  const ptl = document.getElementById('print-tax-label');
+  if (ptl) ptl.textContent = 'Tax (' + (state.quote.quoteTaxPct||0) + '%)';
+  updateQuoteSummary();
+  scheduleSave();
+});
+
+// Collapsible quote sections
+['pre','prod','post'].forEach(sec => {
+  const header = document.getElementById('qsec-header-' + sec);
+  if (!header) return;
+  function toggle() {
+    state.collapsedSections[sec] = !state.collapsedSections[sec];
+    renderCollapsedSections();
+    scheduleSave();
+  }
+  header.addEventListener('click', toggle);
+  header.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+});
+
+// Remove buttons (delegated)
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.remove-row-btn');
+  if (!btn) return;
+  const type = btn.dataset.remove;
+  const id = btn.dataset.id;
+  if (type === 'gear') {
+    state.gear = (Array.isArray(state.gear) ? state.gear : []).filter(g => g.id !== id);
+    renderGear(); renderDayRate();
+  } else if (type === 'overhead') {
+    state.overhead = (Array.isArray(state.overhead) ? state.overhead : []).filter(o => o.id !== id);
+    renderDayRate();
+  } else if (type === 'quote-pre') {
+    state.quote.pre = (Array.isArray(state.quote.pre) ? state.quote.pre : []).filter(r => r.id !== id);
+    renderQuote();
+  } else if (type === 'quote-prod') {
+    state.quote.prod = (Array.isArray(state.quote.prod) ? state.quote.prod : []).filter(r => r.id !== id);
+    renderQuote();
+  } else if (type === 'quote-post') {
+    state.quote.post = (Array.isArray(state.quote.post) ? state.quote.post : []).filter(r => r.id !== id);
+    renderQuote();
+  }
+  scheduleSave();
+});
+
+// Print -- hide empty sections, then restore after
+function getEmptySections() {
+  const calc = calcQuote();
+  const empty = [];
+  if (calc.preSub === 0) empty.push('pre');
+  if (calc.prodSub === 0) empty.push('prod');
+  if (calc.postSub === 0) empty.push('post');
+  return empty;
+}
+window.addEventListener('beforeprint', () => {
+  getEmptySections().forEach(sec => {
+    const card = document.getElementById('quote-section-' + sec);
+    if (card) card.setAttribute('data-print-hidden', '1');
+  });
+});
+window.addEventListener('afterprint', () => {
+  ['pre','prod','post'].forEach(sec => {
+    const card = document.getElementById('quote-section-' + sec);
+    if (card) card.removeAttribute('data-print-hidden');
+  });
+});
+document.getElementById('btn-print-quote').addEventListener('click', () => {
+  state.activeTab = 'quote';
+  renderTab();
+  setTimeout(() => window.print(), 100);
+});
+
+// Export JSON
+document.getElementById('btn-export').addEventListener('click', () => {
+  const data = JSON.stringify(state, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'videographer-calc-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Backup exported.', 'success');
+});
+
+// Import JSON
+document.getElementById('btn-import-open').addEventListener('click', () => {
+  document.getElementById('modal-import').classList.add('open');
+  document.getElementById('import-error').textContent = '';
+  document.getElementById('import-file-input').value = '';
+});
+document.getElementById('modal-import-close').addEventListener('click', () => {
+  document.getElementById('modal-import').classList.remove('open');
+});
+document.getElementById('btn-import-cancel').addEventListener('click', () => {
+  document.getElementById('modal-import').classList.remove('open');
+});
+document.getElementById('btn-import-confirm').addEventListener('click', () => {
+  const fileInput = document.getElementById('import-file-input');
+  const errEl = document.getElementById('import-error');
+  if (!fileInput.files || !fileInput.files[0]) {
+    errEl.textContent = 'Please select a file.'; return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const def = defaultState();
+      if (typeof parsed !== 'object' || parsed === null) throw new Error('Not a valid state object');
+      if (!confirm('Replace all current data with the imported backup? This cannot be undone.')) return;
+      const merged = {
+        ...def, ...parsed,
+        quote: { ...def.quote, ...(parsed.quote || {}) },
+        presets: { ...(parsed.presets || {}) },
+        collapsedSections: { ...(parsed.collapsedSections || {}) },
+      };
+      if (!Array.isArray(merged.gear)) throw new Error('gear must be an array');
+      if (!Array.isArray(merged.overhead)) throw new Error('overhead must be an array');
+      if (!Array.isArray(merged.quote.pre)) throw new Error('quote.pre must be an array');
+      if (!Array.isArray(merged.quote.prod)) throw new Error('quote.prod must be an array');
+      if (!Array.isArray(merged.quote.post)) throw new Error('quote.post must be an array');
+      state = merged;
+      saveState();
+      render();
+      document.getElementById('modal-import').classList.remove('open');
+      showToast('Data imported successfully.', 'success');
+    } catch (err) {
+      document.getElementById('import-error').textContent = 'Import failed: ' + err.message;
+    }
+  };
+  reader.onerror = () => { document.getElementById('import-error').textContent = 'Could not read file.'; };
+  reader.readAsText(fileInput.files[0]);
+});
+
+// Presets
+document.getElementById('btn-preset-save').addEventListener('click', () => {
+  document.getElementById('preset-name-input').value = '';
+  document.getElementById('modal-preset').classList.add('open');
+  document.getElementById('preset-name-input').focus();
+});
+document.getElementById('modal-preset-close').addEventListener('click', () => {
+  document.getElementById('modal-preset').classList.remove('open');
+});
+document.getElementById('btn-preset-modal-cancel').addEventListener('click', () => {
+  document.getElementById('modal-preset').classList.remove('open');
+});
+document.getElementById('btn-preset-modal-save').addEventListener('click', () => {
+  const name = document.getElementById('preset-name-input').value.trim();
+  if (!name) { showToast('Enter a preset name.', 'warn'); return; }
+  if (!state.presets) state.presets = {};
+  state.presets[name] = {
+    gear: JSON.parse(JSON.stringify(state.gear)),
+    overhead: JSON.parse(JSON.stringify(state.overhead)),
+    targetNet: state.targetNet,
+    billableDays: state.billableDays,
+    taxPct: state.taxPct,
+  };
+  saveState();
+  renderPresets();
+  document.getElementById('modal-preset').classList.remove('open');
+  showToast('Preset "' + name + '" saved.', 'success');
+});
+
+document.getElementById('btn-preset-load').addEventListener('click', () => {
+  const name = document.getElementById('preset-select').value;
+  if (!name) { showToast('Select a preset first.', 'warn'); return; }
+  const preset = (state.presets || {})[name];
+  if (!preset) { showToast('Preset not found.', 'error'); return; }
+  if (!confirm('Load preset "' + name + '"? This will replace your current gear list and overhead settings.')) return;
+  if (Array.isArray(preset.gear)) state.gear = JSON.parse(JSON.stringify(preset.gear));
+  if (Array.isArray(preset.overhead)) state.overhead = JSON.parse(JSON.stringify(preset.overhead));
+  if (preset.targetNet !== undefined) state.targetNet = preset.targetNet;
+  if (preset.billableDays !== undefined) state.billableDays = preset.billableDays;
+  if (preset.taxPct !== undefined) state.taxPct = preset.taxPct;
+  render();
+  // sync day rate inputs
+  ['target-net','billable-days','tax-pct'].forEach(id => {
+    const el = document.getElementById(id);
+    const fieldMap = {'target-net':'targetNet','billable-days':'billableDays','tax-pct':'taxPct'};
+    if (el) el.value = state[fieldMap[id]];
+  });
+  const slider = document.getElementById('tax-slider');
+  if (slider) slider.value = state.taxPct;
+  scheduleSave();
+  showToast('Preset "' + name + '" loaded.', 'success');
+});
+
+document.getElementById('btn-preset-delete').addEventListener('click', () => {
+  const name = document.getElementById('preset-select').value;
+  if (!name) { showToast('Select a preset to delete.', 'warn'); return; }
+  if (!confirm('Delete preset "' + name + '"?')) return;
+  delete state.presets[name];
+  saveState();
+  renderPresets();
+  showToast('Preset deleted.', 'success');
+});
+
+// Reset
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (!confirm('Reset to the worked example? All current data will be lost.')) return;
+  const theme = state.theme;
+  state = defaultState();
+  state.theme = theme;
+  saveState();
+  render();
+  // sync day rate inputs
+  const fieldMap = {'target-net':'targetNet','billable-days':'billableDays','tax-pct':'taxPct'};
+  Object.entries(fieldMap).forEach(([id, field]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = state[field];
+  });
+  const slider = document.getElementById('tax-slider');
+  if (slider) slider.value = state.taxPct;
+  showToast('Reset to worked example.', 'success');
+});
+
+// Responsive: dayrate grid to single column on narrow
+function setDayrateLayout() {
+  const grid = document.querySelector('.dayrate-grid');
+  if (!grid) return;
+  grid.style.gridTemplateColumns = window.innerWidth < 700 ? '1fr' : '1fr 1fr';
+}
+window.addEventListener('resize', setDayrateLayout);
+setDayrateLayout();
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+renderTab();
+// Sync input values with loaded state
+(function syncInputs() {
+  const fieldMap = {'target-net':'targetNet','billable-days':'billableDays','tax-pct':'taxPct'};
+  Object.entries(fieldMap).forEach(([id, field]) => {
+    const el = document.getElementById(id);
+    if (el) el.value = state[field];
+  });
+  const slider = document.getElementById('tax-slider');
+  if (slider) slider.value = state.taxPct;
+})();
+</script>
+
+<footer style="text-align:center;font-size:var(--fs-xs);color:var(--ink-3);padding:var(--sp-4) 0;margin-top:var(--sp-4);" class="no-print">
+  Videographer Day Rate &amp; Gear Cost Calculator &middot; jonsDesignerShop &middot; For educational use only - verify rates with a qualified accountant.
+</footer>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Videographer Day Rate &amp; Gear Cost Calculator. It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4526882638?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($34) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

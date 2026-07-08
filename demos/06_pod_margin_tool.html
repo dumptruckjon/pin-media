@@ -1,0 +1,1664 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live Demo · Print-on-Demand Profit &amp; Margin Dashboard</title>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  /* Spacing scale */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+  /* Type scale */
+  --fs-xs: 13px; --fs-sm: 15px; --fs-base: 17px;
+  --fs-lg: 20px; --fs-xl: 26px; --fs-2xl: 34px;
+  /* Radii */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-xl: 24px;
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.08);
+  /* Light theme colors */
+  --bg: #F5F7FA;
+  --bg-card: #FFFFFF;
+  --bg-table-head: #EBF0F7;
+  --bg-table-alt: #F8FAFC;
+  --bg-input: #FFFFFF;
+  --bg-hover: #EBF0F7;
+  --accent: #6B9BD1;
+  --accent-dark: #4A7BB5;
+  --accent-subtle: #D8E9F5;
+  --ink: #2B3A4A;
+  --ink-secondary: #5A6A7A;
+  --ink-muted: #8A9AAA;
+  --border: #D8E2EC;
+  --border-focus: #6B9BD1;
+  --success: #2D7A4F;
+  --success-bg: #D4EBE0;
+  --success-text: #1A5E3A;
+  --warning: #B45309;
+  --warning-bg: #FEF3C7;
+  --warning-text: #92400E;
+  --error: #C0392B;
+  --error-bg: #FDECEA;
+  --error-text: #9B1C1C;
+  --profit-pos: #2D7A4F;
+  --profit-neg: #C0392B;
+  --neutral: #6B7280;
+  --neutral-bg: #F3F4F6;
+  /* Chart segment colors */
+  --c-prod: #6B9BD1;
+  --c-ship: #A8C9E8;
+  --c-fees: #F0A843;
+  --c-ads: #E07070;
+  --c-profit: #5CB87A;
+}
+[data-theme="dark"] {
+  --bg: #111827;
+  --bg-card: #1F2937;
+  --bg-table-head: #273344;
+  --bg-table-alt: #1A2436;
+  --bg-input: #273344;
+  --bg-hover: #2D3E52;
+  --accent: #7AADDB;
+  --accent-dark: #5B94C8;
+  --accent-subtle: #1E3550;
+  --ink: #E8EDF2;
+  --ink-secondary: #A8B8C8;
+  --ink-muted: #6A7A8A;
+  --border: #374151;
+  --border-focus: #7AADDB;
+  --success: #34D399;
+  --success-bg: #064E3B;
+  --success-text: #6EE7B7;
+  --warning: #FBBF24;
+  --warning-bg: #451A03;
+  --warning-text: #FCD34D;
+  --error: #F87171;
+  --error-bg: #7F1D1D;
+  --error-text: #FCA5A5;
+  --profit-pos: #34D399;
+  --profit-neg: #F87171;
+  --neutral: #9CA3AF;
+  --neutral-bg: #374151;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  background: var(--bg);
+  min-height: 100vh;
+  line-height: 1.5;
+  transition: background .2s, color .2s;
+}
+a { color: var(--accent); }
+h1 { font-size: var(--fs-xl); font-weight: 700; letter-spacing: -.02em; }
+h2 { font-size: var(--fs-lg); font-weight: 600; }
+h3 { font-size: var(--fs-base); font-weight: 600; }
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+
+/* ===== LAYOUT ===== */
+.app-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: var(--sp-4);
+}
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding: var(--sp-4) 0 var(--sp-6);
+  flex-wrap: wrap;
+}
+.app-header-left { display: flex; flex-direction: column; gap: var(--sp-1); }
+.app-subtitle { color: var(--ink-secondary); font-size: var(--fs-xs); }
+.header-controls { display: flex; align-items: center; gap: var(--sp-2); }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-6);
+}
+
+/* ===== TABS ===== */
+.tab-bar {
+  display: flex;
+  gap: var(--sp-1);
+  border-bottom: 2px solid var(--border);
+  margin-bottom: var(--sp-6);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-btn {
+  padding: var(--sp-2) var(--sp-4);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--ink-secondary);
+  transition: color .15s, border-color .15s;
+  white-space: nowrap;
+  min-height: 44px;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--accent-dark); border-bottom-color: var(--accent); }
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  transition: background .15s, box-shadow .15s, transform .1s;
+  min-height: 36px;
+  white-space: nowrap;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent-dark);
+}
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary {
+  background: var(--bg-card);
+  color: var(--ink);
+  border-color: var(--border);
+}
+.btn-secondary:hover { background: var(--bg-hover); }
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-secondary);
+  border-color: transparent;
+}
+.btn-ghost:hover { background: var(--bg-hover); color: var(--ink); }
+.btn-danger {
+  background: var(--error-bg);
+  color: var(--error-text);
+  border-color: var(--error);
+}
+.btn-danger:hover { opacity: .85; }
+.btn-sm { padding: var(--sp-1) var(--sp-3); font-size: var(--fs-xs); min-height: 30px; }
+
+/* ===== THEME TOGGLE ===== */
+#theme-toggle {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: var(--sp-1) var(--sp-3);
+  display: flex; align-items: center; gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--ink-secondary);
+  min-height: 36px;
+  transition: background .15s;
+}
+#theme-toggle:hover { background: var(--bg-hover); }
+
+/* ===== FORMS ===== */
+.field-group { display: flex; flex-direction: column; gap: var(--sp-1); }
+.field-label { font-size: var(--fs-xs); font-weight: 600; color: var(--ink-secondary); text-transform: uppercase; letter-spacing: .04em; }
+.field-input {
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-input);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  transition: border-color .15s, box-shadow .15s;
+  min-height: 36px;
+  width: 100%;
+}
+.field-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+.field-input.invalid { border-color: var(--error); }
+.input-error {
+  font-size: var(--fs-xs);
+  color: var(--error-text);
+  margin-top: var(--sp-1);
+}
+
+/* ===== TABLE ===== */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-xs);
+  min-width: 960px;
+}
+thead th {
+  background: var(--bg-table-head);
+  color: var(--ink-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: var(--sp-2) var(--sp-3);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+thead th.col-out { background: #E8F0E0; color: #3A5A2A; }
+[data-theme="dark"] thead th.col-out { background: #1E3319; color: #86C96E; }
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+tbody tr:nth-child(even) { background: var(--bg-table-alt); }
+tbody tr:hover { background: var(--bg-hover); }
+tbody tr.row-focused { background: var(--accent-subtle); }
+tbody td {
+  padding: var(--sp-2) var(--sp-3);
+  vertical-align: middle;
+}
+.cell-input {
+  padding: var(--sp-1) var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-input);
+  color: var(--ink);
+  font-size: var(--fs-xs);
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+  min-width: 72px;
+  min-height: 32px;
+}
+.cell-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 2px var(--accent-subtle);
+}
+.cell-input.invalid { border-color: var(--error); }
+.cell-out {
+  font-weight: 600;
+  white-space: nowrap;
+}
+.cell-out.pos { color: var(--profit-pos); }
+.cell-out.neg { color: var(--profit-neg); }
+.cell-out.muted { color: var(--ink-muted); font-weight: 400; font-style: italic; }
+.ship-pos { color: var(--profit-pos); }
+.ship-neg { color: var(--profit-neg); }
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-flex; align-items: center; gap: var(--sp-1);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-xl);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  white-space: nowrap;
+}
+.badge-success { background: var(--success-bg); color: var(--success-text); }
+.badge-error   { background: var(--error-bg);   color: var(--error-text); }
+.badge-neutral { background: var(--neutral-bg); color: var(--neutral); }
+.badge-warning { background: var(--warning-bg); color: var(--warning-text); }
+
+/* ===== WHAT-IF BANNER ===== */
+.whatif-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--accent-subtle);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-md);
+  margin-bottom: var(--sp-4);
+  flex-wrap: wrap;
+}
+.whatif-bar label { font-size: var(--fs-xs); font-weight: 600; color: var(--ink-secondary); }
+.whatif-bar input[type="range"] { flex: 1; min-width: 120px; accent-color: var(--accent); }
+.whatif-value { font-weight: 700; color: var(--accent-dark); font-size: var(--fs-base); min-width: 40px; }
+.whatif-preview { font-size: var(--fs-xs); color: var(--ink-secondary); }
+.col-whatif { background: #F0F7E8; color: #2A5A1E; font-weight: 600; }
+[data-theme="dark"] .col-whatif { background: #1A3310; color: #7AC462; }
+
+/* ===== WATERFALL CHART ===== */
+#chart-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: var(--sp-4) var(--sp-6);
+  margin-bottom: var(--sp-6);
+}
+#chart-waterfall {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  display: block;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  margin-top: var(--sp-3);
+  justify-content: center;
+}
+.legend-item {
+  display: flex; align-items: center; gap: var(--sp-1);
+  font-size: var(--fs-xs);
+  color: var(--ink-secondary);
+}
+.legend-swatch {
+  width: 12px; height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ===== FEE SETTINGS ===== */
+.fee-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--sp-4);
+}
+.fee-preview-box {
+  background: var(--bg-table-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.fee-preview-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: var(--sp-1) 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-xs);
+}
+.fee-preview-row:last-child { border-bottom: none; font-weight: 700; }
+
+/* ===== PRESETS ===== */
+.preset-list { display: flex; flex-direction: column; gap: var(--sp-2); }
+.preset-item {
+  display: flex; align-items: center; gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-table-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  transition: background .15s;
+}
+.preset-item:hover { background: var(--bg-hover); }
+.preset-name { flex: 1; font-weight: 600; }
+.preset-meta { font-size: var(--fs-xs); color: var(--ink-muted); }
+
+/* ===== EXPORT / IMPORT ===== */
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--sp-6);
+}
+.storage-bar-wrap { background: var(--border); border-radius: 99px; height: 8px; margin-top: var(--sp-2); }
+.storage-bar { height: 8px; border-radius: 99px; background: var(--accent); transition: width .3s; }
+.import-drop {
+  border: 2px dashed var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-8);
+  text-align: center;
+  color: var(--ink-muted);
+  transition: border-color .15s, background .15s;
+}
+.import-drop.drag-over { border-color: var(--accent); background: var(--accent-subtle); }
+.paste-area {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  background: var(--bg-input);
+  color: var(--ink);
+  font-size: var(--fs-xs);
+  font-family: monospace;
+  resize: vertical;
+  min-height: 120px;
+}
+.import-feedback {
+  font-size: var(--fs-xs);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  margin-top: var(--sp-2);
+}
+
+/* ===== TOAST ===== */
+#toast-container {
+  position: fixed; bottom: var(--sp-6); right: var(--sp-6);
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  z-index: 1000;
+}
+.toast {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--ink);
+  color: #fff;
+  font-size: var(--fs-xs);
+  box-shadow: var(--shadow-lg);
+  animation: slideIn .2s ease;
+  max-width: 320px;
+}
+.toast.toast-error   { background: var(--error); }
+.toast.toast-success { background: var(--success); }
+.toast.toast-warning { background: var(--warning); }
+@keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+/* ===== NUMBER PULSE ===== */
+.pulse-update { animation: numPulse .25s ease; }
+@keyframes numPulse { 0%{opacity:.4} 100%{opacity:1} }
+
+/* ===== ROW ACTIONS ===== */
+.row-actions { display: flex; gap: var(--sp-1); }
+
+/* ===== SECTION TITLES ===== */
+.section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--sp-4);
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  body { background: #fff; color: #000; font-size: 12pt; }
+  .app-header, .tab-bar, .no-print,
+  .whatif-bar, #chart-section, #toast-container,
+  .row-actions, .btn, .tab-btn { display: none !important; }
+  .panel { display: block !important; }
+  #panel-products { display: block !important; }
+  .table-wrap { border: 1px solid #ccc; overflow: visible; }
+  table { min-width: unset; page-break-inside: auto; }
+  thead { display: table-header-group; }
+  tr { page-break-inside: avoid; }
+  .print-header { display: block !important; }
+  .app-shell { max-width: 100%; padding: 0; }
+  @page { margin: 1.5cm; }
+}
+.print-header { display: none; }
+.print-header h2 { font-size: 14pt; margin-bottom: 4pt; }
+.print-footer { display: none; }
+@media print {
+  .print-footer { display: block !important; text-align: center; font-size: 9pt; color: #555; margin-top: 12pt; }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 480px) {
+  .app-header { padding: var(--sp-3) 0 var(--sp-4); }
+  h1 { font-size: var(--fs-lg); }
+  .card { padding: var(--sp-4); }
+  .tab-btn { padding: var(--sp-2) var(--sp-3); font-size: var(--fs-xs); min-height: 44px; }
+  .btn { min-height: 44px; padding: var(--sp-2) var(--sp-4); }
+  .btn-sm { min-height: 44px; }
+  .field-input, .cell-input, .paste-area, select { min-height: 44px; font-size: 16px; }
+  .fee-grid { grid-template-columns: 1fr; }
+  .export-grid { grid-template-columns: 1fr; }
+  #theme-toggle { min-height: 44px; }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <!-- PRINT HEADER (hidden on screen) -->
+  <div class="print-header" aria-hidden="true">
+    <h2>POD Margin Report</h2>
+    <p id="print-date"></p>
+  </div>
+
+  <!-- APP HEADER -->
+  <header class="app-header">
+    <div class="app-header-left">
+      <h1>Print-on-Demand Profit &amp; Margin Dashboard</h1>
+      <p class="app-subtitle">Per-product true margin after all fees, shipping delta &amp; ad spend: Printify/Printful + Etsy/Shopify</p>
+    </div>
+    <div class="header-controls no-print">
+      <button id="theme-toggle" aria-label="Toggle dark/light theme">
+        <span id="theme-icon">☀</span>
+        <span id="theme-label">Light</span>
+      </button>
+      <button class="btn btn-secondary btn-sm" id="btn-export-backup" title="Download a JSON backup of all your products and settings">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export Backup
+      </button>
+      <button class="btn btn-secondary btn-sm" id="btn-print" onclick="window.print()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print
+      </button>
+    </div>
+  </header>
+
+  <!-- TABS -->
+  <nav class="tab-bar no-print" role="tablist" aria-label="Dashboard sections">
+    <button class="tab-btn active" role="tab" data-tab="products" id="tab-products" aria-selected="true">Products</button>
+    <button class="tab-btn" role="tab" data-tab="fees" id="tab-fees" aria-selected="false">Fee Settings</button>
+    <button class="tab-btn" role="tab" data-tab="presets" id="tab-presets" aria-selected="false">Presets</button>
+    <button class="tab-btn" role="tab" data-tab="exportimport" id="tab-exportimport" aria-selected="false">Export / Import</button>
+  </nav>
+
+  <!-- PANEL: PRODUCTS -->
+  <div id="panel-products" class="panel active" role="tabpanel" aria-labelledby="tab-products">
+    <!-- What-if bar -->
+    <div class="whatif-bar no-print">
+      <label for="whatif-slider">What-if price raise:</label>
+      <input type="range" id="whatif-slider" min="0" max="50" value="0" step="1" aria-label="Price raise percentage">
+      <span class="whatif-value" id="whatif-pct">+0%</span>
+      <span class="whatif-preview" id="whatif-desc">Move slider to preview adjusted margins</span>
+      <button class="btn btn-ghost btn-sm no-print" id="whatif-reset" style="margin-left:auto">Reset</button>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div class="section-header no-print" style="padding:var(--sp-4) var(--sp-6) 0">
+        <h2>Products</h2>
+        <div style="display:flex;gap:var(--sp-2);flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" id="btn-add-row">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Product
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btn-reset-example">Load Example</button>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin:var(--sp-4) 0 0">
+        <table id="products-table" aria-label="Product margin table">
+          <thead id="products-thead"></thead>
+          <tbody id="products-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Waterfall chart -->
+    <div id="chart-section">
+      <div class="section-header">
+        <h3 id="chart-title">Select a product row to see its margin waterfall</h3>
+      </div>
+      <svg id="chart-waterfall" viewBox="0 0 600 140" xmlns="http://www.w3.org/2000/svg" aria-label="Margin waterfall chart"></svg>
+      <div class="chart-legend" id="chart-legend"></div>
+    </div>
+  </div>
+
+  <!-- PANEL: FEE SETTINGS -->
+  <div id="panel-fees" class="panel" role="tabpanel" aria-labelledby="tab-fees">
+    <div class="card">
+      <div class="section-header">
+        <h2>Platform Fee Configuration</h2>
+        <button class="btn btn-secondary btn-sm" id="btn-reset-fees">Reset to Etsy Defaults</button>
+      </div>
+      <p style="color:var(--ink-secondary);font-size:var(--fs-xs);margin-bottom:var(--sp-4)">Fees apply to all products. Change these to model Shopify or other platforms. Rates are expressed as percentages (e.g. 6.5 for 6.5%).</p>
+      <div class="fee-grid" id="fee-grid"></div>
+      <div class="fee-preview-box" id="fee-preview-box">
+        <h3 style="margin-bottom:var(--sp-3)">Live fee breakdown for focused product</h3>
+        <div id="fee-preview-rows"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL: PRESETS -->
+  <div id="panel-presets" class="panel" role="tabpanel" aria-labelledby="tab-presets">
+    <div class="card">
+      <div class="section-header">
+        <h2>Product Presets</h2>
+        <button class="btn btn-primary btn-sm" id="btn-save-preset">Save Focused Row as Preset</button>
+      </div>
+      <p style="color:var(--ink-secondary);font-size:var(--fs-xs);margin-bottom:var(--sp-4)">Save any product's cost/price configuration as a reusable template. Load a preset into any new row to avoid re-entering the same POD provider costs.</p>
+      <div class="preset-list" id="preset-list"></div>
+      <p id="preset-empty" style="color:var(--ink-muted);text-align:center;padding:var(--sp-8);font-size:var(--fs-xs)">No presets saved yet. Focus a product row and click "Save Focused Row as Preset".</p>
+    </div>
+  </div>
+
+  <!-- PANEL: EXPORT / IMPORT -->
+  <div id="panel-exportimport" class="panel" role="tabpanel" aria-labelledby="tab-exportimport">
+    <div class="export-grid">
+      <!-- JSON Export -->
+      <div class="card">
+        <h2 style="margin-bottom:var(--sp-4)">Export Backup</h2>
+        <p style="color:var(--ink-secondary);font-size:var(--fs-xs);margin-bottom:var(--sp-4)">Download a complete backup of your products and settings as a JSON file. Keep a copy outside your browser.</p>
+        <p class="import-feedback" style="background:var(--accent-subtle);color:var(--ink-secondary)"><strong>Tip:</strong> export a backup before you clear this app's data or your browser data. Your work saves only in this browser.</p>
+        <div style="margin-top:var(--sp-4);display:flex;gap:var(--sp-2);flex-wrap:wrap">
+          <button class="btn btn-primary" id="btn-export-json">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export JSON
+          </button>
+          <button class="btn btn-danger btn-sm" id="btn-clear-data">Clear All Data</button>
+        </div>
+        <div style="margin-top:var(--sp-4)">
+          <div style="font-size:var(--fs-xs);color:var(--ink-secondary);margin-bottom:var(--sp-1)">Storage used</div>
+          <div class="storage-bar-wrap"><div class="storage-bar" id="storage-bar" style="width:0%"></div></div>
+          <div id="storage-label" style="font-size:var(--fs-xs);color:var(--ink-muted);margin-top:var(--sp-1)"></div>
+        </div>
+      </div>
+
+      <!-- JSON Import -->
+      <div class="card">
+        <h2 style="margin-bottom:var(--sp-4)">Import Backup</h2>
+        <div class="import-drop" id="import-drop">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto var(--sp-2);display:block;opacity:.4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Drag &amp; drop a JSON backup file here, or
+          <label for="import-file-input" style="color:var(--accent);cursor:pointer;text-decoration:underline">browse</label>
+          <input type="file" id="import-file-input" accept=".json" style="display:none" aria-label="Import JSON backup file">
+        </div>
+        <div id="import-json-msg" class="import-feedback" style="display:none"></div>
+      </div>
+
+      <!-- Paste Importer -->
+      <div class="card" style="grid-column:1/-1">
+        <h2 style="margin-bottom:var(--sp-2)">Paste from Spreadsheet</h2>
+        <p style="color:var(--ink-secondary);font-size:var(--fs-xs);margin-bottom:var(--sp-3)">Copy rows from Excel, Google Sheets, or any CSV and paste below. One row per product. Columns: <strong>Name, Production Cost, Selling Price, Shipping Charged, Actual Shipping, Ad Spend</strong> (header row optional). Dollar signs and commas are handled automatically.</p>
+        <button class="btn btn-secondary btn-sm" id="btn-csv-template" style="margin-bottom:var(--sp-3)">Download CSV Template</button>
+        <textarea id="import-paste" class="paste-area" placeholder="Paste spreadsheet rows here..." aria-label="Paste spreadsheet data here"></textarea>
+        <div id="paste-preview" style="display:none;margin-top:var(--sp-3)"></div>
+        <div style="display:flex;gap:var(--sp-2);margin-top:var(--sp-3);flex-wrap:wrap">
+          <button class="btn btn-primary" id="import-btn">Import Rows</button>
+          <button class="btn btn-ghost btn-sm" id="btn-clear-paste">Clear</button>
+        </div>
+        <div id="paste-feedback" class="import-feedback" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRINT FOOTER -->
+<div class="print-footer" aria-hidden="true">Print-on-Demand Profit &amp; Margin Dashboard &bull; jonsDesignerShop &bull; Pre-tax margin, educational tool only</div>
+
+<!-- TOAST -->
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+'use strict';
+
+/* ===== CONSTANTS ===== */
+const STORAGE_KEY = 'pod-margin-v1:state';
+const PRESETS_KEY = 'pod-margin-v1:presets';
+
+/* ===== DEFAULT STATE ===== */
+function defaultState() {
+  return {
+    theme: 'light',
+    activeTab: 'products',
+    focusedRowId: null,
+    whatifPct: 0,
+    fees: {
+      txnRate: 6.5,
+      payRate: 3,
+      payFlat: 0.25,
+      listFee: 0.20
+    },
+    rows: [
+      { id: uid(), name: 'Classic T-Shirt (Bella+Canvas via Printify)', prodCost: 8.50, price: 25.00, shipCharged: 4.99, shipActual: 3.99, adSpend: 1.50, actualRoas: '' },
+      { id: uid(), name: 'Coffee Mug (Printful 11oz)', prodCost: 7.00, price: 18.00, shipCharged: 5.00, shipActual: 4.25, adSpend: 0.80, actualRoas: '' },
+      { id: uid(), name: 'Poster Print 18x24 (Gooten)', prodCost: 4.50, price: 22.00, shipCharged: 6.00, shipActual: 5.50, adSpend: 0, actualRoas: '' }
+    ]
+  };
+}
+
+/* ===== STATE ===== */
+let state = loadState();
+let saveTimer = null;
+
+function uid() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+/* ===== PERSISTENCE ===== */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') throw new Error('not object');
+    // Array guards
+    if (!Array.isArray(parsed.rows)) parsed.rows = defaultState().rows;
+    // Merge with defaults for upgrade-safety
+    const def = defaultState();
+    const merged = {
+      ...def,
+      ...parsed,
+      fees: { ...def.fees, ...(parsed.fees || {}) },
+      rows: parsed.rows
+    };
+    return merged;
+  } catch(e) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) localStorage.setItem(STORAGE_KEY + '__corrupt-backup', raw);
+      toast('Your saved data was unreadable. Restored example data. A backup was saved.', 'warning');
+    } catch(_) {}
+    return defaultState();
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    updateStorageBar();
+  } catch(e) {
+    toast('Could not save: storage quota reached or blocked. Export a backup now.', 'error');
+  }
+}
+
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { saveState(); saveTimer = null; }, 300);
+}
+
+function flushSave() {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    saveState();
+  }
+}
+
+window.addEventListener('pagehide', flushSave);
+window.addEventListener('visibilitychange', () => { if (document.hidden) flushSave(); });
+window.addEventListener('storage', e => {
+  if (e.key === STORAGE_KEY) {
+    toast('Data was changed in another tab. Reload to see the latest.', 'warning');
+  }
+});
+
+/* ===== FORMULAS ===== */
+function compute(row, fees, whatifPct) {
+  const price = parseNum(row.price);
+  const adjPrice = price * (1 + whatifPct / 100);
+  const shipCharged = parseNum(row.shipCharged);
+  const prodCost = parseNum(row.prodCost);
+  const shipActual = parseNum(row.shipActual);
+  const adSpend = parseNum(row.adSpend);
+  const txnRate = parseNum(fees.txnRate) / 100;
+  const payRate = parseNum(fees.payRate) / 100;
+  const payFlat = parseNum(fees.payFlat);
+  const listFee = parseNum(fees.listFee);
+
+  const grossRev = adjPrice + shipCharged;
+
+  if (grossRev === 0) {
+    return { grossRev: 0, feeTxn: 0, feePay: 0, feeListing: listFee, totalFees: listFee, netRev: -listFee, shipPL: shipCharged - shipActual, trueProfit: -(prodCost + shipActual + adSpend + listFee), marginPct: null, preAdProfit: null, preAdMargin: null, breakeven: null, adjPrice };
+  }
+
+  const feeTxn = txnRate * grossRev;
+  const feePay = (payRate * grossRev) + payFlat;
+  const totalFees = feeTxn + feePay + listFee;
+  const netRev = grossRev - totalFees;
+  const shipPL = shipCharged - shipActual;
+  const trueProfit = grossRev - totalFees - prodCost - shipActual - adSpend;
+  const marginPct = (trueProfit / grossRev) * 100;
+  const preAdProfit = grossRev - totalFees - prodCost - shipActual;
+  const preAdMargin = preAdProfit / grossRev;
+  const breakeven = preAdMargin > 0 ? 1 / preAdMargin : null;
+  return { grossRev, feeTxn, feePay, feeListing: listFee, totalFees, netRev, shipPL, trueProfit, marginPct, preAdProfit, preAdMargin, breakeven, adjPrice };
+}
+
+function parseNum(v) {
+  if (v === '' || v === null || v === undefined) return 0;
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g, ''));
+  return isFinite(n) ? n : 0;
+}
+
+/* ===== FORMATTERS ===== */
+function fmt$(v, dp=2) {
+  if (!isFinite(v)) return '—';
+  return '$' + v.toFixed(dp).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function fmtPct(v) {
+  if (v === null || !isFinite(v)) return '—';
+  return v.toFixed(2) + '%';
+}
+function fmtRoas(v) {
+  if (v === null || !isFinite(v)) return null;
+  return v.toFixed(2) + '×';
+}
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ===== TOAST ===== */
+function toast(msg, type='') {
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' toast-' + type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+/* ===== STORAGE BAR ===== */
+function updateStorageBar() {
+  try {
+    const used = new Blob([localStorage.getItem(STORAGE_KEY)||'']).size;
+    const est = 5 * 1024 * 1024;
+    const pct = Math.min(100, (used / est) * 100);
+    const bar = document.getElementById('storage-bar');
+    const lbl = document.getElementById('storage-label');
+    if (bar) bar.style.width = pct.toFixed(1) + '%';
+    if (lbl) lbl.textContent = (used / 1024).toFixed(1) + ' KB used of ~5 MB';
+  } catch(_) {}
+}
+
+/* ===== THEME ===== */
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  const icon = document.getElementById('theme-icon');
+  const lbl  = document.getElementById('theme-label');
+  if (icon) icon.textContent = t === 'dark' ? '☽' : '☀';
+  if (lbl)  lbl.textContent  = t === 'dark' ? 'Dark' : 'Light';
+}
+
+function wireThemeToggle() {
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(state.theme);
+    scheduleSave();
+  });
+}
+
+/* ===== TAB BAR ===== */
+function wireTabBar() {
+  document.querySelector('.tab-bar').addEventListener('click', e => {
+    const btn = e.target.closest('.tab-btn');
+    if (!btn) return;
+    switchTab(btn.dataset.tab);
+  });
+}
+
+function switchTab(tab) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const active = b.dataset.tab === tab;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', active);
+  });
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'panel-' + tab);
+  });
+  if (tab === 'fees') renderFeeSettings();
+  if (tab === 'presets') renderPresets();
+  if (tab === 'exportimport') updateStorageBar();
+  scheduleSave();
+}
+
+/* ===== TABLE HEADERS ===== */
+function buildTableHead(whatifPct) {
+  const showWhatif = whatifPct > 0;
+  return `<tr>
+    <th style="min-width:160px">Product Name</th>
+    <th>Prod Cost</th>
+    <th>Sell Price</th>
+    <th>Ship Charged</th>
+    <th>Ship Actual</th>
+    <th>Ad Spend/Unit</th>
+    <th class="col-out">Gross Rev</th>
+    <th class="col-out">Total Fees</th>
+    <th class="col-out">Ship P/L</th>
+    <th class="col-out">True Profit</th>
+    <th class="col-out">Margin %</th>
+    <th class="col-out">Breakeven ROAS</th>
+    <th>Actual ROAS</th>
+    ${showWhatif ? '<th class="col-whatif">+' + whatifPct + '% Margin</th>' : ''}
+    <th style="min-width:100px">Actions</th>
+  </tr>`;
+}
+
+/* ===== ROW RENDERER ===== */
+function buildTableRow(row, fees, whatifPct, isFocused) {
+  const c = compute(row, fees, 0);
+  const showWhatif = whatifPct > 0;
+  const cw = showWhatif ? compute(row, fees, whatifPct) : null;
+
+  const marginClass = c.marginPct !== null ? (c.marginPct >= 0 ? 'pos' : 'neg') : 'muted';
+  const profitClass = c.trueProfit >= 0 ? 'pos' : 'neg';
+  const shipClass   = c.shipPL >= 0 ? 'ship-pos' : 'ship-neg';
+
+  // Breakeven ROAS cell
+  let breakevenCell = '—';
+  let roasBadge = '';
+  if (c.breakeven === null && c.preAdMargin !== null && c.preAdMargin <= 0) {
+    breakevenCell = '<span class="badge badge-error" style="font-size:10px">Losing before ads</span>';
+  } else if (c.breakeven !== null) {
+    breakevenCell = fmtRoas(c.breakeven) || '—';
+    const actRoas = parseNum(row.actualRoas);
+    if (row.actualRoas !== '' && actRoas > 0) {
+      if (actRoas >= c.breakeven) {
+        roasBadge = `<span class="badge badge-success">ROAS OK +${(actRoas - c.breakeven).toFixed(2)}x</span>`;
+      } else {
+        roasBadge = `<span class="badge badge-error">ROAS LOW -${(c.breakeven - actRoas).toFixed(2)}x</span>`;
+      }
+    }
+  }
+
+  const whatifCell = showWhatif && cw
+    ? `<td class="col-whatif cell-out">${fmtPct(cw.marginPct)}<br><small style="font-weight:400">${fmt$(cw.trueProfit)}</small></td>`
+    : '';
+
+  const rid = row.id;
+  return `<tr data-id="${esc(rid)}" class="${isFocused ? 'row-focused' : ''}">
+    <td><input class="cell-input" data-id="${esc(rid)}" data-field="name" value="${esc(row.name)}" aria-label="Product name" style="min-width:150px"></td>
+    <td>
+      <input class="cell-input" data-id="${esc(rid)}" data-field="prodCost" type="number" min="0" step="0.01" value="${row.prodCost}" aria-label="Production cost">
+      <div class="input-error" data-id="${esc(rid)}" data-err="prodCost" role="alert" style="display:none"></div>
+    </td>
+    <td>
+      <input class="cell-input" data-id="${esc(rid)}" data-field="price" type="number" min="0" step="0.01" value="${row.price}" aria-label="Selling price">
+      <div class="input-error" data-id="${esc(rid)}" data-err="price" role="alert" style="display:none"></div>
+    </td>
+    <td><input class="cell-input" data-id="${esc(rid)}" data-field="shipCharged" type="number" min="0" step="0.01" value="${row.shipCharged}" aria-label="Shipping charged to buyer"></td>
+    <td>
+      <input class="cell-input" data-id="${esc(rid)}" data-field="shipActual" type="number" min="0" step="0.01" value="${row.shipActual}" aria-label="Actual shipping cost">
+      <div class="input-error" data-id="${esc(rid)}" data-err="shipActual" role="alert" style="display:none"></div>
+    </td>
+    <td>
+      <input class="cell-input" data-id="${esc(rid)}" data-field="adSpend" type="number" min="0" step="0.01" value="${row.adSpend}" aria-label="Ad spend per unit">
+      <div class="input-error" data-id="${esc(rid)}" data-err="adSpend" role="alert" style="display:none"></div>
+    </td>
+    <td class="cell-out">${fmt$(c.grossRev)}</td>
+    <td class="cell-out">${fmt$(c.totalFees)}</td>
+    <td class="cell-out ${shipClass}">${fmt$(c.shipPL)}</td>
+    <td class="cell-out ${profitClass}">${fmt$(c.trueProfit)}</td>
+    <td class="cell-out ${marginClass}">${c.grossRev === 0 ? '<span class="cell-out muted">—</span>' : fmtPct(c.marginPct)}</td>
+    <td class="cell-out">${breakevenCell}${roasBadge ? '<br>' + roasBadge : ''}</td>
+    <td>
+      <input class="cell-input" data-id="${esc(rid)}" data-field="actualRoas" type="number" min="0" step="0.01" value="${row.actualRoas}" placeholder="e.g. 3.5" aria-label="Actual ROAS for this product" style="max-width:80px">
+    </td>
+    ${whatifCell}
+    <td>
+      <div class="row-actions">
+        <button class="btn btn-ghost btn-sm" data-action="focus" data-id="${esc(rid)}" aria-label="Focus row for chart">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button class="btn btn-ghost btn-sm" data-action="clone" data-id="${esc(rid)}" aria-label="Duplicate row">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+        <button class="btn btn-ghost btn-sm" data-action="delete" data-id="${esc(rid)}" aria-label="Delete row" style="color:var(--error)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        </button>
+      </div>
+    </td>
+  </tr>`;
+}
+
+/* ===== WATERFALL CHART ===== */
+function renderChart(row, fees) {
+  const svg = document.getElementById('chart-waterfall');
+  const legend = document.getElementById('chart-legend');
+  const title = document.getElementById('chart-title');
+  if (!row) {
+    title.textContent = 'Select a product row to see its margin waterfall';
+    svg.innerHTML = '';
+    legend.innerHTML = '';
+    return;
+  }
+  const c = compute(row, fees, 0);
+  title.textContent = 'Margin waterfall: ' + row.name;
+
+  const gross = c.grossRev;
+  if (gross === 0) {
+    svg.innerHTML = '<text x="300" y="70" text-anchor="middle" font-family="inherit" font-size="13" fill="currentColor">Set a selling price to see the waterfall chart.</text>';
+    legend.innerHTML = '';
+    return;
+  }
+
+  const segs = [
+    { label: 'Prod Cost', val: parseNum(row.prodCost), color: 'var(--c-prod)' },
+    { label: 'Ship Cost', val: parseNum(row.shipActual), color: 'var(--c-ship)' },
+    { label: 'Fees', val: c.totalFees, color: 'var(--c-fees)' },
+    { label: 'Ad Spend', val: parseNum(row.adSpend), color: 'var(--c-ads)' },
+    { label: 'Profit', val: c.trueProfit, color: c.trueProfit >= 0 ? 'var(--c-profit)' : 'var(--profit-neg)' }
+  ];
+
+  const W = 600, H = 140, padL = 8, padR = 8, barH = 72, barY = 30;
+  const total = segs.reduce((a, s) => a + Math.abs(s.val), 0) || 1;
+  const usableW = W - padL - padR;
+  let x = padL;
+  let paths = '';
+
+  for (const seg of segs) {
+    const w = Math.max(0, (Math.abs(seg.val) / total) * usableW);
+    if (w < 1) { x += w; continue; }
+    paths += `<rect x="${x.toFixed(1)}" y="${barY}" width="${w.toFixed(1)}" height="${barH}" fill="${seg.color}" rx="3"/>`;
+    x += w;
+  }
+
+  // Legend only (no inline bar labels — avoids cramped text at narrow segments)
+  const legendHtml = segs.map(s => {
+    const pct = ((Math.abs(s.val) / gross) * 100).toFixed(1);
+    const sign = s.val < 0 && s.label === 'Profit' ? '-' : '';
+    return `<div class="legend-item">
+      <div class="legend-swatch" style="background:${s.color}"></div>
+      <span>${s.label}: ${sign}${fmt$(Math.abs(s.val))} (${pct}%)</span>
+    </div>`;
+  }).join('');
+
+  svg.innerHTML = paths;
+  legend.innerHTML = legendHtml;
+}
+
+/* ===== RENDER ===== */
+function render() {
+  const { rows, fees, whatifPct, focusedRowId } = state;
+  const pct = parseNum(whatifPct);
+
+  // Table head
+  const thead = document.getElementById('products-thead');
+  if (thead) thead.innerHTML = buildTableHead(pct);
+
+  // Table body
+  const tbody = document.getElementById('products-tbody');
+  if (tbody) {
+    tbody.innerHTML = rows.map(row => buildTableRow(row, fees, pct, row.id === focusedRowId)).join('');
+  }
+
+  // What-if display
+  const wi = document.getElementById('whatif-pct');
+  if (wi) wi.textContent = '+' + pct + '%';
+  const wd = document.getElementById('whatif-desc');
+  if (wd) {
+    if (pct === 0) {
+      wd.textContent = 'Move slider to preview adjusted margins';
+    } else {
+      const rowCount = rows.length;
+      wd.textContent = `Previewing +${pct}% price raise across ${rowCount} product${rowCount !== 1 ? 's' : ''}`;
+    }
+  }
+  const wSlider = document.getElementById('whatif-slider');
+  if (wSlider && parseFloat(wSlider.value) !== pct) wSlider.value = pct;
+
+  // Chart — auto-render the first row when nothing is explicitly focused
+  const focused = rows.find(r => r.id === focusedRowId) || rows[0] || null;
+  renderChart(focused, fees);
+
+  // Apply active tab
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const active = b.dataset.tab === state.activeTab;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', active);
+  });
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'panel-' + state.activeTab);
+  });
+
+  if (state.activeTab === 'fees') renderFeeSettings();
+  if (state.activeTab === 'presets') renderPresets();
+}
+
+/* ===== FEE SETTINGS ===== */
+const FEE_DEFAULTS = { txnRate: 6.5, payRate: 3, payFlat: 0.25, listFee: 0.20 };
+const FEE_FIELDS = [
+  { key: 'txnRate', label: 'Transaction Rate (%)', placeholder: '6.5', hint: 'Etsy default: 6.5%', pct: true },
+  { key: 'payRate', label: 'Payment Processing Rate (%)', placeholder: '3.0', hint: 'Etsy default: 3%', pct: true },
+  { key: 'payFlat', label: 'Payment Processing Flat ($)', placeholder: '0.25', hint: 'Etsy default: $0.25', pct: false },
+  { key: 'listFee', label: 'Listing Fee per Sale ($)', placeholder: '0.20', hint: 'Etsy default: $0.20', pct: false }
+];
+
+function renderFeeSettings() {
+  const grid = document.getElementById('fee-grid');
+  if (!grid) return;
+  grid.innerHTML = FEE_FIELDS.map(f => {
+    const val = state.fees[f.key];
+    return `<div class="field-group">
+      <label class="field-label" for="fee-${f.key}">${f.label}</label>
+      <input class="field-input" id="fee-${f.key}" type="number" min="0" step="0.01" value="${val}" data-fee="${f.key}" aria-label="${f.label}">
+      <div class="input-error" id="fee-err-${f.key}" role="alert" style="display:none"></div>
+      <small style="color:var(--ink-muted);font-size:11px">${f.hint}</small>
+    </div>`;
+  }).join('');
+
+  // Wire inputs
+  grid.querySelectorAll('[data-fee]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const key = inp.dataset.fee;
+      const v = parseFloat(inp.value);
+      const errEl = document.getElementById('fee-err-' + key);
+      const isPct = FEE_FIELDS.find(f => f.key === key).pct;
+      if (isNaN(v) || v < 0) {
+        inp.classList.add('invalid');
+        errEl.textContent = 'Must be 0 or more.';
+        errEl.style.display = '';
+      } else if (isPct && v > 50) {
+        inp.classList.add('invalid');
+        errEl.textContent = 'Rate over 50% — double-check.';
+        errEl.style.display = '';
+      } else {
+        inp.classList.remove('invalid');
+        errEl.style.display = 'none';
+      }
+      state.fees[key] = isNaN(v) ? 0 : v;
+      state.rows.forEach(r => updateRowOutputs(r.id)); // fee changes must recompute EVERY product row's margins
+      renderFeePreview();
+      scheduleSave();
+    });
+  });
+
+  renderFeePreview();
+}
+
+function renderFeePreview() {
+  const box = document.getElementById('fee-preview-rows');
+  if (!box) return;
+  const focused = state.rows.find(r => r.id === state.focusedRowId) || state.rows[0];
+  if (!focused) { box.innerHTML = '<p style="color:var(--ink-muted);font-size:var(--fs-xs)">No products to preview.</p>'; return; }
+  const c = compute(focused, state.fees, 0);
+  const rows2 = [
+    ['Product', focused.name],
+    ['Gross Revenue', fmt$(c.grossRev)],
+    ['Transaction Fee (' + state.fees.txnRate + '%)', fmt$(c.feeTxn)],
+    ['Payment Processing', fmt$(c.feePay)],
+    ['Listing Fee', fmt$(c.feeListing)],
+    ['Total Fees', fmt$(c.totalFees)],
+    ['Net Revenue', fmt$(c.netRev)],
+    ['True Profit', fmt$(c.trueProfit)],
+    ['Margin', c.grossRev === 0 ? '—' : fmtPct(c.marginPct)]
+  ];
+  box.innerHTML = rows2.map((r, i) => `<div class="fee-preview-row${i === rows2.length-1 ? '' : ''}">
+    <span style="color:var(--ink-secondary)">${esc(r[0])}</span>
+    <span style="color:${i >= rows2.length-2 ? 'var(--ink)' : 'inherit'}">${esc(r[1])}</span>
+  </div>`).join('');
+}
+
+/* ===== PRESETS ===== */
+function loadPresets() {
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY);
+    if (!raw) return [];
+    const p = JSON.parse(raw);
+    return Array.isArray(p) ? p : [];
+  } catch(_) { return []; }
+}
+
+function savePresets(presets) {
+  try {
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(presets));
+  } catch(_) { toast('Could not save preset: storage full.', 'error'); }
+}
+
+function renderPresets() {
+  const list = document.getElementById('preset-list');
+  const empty = document.getElementById('preset-empty');
+  if (!list) return;
+  const presets = loadPresets();
+  if (presets.length === 0) {
+    list.innerHTML = '';
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  list.innerHTML = presets.map((p, i) => `<div class="preset-item">
+    <div>
+      <div class="preset-name">${esc(p.name)}</div>
+      <div class="preset-meta">Prod cost: ${fmt$(p.prodCost)} | Sell: ${fmt$(p.price)} | Ship actual: ${fmt$(p.shipActual)}</div>
+    </div>
+    <button class="btn btn-primary btn-sm" data-preset-load="${i}" aria-label="Load preset ${esc(p.name)} into a new row">Load into New Row</button>
+    <button class="btn btn-danger btn-sm" data-preset-del="${i}" aria-label="Delete preset ${esc(p.name)}">Delete</button>
+  </div>`).join('');
+
+  list.querySelectorAll('[data-preset-load]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.presetLoad);
+      const presets2 = loadPresets();
+      const p = presets2[idx];
+      if (!p) return;
+      const newRow = { ...p, id: uid(), actualRoas: '' };
+      state.rows.push(newRow);
+      state.focusedRowId = newRow.id;
+      scheduleSave();
+      switchTab('products');
+      render();
+      toast('Preset loaded into a new row.', 'success');
+    });
+  });
+
+  list.querySelectorAll('[data-preset-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.presetDel);
+      const presets2 = loadPresets();
+      presets2.splice(idx, 1);
+      savePresets(presets2);
+      renderPresets();
+      toast('Preset deleted.');
+    });
+  });
+}
+
+/* ===== TABLE DELEGATION ===== */
+function wireTable() {
+  const tbody = document.getElementById('products-tbody');
+  if (!tbody) return;
+
+  tbody.addEventListener('input', e => {
+    const inp = e.target.closest('.cell-input');
+    if (!inp) return;
+    const id = inp.dataset.id;
+    const field = inp.dataset.field;
+    const row = state.rows.find(r => r.id === id);
+    if (!row) return;
+
+    const val = inp.value;
+    if (field === 'name') {
+      row[field] = val;
+    } else {
+      const n = parseFloat(val);
+      const errEl = tbody.querySelector(`[data-err="${field}"][data-id="${id}"]`);
+      if (errEl) {
+        if (val !== '' && (isNaN(n) || n < 0)) {
+          inp.classList.add('invalid');
+          errEl.textContent = 'Must be 0 or more.';
+          errEl.style.display = '';
+        } else {
+          inp.classList.remove('invalid');
+          errEl.style.display = 'none';
+        }
+      }
+      row[field] = val === '' ? '' : val;
+    }
+    // Update computed cells without full re-render (performance)
+    updateRowOutputs(id);
+    scheduleSave();
+  });
+
+  tbody.addEventListener('focus', e => {
+    const inp = e.target.closest('.cell-input');
+    if (inp && inp.dataset.id) {
+      state.focusedRowId = inp.dataset.id;
+      const focused = state.rows.find(r => r.id === state.focusedRowId);
+      renderChart(focused || null, state.fees);
+      renderFeePreview();
+      // Update row highlight
+      tbody.querySelectorAll('tr').forEach(tr => tr.classList.toggle('row-focused', tr.dataset.id === state.focusedRowId));
+    }
+  }, true);
+
+  tbody.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    const idx = state.rows.findIndex(r => r.id === id);
+    if (idx === -1) return;
+
+    if (action === 'focus') {
+      state.focusedRowId = id;
+      scheduleSave();
+      render();
+    } else if (action === 'clone') {
+      const clone = { ...state.rows[idx], id: uid(), name: state.rows[idx].name + ' (copy)' };
+      state.rows.splice(idx + 1, 0, clone);
+      scheduleSave();
+      render();
+    } else if (action === 'delete') {
+      state.rows.splice(idx, 1);
+      if (state.focusedRowId === id) state.focusedRowId = state.rows[0]?.id || null;
+      scheduleSave();
+      render();
+    }
+  });
+}
+
+function updateRowOutputs(id) {
+  const row = state.rows.find(r => r.id === id);
+  if (!row) return;
+  const c = compute(row, state.fees, 0);
+  const pct = parseNum(state.whatifPct);
+  const cw = pct > 0 ? compute(row, state.fees, pct) : null;
+  const tbody = document.getElementById('products-tbody');
+  if (!tbody) return;
+  const tr = tbody.querySelector(`tr[data-id="${id}"]`);
+  if (!tr) return;
+
+  // Get output cells by position (after the 6 input cols + optional errors)
+  const cells = tr.querySelectorAll('td');
+  // Cells layout: 0=name, 1=prodCost, 2=price, 3=shipCharged, 4=shipActual, 5=adSpend,
+  // 6=grossRev, 7=totalFees, 8=shipPL, 9=trueProfit, 10=marginPct, 11=breakevenRoas, 12=actualRoas, [13=whatif], last=actions
+  const outStart = 6;
+  function setCell(i, html, cls) {
+    if (!cells[i]) return;
+    if (cells[i].innerHTML !== html) {
+      cells[i].innerHTML = html;
+      cells[i].className = 'cell-out' + (cls ? ' ' + cls : '');
+      cells[i].classList.add('pulse-update');
+      setTimeout(() => cells[i].classList.remove('pulse-update'), 300);
+    }
+  }
+
+  const marginClass = c.marginPct !== null ? (c.marginPct >= 0 ? 'pos' : 'neg') : 'muted';
+  const profitClass = c.trueProfit >= 0 ? 'pos' : 'neg';
+  const shipClass   = c.shipPL >= 0 ? 'ship-pos' : 'ship-neg';
+
+  setCell(outStart, fmt$(c.grossRev));
+  setCell(outStart+1, fmt$(c.totalFees));
+  setCell(outStart+2, fmt$(c.shipPL), shipClass.replace('ship-',''));
+  cells[outStart+2].className = 'cell-out ' + shipClass;
+  setCell(outStart+3, fmt$(c.trueProfit), profitClass);
+  setCell(outStart+4, c.grossRev === 0 ? '<span class="cell-out muted">—</span>' : fmtPct(c.marginPct), marginClass);
+
+  // Breakeven
+  let breakevenHtml = '—';
+  let roasBadge = '';
+  if (c.breakeven === null && c.preAdMargin !== null && c.preAdMargin <= 0) {
+    breakevenHtml = '<span class="badge badge-error" style="font-size:10px">Losing before ads</span>';
+  } else if (c.breakeven !== null) {
+    breakevenHtml = fmtRoas(c.breakeven) || '—';
+    const actRoas = parseNum(row.actualRoas);
+    if (row.actualRoas !== '' && actRoas > 0) {
+      if (actRoas >= c.breakeven) {
+        roasBadge = `<span class="badge badge-success">ROAS OK +${(actRoas - c.breakeven).toFixed(2)}x</span>`;
+      } else {
+        roasBadge = `<span class="badge badge-error">ROAS LOW -${(c.breakeven - actRoas).toFixed(2)}x</span>`;
+      }
+    }
+  }
+  setCell(outStart+5, breakevenHtml + (roasBadge ? '<br>' + roasBadge : ''));
+
+  // What-if
+  if (pct > 0 && cw && cells[outStart+7]) {
+    cells[outStart+7].innerHTML = fmtPct(cw.marginPct) + '<br><small style="font-weight:400">' + fmt$(cw.trueProfit) + '</small>';
+  }
+
+  // Chart update if focused
+  if (state.focusedRowId === id) renderChart(row, state.fees);
+  renderFeePreview();
+}
+
+/* ===== WHAT-IF ===== */
+function wireWhatif() {
+  const slider = document.getElementById('whatif-slider');
+  if (!slider) return;
+  slider.addEventListener('input', () => {
+    state.whatifPct = parseInt(slider.value);
+    document.getElementById('whatif-pct').textContent = '+' + state.whatifPct + '%';
+    const wd = document.getElementById('whatif-desc');
+    if (wd) {
+      if (state.whatifPct === 0) wd.textContent = 'Move slider to preview adjusted margins';
+      else wd.textContent = `Previewing +${state.whatifPct}% price raise across ${state.rows.length} product${state.rows.length !== 1 ? 's' : ''}`;
+    }
+    render(); // need full re-render to show/hide whatif column
+    scheduleSave();
+  });
+  document.getElementById('whatif-reset').addEventListener('click', () => {
+    state.whatifPct = 0;
+    slider.value = 0;
+    document.getElementById('whatif-pct').textContent = '+0%';
+    document.getElementById('whatif-desc').textContent = 'Move slider to preview adjusted margins';
+    render();
+    scheduleSave();
+  });
+}
+
+/* ===== ADD/RESET ROWS ===== */
+function wireProductActions() {
+  document.getElementById('btn-add-row').addEventListener('click', () => {
+    const newRow = { id: uid(), name: 'New Product', prodCost: 0, price: 0, shipCharged: 0, shipActual: 0, adSpend: 0, actualRoas: '' };
+    state.rows.push(newRow);
+    state.focusedRowId = newRow.id;
+    scheduleSave();
+    render();
+  });
+
+  document.getElementById('btn-reset-example').addEventListener('click', () => {
+    if (!confirm('This will replace your current products with the example data. Continue?')) return;
+    const d = defaultState();
+    state.rows = d.rows;
+    state.focusedRowId = null;
+    scheduleSave();
+    render();
+    toast('Example data loaded.', 'success');
+  });
+
+  document.getElementById('btn-save-preset').addEventListener('click', () => {
+    const focused = state.rows.find(r => r.id === state.focusedRowId) || state.rows[0];
+    if (!focused) { toast('No product focused.', 'warning'); return; }
+    const name = prompt('Preset name:', focused.name);
+    if (!name) return;
+    const presets = loadPresets();
+    presets.push({ name, prodCost: focused.prodCost, price: focused.price, shipCharged: focused.shipCharged, shipActual: focused.shipActual, adSpend: focused.adSpend });
+    savePresets(presets);
+    toast('Preset saved: ' + name, 'success');
+    renderPresets();
+  });
+
+  document.getElementById('btn-reset-fees').addEventListener('click', () => {
+    state.fees = { ...FEE_DEFAULTS };
+    scheduleSave();
+    renderFeeSettings();
+    render();
+    toast('Fees reset to Etsy defaults.', 'success');
+  });
+}
+
+/* ===== EXPORT / IMPORT ===== */
+function downloadStateBackup() {
+  const blob = new Blob([JSON.stringify({ ...state, exportedAt: new Date().toISOString() }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `pod-margin-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function wireExportImport() {
+  // JSON Export — wired on both the header quick-backup button (always visible) and the panel button
+  document.getElementById('btn-export-backup').addEventListener('click', downloadStateBackup);
+  document.getElementById('btn-export-json').addEventListener('click', downloadStateBackup);
+
+  // Clear data
+  document.getElementById('btn-clear-data').addEventListener('click', () => {
+    if (!confirm('This will delete ALL your products and settings permanently. Export a backup first. Continue?')) return;
+    state = defaultState();
+    saveState();
+    render();
+    toast('All data cleared. Example data loaded.', 'warning');
+  });
+
+  // File import
+  const fileInput = document.getElementById('import-file-input');
+  document.getElementById('import-drop').addEventListener('dragover', e => {
+    e.preventDefault();
+    document.getElementById('import-drop').classList.add('drag-over');
+  });
+  document.getElementById('import-drop').addEventListener('dragleave', () => {
+    document.getElementById('import-drop').classList.remove('drag-over');
+  });
+  document.getElementById('import-drop').addEventListener('drop', e => {
+    e.preventDefault();
+    document.getElementById('import-drop').classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) importJsonFile(file);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) importJsonFile(fileInput.files[0]);
+  });
+
+  // Paste importer
+  document.getElementById('import-btn').addEventListener('click', importPaste);
+  document.getElementById('btn-clear-paste').addEventListener('click', () => {
+    document.getElementById('import-paste').value = '';
+    document.getElementById('paste-feedback').style.display = 'none';
+    document.getElementById('paste-preview').style.display = 'none';
+  });
+  document.getElementById('import-paste').addEventListener('input', updatePastePreview);
+
+  // CSV template
+  document.getElementById('btn-csv-template').addEventListener('click', () => {
+    const csv = 'Name,Production Cost,Selling Price,Shipping Charged,Actual Shipping,Ad Spend\nT-Shirt Classic,8.50,25.00,4.99,3.99,1.50\nCoffee Mug,7.00,18.00,5.00,4.25,0.80\n';
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'pod-margin-template.csv';
+    a.click(); URL.revokeObjectURL(url);
+  });
+}
+
+function importJsonFile(file) {
+  const reader = new FileReader();
+  const msgEl = document.getElementById('import-json-msg');
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || typeof parsed !== 'object') throw new Error('Invalid format');
+      if (!Array.isArray(parsed.rows)) throw new Error('Missing rows array');
+      // Validate rows
+      const cleanRows = parsed.rows.map(r => ({
+        id: uid(),
+        name: String(r.name || 'Unnamed').slice(0, 200),
+        prodCost: parseNum(r.prodCost),
+        price: parseNum(r.price),
+        shipCharged: parseNum(r.shipCharged),
+        shipActual: parseNum(r.shipActual),
+        adSpend: parseNum(r.adSpend),
+        actualRoas: r.actualRoas || ''
+      }));
+      if (!confirm(`Import will replace your ${state.rows.length} current product${state.rows.length !== 1 ? 's' : ''} with ${cleanRows.length} from the backup file. Continue?`)) return;
+      state = { ...defaultState(), ...parsed, rows: cleanRows, fees: { ...FEE_DEFAULTS, ...(parsed.fees || {}) }, theme: state.theme };
+      saveState();
+      render();
+      msgEl.style.display = '';
+      msgEl.className = 'import-feedback';
+      msgEl.style.background = 'var(--success-bg)';
+      msgEl.style.color = 'var(--success-text)';
+      msgEl.textContent = 'Imported ' + cleanRows.length + ' products successfully.';
+      toast('Import successful.', 'success');
+    } catch(err) {
+      msgEl.style.display = '';
+      msgEl.className = 'import-feedback';
+      msgEl.style.background = 'var(--error-bg)';
+      msgEl.style.color = 'var(--error-text)';
+      msgEl.textContent = 'Import failed: ' + err.message + '. File may be corrupted or wrong format.';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function parseMoneyVal(s) {
+  if (s === null || s === undefined) return 0;
+  const cleaned = String(s).replace(/[$,\s]/g, '');
+  const n = parseFloat(cleaned);
+  return isFinite(n) ? n : 0;
+}
+
+function updatePastePreview() {
+  const raw = document.getElementById('import-paste').value;
+  const preview = document.getElementById('paste-preview');
+  if (!raw.trim()) { preview.style.display = 'none'; return; }
+  const { rows: parsed } = parsePaste(raw);
+  if (parsed.length === 0) { preview.style.display = 'none'; return; }
+  preview.style.display = '';
+  preview.innerHTML = `<p style="font-size:var(--fs-xs);color:var(--ink-secondary);margin-bottom:var(--sp-2)">Preview: ${parsed.length} row${parsed.length !== 1 ? 's' : ''} detected</p>
+  <div class="table-wrap" style="max-height:160px;overflow-y:auto">
+  <table><thead><tr><th>Name</th><th>Prod Cost</th><th>Price</th><th>Ship Chgd</th><th>Ship Actual</th><th>Ad Spend</th></tr></thead>
+  <tbody>${parsed.slice(0,5).map(r => `<tr><td>${esc(r.name)}</td><td>${fmt$(r.prodCost)}</td><td>${fmt$(r.price)}</td><td>${fmt$(r.shipCharged)}</td><td>${fmt$(r.shipActual)}</td><td>${fmt$(r.adSpend)}</td></tr>`).join('')}
+  ${parsed.length > 5 ? `<tr><td colspan="6" style="color:var(--ink-muted);text-align:center">...and ${parsed.length - 5} more</td></tr>` : ''}
+  </tbody></table></div>`;
+}
+
+function parsePaste(raw) {
+  const lines = raw.split('\n');
+  const rows = [];
+  let skipped = 0;
+  const skipReasons = [];
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    // Detect delimiter: tab or comma
+    const delim = line.includes('\t') ? '\t' : ',';
+    // Split and trim per-field (not the whole blob)
+    const parts = line.split(delim).map(f => f.trim());
+    if (parts.length < 2) { skipped++; skipReasons.push('Too few columns: ' + line.slice(0,40)); continue; }
+
+    // Skip header row if it looks like text
+    const firstCell = parts[0].toLowerCase();
+    if (firstCell === 'name' || firstCell === 'product' || firstCell === 'product name') continue;
+
+    const name = parts[0] || 'Unnamed';
+    const prodCost = parseMoneyVal(parts[1]);
+    const price = parseMoneyVal(parts[2] || '0');
+    const shipCharged = parseMoneyVal(parts[3] || '0');
+    const shipActual = parseMoneyVal(parts[4] || '0');
+    const adSpend = parseMoneyVal(parts[5] || '0');
+
+    rows.push({ id: uid(), name: name.slice(0, 200), prodCost, price, shipCharged, shipActual, adSpend, actualRoas: '' });
+  }
+  return { rows, skipped, skipReasons };
+}
+
+function importPaste() {
+  const raw = document.getElementById('import-paste').value;
+  const feedback = document.getElementById('paste-feedback');
+  if (!raw.trim()) { feedback.style.display = ''; feedback.style.background='var(--warning-bg)'; feedback.style.color='var(--warning-text)'; feedback.textContent='Paste some rows first.'; return; }
+
+  const { rows: parsed, skipped, skipReasons } = parsePaste(raw);
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    feedback.style.display = '';
+    feedback.style.background = 'var(--error-bg)';
+    feedback.style.color = 'var(--error-text)';
+    feedback.textContent = parsed.length === 0
+      ? 'No valid rows found. Check that each row has at least Name and Production Cost columns.'
+      : 'Invalid data format.';
+    return;
+  }
+
+  if (!confirm(`Add ${parsed.length} row${parsed.length !== 1 ? 's' : ''} to your existing ${state.rows.length} product${state.rows.length !== 1 ? 's' : ''}? Your current products are kept. Rows are appended and cannot be auto-removed.`)) return;
+
+  state.rows = [...state.rows, ...parsed];
+  scheduleSave();
+  render();
+  feedback.style.display = '';
+  feedback.style.background = 'var(--success-bg)';
+  feedback.style.color = 'var(--success-text)';
+  let msg = `Imported ${parsed.length} row${parsed.length !== 1 ? 's' : ''}.`;
+  if (skipped > 0) msg += ` Skipped ${skipped} row${skipped !== 1 ? 's' : ''} (too few columns).`;
+  feedback.textContent = msg;
+  toast(msg, 'success');
+}
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', () => {
+  applyTheme(state.theme);
+  wireTabBar();
+  wireThemeToggle();
+  wireTable();
+  wireWhatif();
+  wireProductActions();
+  wireExportImport();
+  render();
+  updateStorageBar();
+  document.getElementById('print-date').textContent = new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'});
+
+  // Respect system preference on first load only
+  if (!localStorage.getItem(STORAGE_KEY)) {
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      state.theme = 'dark';
+      applyTheme('dark');
+    }
+  }
+});
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Print-on-Demand Profit &amp; Margin Dashboard. It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4531575559?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($14) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

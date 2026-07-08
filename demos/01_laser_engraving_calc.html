@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Laser Engraving Price &amp; Profit Calculator</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#6B9BD1;--blue-light:#EBF2FA;--blue-dark:#4A7DB5;
+  --ink:#2B3A4A;--ink-light:#4A5D6E;--ink-faint:#8A9BAB;
+  --bg:#F4F7FA;--card:#FFFFFF;
+  --green:#3DAA7A;--green-light:#E8F7F1;
+  --orange:#E07A30;--orange-light:#FDF0E8;
+  --red:#CC4444;--red-light:#FDEAEA;
+  --border:#DDE4EC;--shadow:0 2px 8px rgba(43,58,74,.09);
+  --radius:12px;--radius-sm:8px;
+  --font:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+}
+html{font-size:16px;color:var(--ink);background:var(--bg);font-family:var(--font)}
+body{min-height:100vh;padding-bottom:48px}
+
+/* LAYOUT */
+.app-header{background:var(--card);border-bottom:1px solid var(--border);padding:20px 24px;display:flex;align-items:center;gap:16px;box-shadow:var(--shadow)}
+.app-header .logo{width:40px;height:40px;flex-shrink:0}
+.app-header h1{font-size:1.25rem;font-weight:700;color:var(--ink)}
+.app-header h1 span{color:var(--blue);display:block;font-size:.8rem;font-weight:500;margin-top:1px}
+.header-actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+.container{max-width:1100px;margin:0 auto;padding:24px 16px}
+
+.tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--card);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow)}
+.tab-btn{flex:1;padding:10px 8px;border:none;background:transparent;border-radius:var(--radius-sm);cursor:pointer;font:600 .85rem var(--font);color:var(--ink-light);transition:all .2s}
+.tab-btn.active{background:var(--blue);color:#fff;box-shadow:0 2px 6px rgba(107,155,209,.4)}
+.tab-btn:hover:not(.active){background:var(--blue-light);color:var(--blue-dark)}
+
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px}
+@media(max-width:700px){.grid-2,.grid-3{grid-template-columns:1fr}}
+@media(max-width:900px){.grid-3{grid-template-columns:1fr 1fr}}
+
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:20px}
+.card-title{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);margin-bottom:16px}
+.card-title .icon{display:inline-block;width:18px;height:18px;vertical-align:middle;margin-right:6px}
+
+/* FORM ELEMENTS */
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--ink-light);margin-bottom:5px}
+label .hint{font-weight:400;color:var(--ink-faint);font-size:.75rem;margin-left:4px}
+input[type=number],input[type=text],select,textarea{
+  width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  font:1rem var(--font);color:var(--ink);background:#fff;
+  transition:border-color .2s,box-shadow .2s;
+  -moz-appearance:textfield;
+}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input[type=number]:focus,input[type=text]:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(107,155,209,.2)
+}
+input.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(204,68,68,.12)}
+.input-error{color:var(--red);font-size:.74rem;font-weight:600;margin-top:5px}
+.input-prefix,.input-suffix{position:relative;display:flex;align-items:center}
+.input-prefix input,.input-suffix input{padding-left:30px}
+.input-prefix::before{content:attr(data-sym);position:absolute;left:11px;color:var(--ink-faint);font-size:.9rem;pointer-events:none}
+.input-suffix::after{content:attr(data-sym);position:absolute;right:11px;color:var(--ink-faint);font-size:.85rem;pointer-events:none}
+.input-suffix input{padding-right:36px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--radius-sm);border:none;cursor:pointer;font:600 .85rem var(--font);transition:all .18s;white-space:nowrap}
+.btn-primary{background:var(--blue);color:#fff;box-shadow:0 2px 6px rgba(107,155,209,.35)}
+.btn-primary:hover{background:var(--blue-dark);box-shadow:0 3px 10px rgba(107,155,209,.45)}
+.btn-secondary{background:var(--blue-light);color:var(--blue-dark);border:1.5px solid #C8DCEF}
+.btn-secondary:hover{background:#D9EAFA;border-color:var(--blue)}
+.btn-ghost{background:transparent;color:var(--ink-light);border:1.5px solid var(--border)}
+.btn-ghost:hover{background:var(--bg);border-color:var(--ink-light)}
+.btn-danger{background:var(--red-light);color:var(--red);border:1.5px solid #EEBCBC}
+.btn-danger:hover{background:#FAD8D8}
+.btn-sm{padding:6px 12px;font-size:.78rem}
+.btn-icon{padding:7px;border-radius:var(--radius-sm)}
+.btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* RESULT CARDS */
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px}
+.result-card{background:var(--card);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);border-left:4px solid var(--border)}
+.result-card.green{border-left-color:var(--green);background:var(--green-light)}
+.result-card.blue{border-left-color:var(--blue);background:var(--blue-light)}
+.result-card.orange{border-left-color:var(--orange);background:var(--orange-light)}
+.result-card.red{border-left-color:var(--red);background:var(--red-light)}
+.result-card .label{font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);margin-bottom:4px}
+.result-card .value{font-size:1.6rem;font-weight:700;color:var(--ink)}
+.result-card .sub{font-size:.75rem;color:var(--ink-light);margin-top:4px}
+
+/* PROFIT SLIDER */
+.price-slider-wrap{margin:20px 0}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row label{white-space:nowrap;min-width:100px;font-size:.82rem;font-weight:600;color:var(--ink-light)}
+input[type=range]{flex:1;-webkit-appearance:none;height:6px;border-radius:3px;background:var(--border);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--blue);box-shadow:0 2px 5px rgba(107,155,209,.5);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--blue);border:none;cursor:pointer}
+.slider-val{min-width:70px;text-align:right;font-weight:700;font-size:1rem;color:var(--ink)}
+
+/* BREAKDOWN TABLE */
+.breakdown-table{width:100%;border-collapse:collapse;font-size:.85rem}
+.breakdown-table th{text-align:left;padding:8px 10px;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-faint);background:var(--bg);border-bottom:1px solid var(--border)}
+.breakdown-table td{padding:9px 10px;border-bottom:1px solid #EEF2F6;vertical-align:top}
+.breakdown-table tr:last-child td{border-bottom:none;font-weight:700;background:var(--blue-light)}
+.breakdown-table .amt{text-align:right;font-feature-settings:'tnum';font-variant-numeric:tabular-nums}
+.breakdown-table .pct{text-align:right;color:var(--ink-faint);font-size:.78rem}
+
+/* BATCH TABLE */
+.batch-table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:12px}
+.batch-table th{text-align:left;padding:10px 12px;background:var(--ink);color:#fff;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
+.batch-table th:not(:first-child){text-align:right}
+.batch-table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+.batch-table td:not(:first-child){text-align:right;font-feature-settings:'tnum'}
+.batch-table tr:hover td{background:var(--blue-light)}
+.batch-table .highlight td{background:var(--green-light);font-weight:600}
+
+/* PRESETS */
+.preset-list{display:flex;flex-direction:column;gap:8px}
+.preset-item{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fff;cursor:pointer;transition:all .15s}
+.preset-item:hover{border-color:var(--blue);background:var(--blue-light)}
+.preset-item .pi-name{font-weight:600;font-size:.88rem;flex:1;text-align:left}
+.preset-item .pi-meta{font-size:.75rem;color:var(--ink-faint)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(43,58,74,.45);z-index:1000;align-items:center;justify-content:center;padding:16px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border-radius:var(--radius);box-shadow:0 8px 32px rgba(43,58,74,.22);padding:28px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto}
+.modal h2{font-size:1.1rem;font-weight:700;margin-bottom:16px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+
+/* CHART */
+.chart-wrap{margin-top:16px}
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:160px;border-bottom:2px solid var(--border);padding-bottom:0}
+.chart-bar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:4px;height:100%}
+.chart-bar{width:100%;border-radius:4px 4px 0 0;transition:height .3s}
+.chart-label{font-size:.65rem;color:var(--ink-faint);text-align:center;margin-top:6px;word-break:break-word}
+.chart-val{font-size:.65rem;font-weight:700;text-align:center;color:var(--ink-light)}
+
+/* MISC */
+.divider{height:1px;background:var(--border);margin:20px 0}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.badge-green{background:var(--green-light);color:var(--green)}
+.badge-orange{background:var(--orange-light);color:var(--orange)}
+.badge-red{background:var(--red-light);color:var(--red)}
+.badge-blue{background:var(--blue-light);color:var(--blue-dark)}
+.text-sm{font-size:.82rem;color:var(--ink-light)}
+.text-muted{color:var(--ink-faint)}
+.mt8{margin-top:8px}
+.mt16{margin-top:16px}
+.row{display:flex;align-items:center;gap:10px}
+.spacer{flex:1}
+.flex-wrap{flex-wrap:wrap}
+
+/* PRINT */
+@media print{
+  body{background:#fff;padding:0}
+  .app-header,.tabs,.header-actions,.no-print,.btn,.price-slider-wrap{display:none!important}
+  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
+  .result-card{box-shadow:none;border:1px solid #ccc}
+  .tab-panel{display:none!important}            /* was block!important: it printed ALL four panels stacked */
+  #panel-quote{display:block!important}          /* only the quote sheet prints, whatever tab is active */
+  #panel-quote .card:not(#quotePrint){display:none!important} /* hide the quote INPUT form, keep only the clean printed quote */
+  .container{padding:8px}
+}
+
+/* FOOTER */
+.app-footer{text-align:center;padding:20px 16px 8px;font-size:.72rem;color:var(--ink-faint);border-top:1px solid var(--border);margin-top:32px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:var(--radius-sm);font-size:.85rem;box-shadow:0 4px 16px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:9999}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* FOCUS */
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <svg class="logo" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="40" height="40" rx="10" fill="#EBF2FA"/>
+    <path d="M8 30 L20 10 L32 30" stroke="#6B9BD1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M13 23 L27 23" stroke="#6B9BD1" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="20" cy="10" r="3" fill="#4A7DB5"/>
+    <path d="M20 26 L20 30" stroke="#4A7DB5" stroke-width="2.5" stroke-linecap="round"/>
+  </svg>
+  <h1>Laser Engraving Calculator <span>Price · Profit · Quote</span></h1>
+  <div class="header-actions no-print">
+    <button class="btn btn-secondary btn-sm" onclick="exportJSON()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M3 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Export
+    </button>
+    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('importFile').click()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 10V2M5 5l3-3 3 3M3 12h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Import
+    </button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="btn btn-ghost btn-sm" onclick="confirmReset()">Reset</button>
+    <button class="btn btn-primary btn-sm" onclick="window.print()">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M5 6V3h6v3M5 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Print Quote
+    </button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- TABS -->
+  <nav class="tabs no-print" role="tablist">
+    <button class="tab-btn active" onclick="showTab('calculator')" role="tab" aria-selected="true" id="tab-calculator">Calculator</button>
+    <button class="tab-btn" onclick="showTab('batch')" role="tab" id="tab-batch">Batch Pricing</button>
+    <button class="tab-btn" onclick="showTab('presets')" role="tab" id="tab-presets">Presets</button>
+    <button class="tab-btn" onclick="showTab('quote')" role="tab" id="tab-quote">Quote Sheet</button>
+  </nav>
+
+  <!-- ======== CALCULATOR TAB ======== -->
+  <div class="tab-panel active" id="panel-calculator">
+    <div class="grid-2">
+
+      <!-- LEFT COLUMN -->
+      <div>
+        <!-- MATERIALS -->
+        <div class="card">
+          <div class="card-title">
+            <svg class="icon" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="14" rx="3" stroke="#6B9BD1" stroke-width="1.8"/><path d="M6 9h6M9 6v6" stroke="#6B9BD1" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Materials
+          </div>
+          <div class="field">
+            <label for="matCost">Material Sheet Cost <span class="hint">(full sheet)</span></label>
+            <div class="input-prefix" data-sym="$">
+              <input type="number" id="matCost" min="0" step="0.01" placeholder="12.50" oninput="calc()">
+            </div>
+          </div>
+          <div class="field">
+            <label for="matUsage">Sheet Usage <span class="hint">(%)</span></label>
+            <div class="input-suffix" data-sym="%">
+              <input type="number" id="matUsage" min="0" max="100" step="1" placeholder="35" oninput="calc()">
+            </div>
+          </div>
+          <div class="field">
+            <label for="consumables">Consumables / Supplies <span class="hint">(per job)</span></label>
+            <div class="input-prefix" data-sym="$">
+              <input type="number" id="consumables" min="0" step="0.01" placeholder="0.50" oninput="calc()">
+            </div>
+          </div>
+          <div class="field">
+            <label for="failRate">Failure / Scrap Rate <span class="hint">(%)</span></label>
+            <div class="input-suffix" data-sym="%">
+              <input type="number" id="failRate" min="0" max="100" step="0.5" placeholder="5" oninput="calc()">
+            </div>
+          </div>
+        </div>
+
+        <!-- MACHINE -->
+        <div class="card">
+          <div class="card-title">
+            <svg class="icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="6.5" stroke="#6B9BD1" stroke-width="1.8"/><circle cx="9" cy="9" r="2.5" stroke="#6B9BD1" stroke-width="1.8"/><path d="M9 2.5v2M9 13.5v2M2.5 9h2M13.5 9h2" stroke="#6B9BD1" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Machine
+          </div>
+          <div class="field">
+            <label for="machineCost">Machine Purchase Price</label>
+            <div class="input-prefix" data-sym="$">
+              <input type="number" id="machineCost" min="0" step="100" placeholder="6000" oninput="calc()">
+            </div>
+          </div>
+          <div class="field">
+            <label for="machineLife">Expected Lifespan <span class="hint">(hours)</span></label>
+            <input type="number" id="machineLife" min="1" step="100" placeholder="5000" oninput="calc()">
+          </div>
+          <div class="field">
+            <label for="cutTime">Cut Time <span class="hint">(minutes)</span></label>
+            <input type="number" id="cutTime" min="0" step="0.5" placeholder="15" oninput="calc()">
+          </div>
+          <div class="field">
+            <label for="engraveTime">Engrave Time <span class="hint">(minutes)</span></label>
+            <input type="number" id="engraveTime" min="0" step="0.5" placeholder="20" oninput="calc()">
+          </div>
+        </div>
+
+        <!-- OVERHEAD -->
+        <div class="card">
+          <div class="card-title">
+            <svg class="icon" viewBox="0 0 18 18" fill="none"><path d="M3 14l5-5 3 3 4-6" stroke="#6B9BD1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Overhead &amp; Labor
+          </div>
+          <div class="field">
+            <label for="electricRate">Electricity Rate <span class="hint">($/kWh)</span></label>
+            <div class="input-prefix" data-sym="$">
+              <input type="number" id="electricRate" min="0" step="0.01" placeholder="0.13" oninput="calc()">
+            </div>
+          </div>
+          <div class="field">
+            <label for="machineWatts">Machine Wattage <span class="hint">(W, for electricity cost)</span></label>
+            <input type="number" id="machineWatts" min="0" step="10" placeholder="800" oninput="calc()">
+          </div>
+          <div class="field">
+            <label for="laborRate">Labor Rate <span class="hint">($/hr)</span></label>
+            <div class="input-prefix" data-sym="$">
+              <input type="number" id="laborRate" min="0" step="0.50" placeholder="25" oninput="calc()">
+            </div>
+          </div>
+          <div class="field">
+            <label for="designTime">Design / Setup Time <span class="hint">(minutes)</span></label>
+            <input type="number" id="designTime" min="0" step="1" placeholder="10" oninput="calc()">
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div>
+        <!-- PRICING -->
+        <div class="card">
+          <div class="card-title">
+            <svg class="icon" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7" stroke="#6B9BD1" stroke-width="1.8"/><path d="M9 5.5v1.8m0 3.4v1.8M7.2 8.5a1.8 1.8 0 1 0 3.6 0" stroke="#6B9BD1" stroke-width="1.6" stroke-linecap="round"/></svg>
+            Pricing Target
+          </div>
+          <div class="field">
+            <label for="targetMargin">Desired Profit Margin <span class="hint">(%)</span></label>
+            <div class="input-suffix" data-sym="%">
+              <input type="number" id="targetMargin" min="0" max="100" step="1" placeholder="40" oninput="calc()">
+            </div>
+          </div>
+          <div class="field">
+            <label for="customPrice">Your Price <span class="hint">(override to test any price)</span></label>
+            <div class="input-prefix" data-sym="$">
+              <input type="number" id="customPrice" min="0" step="0.01" placeholder="auto" oninput="calc()">
+            </div>
+          </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="card">
+          <div class="card-title">Results</div>
+          <div class="result-grid" id="resultGrid">
+            <div class="result-card blue">
+              <div class="label">True Cost / Job</div>
+              <div class="value" id="r-cost">—</div>
+              <div class="sub">all costs combined</div>
+            </div>
+            <div class="result-card green">
+              <div class="label">Recommended Price</div>
+              <div class="value" id="r-price">—</div>
+              <div class="sub" id="r-margin-label">at target margin</div>
+            </div>
+            <div class="result-card" id="r-profit-card">
+              <div class="label">Profit at Your Price</div>
+              <div class="value" id="r-profit">—</div>
+              <div class="sub" id="r-profit-pct">margin %</div>
+            </div>
+            <div class="result-card blue">
+              <div class="label">Shop Rate / Hour</div>
+              <div class="value" id="r-hourly">—</div>
+              <div class="sub">effective hourly rate</div>
+            </div>
+          </div>
+
+          <!-- PRICE SLIDER -->
+          <div class="price-slider-wrap no-print">
+            <div class="slider-row">
+              <label for="priceSlider">Test price:</label>
+              <input type="range" id="priceSlider" min="0" max="200" step="0.25" value="0" oninput="sliderChange(this.value)">
+              <div class="slider-val" id="sliderVal">$0.00</div>
+            </div>
+            <div style="margin-top:8px;font-size:.8rem;color:var(--ink-light)">
+              Profit at this price: <strong id="sliderProfit">—</strong> &nbsp;|&nbsp; Margin: <strong id="sliderMargin">—</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- COST BREAKDOWN -->
+        <div class="card">
+          <div class="card-title">Cost Breakdown</div>
+          <table class="breakdown-table" id="breakdownTable">
+            <thead>
+              <tr><th>Line item</th><th class="amt">Amount</th><th class="pct">% of cost</th></tr>
+            </thead>
+            <tbody id="breakdownBody">
+              <tr><td colspan="3" class="text-muted" style="text-align:center;padding:20px">Enter values to see breakdown</td></tr>
+            </tbody>
+          </table>
+          <div class="chart-wrap" id="chartWrap" style="display:none">
+            <div class="chart-bars" id="chartBars"></div>
+          </div>
+        </div>
+
+        <!-- PRESETS QUICK SAVE -->
+        <div class="card no-print">
+          <div class="card-title">Presets</div>
+          <div class="row">
+            <input type="text" id="presetName" placeholder="e.g. Birch 3mm · Glowforge" style="flex:1" maxlength="60">
+            <button class="btn btn-secondary" onclick="savePreset()">Save</button>
+          </div>
+          <div class="mt8 text-sm text-muted">Save current inputs as a named preset for quick reuse.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== BATCH TAB ======== -->
+  <div class="tab-panel" id="panel-batch">
+    <div class="card">
+      <div class="card-title">Batch Pricing: Multiple Units</div>
+      <div class="grid-3">
+        <div class="field">
+          <label for="batchDiscount">Volume Discount <span class="hint">(% per tier)</span></label>
+          <div class="input-suffix" data-sym="%">
+            <input type="number" id="batchDiscount" min="0" max="50" step="1" placeholder="5" oninput="calcBatch()">
+          </div>
+        </div>
+        <div class="field">
+          <label for="batchSetup">Per-Batch Setup Fee</label>
+          <div class="input-prefix" data-sym="$">
+            <input type="number" id="batchSetup" min="0" step="0.50" placeholder="5.00" oninput="calcBatch()">
+          </div>
+        </div>
+        <div class="field">
+          <label for="batchMinMargin">Minimum Margin <span class="hint">(%)</span></label>
+          <div class="input-suffix" data-sym="%">
+            <input type="number" id="batchMinMargin" min="0" max="100" step="1" placeholder="20" oninput="calcBatch()">
+          </div>
+        </div>
+      </div>
+      <div id="batchNote" class="text-sm text-muted" style="margin-top:4px"></div>
+    </div>
+    <div class="card" style="overflow-x:auto">
+      <div class="card-title">Price Schedule</div>
+      <table class="batch-table" id="batchTable">
+        <thead>
+          <tr>
+            <th>Qty</th>
+            <th>Unit Cost</th>
+            <th>Discount</th>
+            <th>Unit Price</th>
+            <th>Total Revenue</th>
+            <th>Total Profit</th>
+            <th>Margin</th>
+          </tr>
+        </thead>
+        <tbody id="batchBody">
+          <tr><td colspan="7" style="text-align:center;padding:20px;color:var(--ink-faint)">Complete the Calculator tab first</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ======== PRESETS TAB ======== -->
+  <div class="tab-panel" id="panel-presets">
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Saved Material &amp; Machine Presets</div>
+        <div id="presetListWrap">
+          <div class="text-muted text-sm" style="padding:16px 0">No presets saved yet. Use the Calculator tab to save presets.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Import / Export Presets</div>
+        <p class="text-sm" style="margin-bottom:16px">Export all presets to a JSON file for backup or sharing. Import to restore.</p>
+        <div class="row flex-wrap" style="gap:10px">
+          <button class="btn btn-secondary" onclick="exportJSON()">Export All Data</button>
+          <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">Import JSON</button>
+        </div>
+        <div class="divider"></div>
+        <button class="btn btn-danger" onclick="confirmReset()">Reset All Data</button>
+        <p class="text-sm text-muted mt8">Restores calculator inputs to example defaults and clears presets from localStorage. Cannot be undone.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== QUOTE SHEET TAB ======== -->
+  <div class="tab-panel" id="panel-quote">
+    <div class="card">
+      <div class="row" style="margin-bottom:20px">
+        <div class="card-title" style="margin:0">Quote Details</div>
+        <div class="spacer"></div>
+        <button class="btn btn-primary no-print" onclick="window.print()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="3" y="6" width="10" height="7" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M5 6V3h6v3M5 12h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Print
+        </button>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="field">
+            <label for="quoteCustomer">Customer Name</label>
+            <input type="text" id="quoteCustomer" placeholder="Jane Smith" oninput="saveState()">
+          </div>
+          <div class="field">
+            <label for="quoteProject">Project Description</label>
+            <input type="text" id="quoteProject" placeholder="Personalized cutting board, oak, 12×18″" oninput="saveState()">
+          </div>
+          <div class="field">
+            <label for="quoteDate">Date</label>
+            <input type="text" id="quoteDate" placeholder="2024-01-15" oninput="saveState()">
+          </div>
+          <div class="field">
+            <label for="quoteValidDays">Quote Valid (days)</label>
+            <input type="number" id="quoteValidDays" min="1" step="1" placeholder="30" oninput="saveState()">
+          </div>
+        </div>
+        <div>
+          <div class="field">
+            <label for="quoteQty">Quantity</label>
+            <input type="number" id="quoteQty" min="1" step="1" placeholder="1" oninput="updateQuoteCalc();saveState()">
+          </div>
+          <div class="field">
+            <label for="quoteNotes">Notes / Terms</label>
+            <textarea id="quoteNotes" rows="4" placeholder="50% deposit required. Artwork approval before production. Delivery 5-7 business days." style="resize:vertical" oninput="saveState()"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRINTABLE QUOTE OUTPUT -->
+    <div class="card" id="quotePrint" style="margin-top:4px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px">
+        <div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--ink)">QUOTE</div>
+          <div class="text-sm text-muted" id="qDate"></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-weight:700;font-size:.95rem" id="qCustomer">Customer</div>
+          <div class="text-sm text-muted" id="qProject">Project</div>
+        </div>
+      </div>
+
+      <table class="breakdown-table" style="margin-bottom:20px">
+        <thead>
+          <tr><th>Description</th><th class="amt">Unit Price</th><th class="amt">Qty</th><th class="amt">Total</th></tr>
+        </thead>
+        <tbody id="quoteLineBody">
+          <tr><td colspan="4" class="text-muted" style="text-align:center;padding:16px">Complete the Calculator tab to populate this quote.</td></tr>
+        </tbody>
+      </table>
+
+      <div style="display:flex;justify-content:flex-end">
+        <div style="min-width:220px">
+          <div class="row" style="justify-content:space-between;padding:8px 0;border-top:1px solid var(--border)">
+            <span class="text-sm">Subtotal</span><span id="qSubtotal" class="text-sm" style="font-weight:600">—</span>
+          </div>
+          <div class="row" style="justify-content:space-between;padding:12px 0;border-top:2px solid var(--ink);border-bottom:2px solid var(--ink)">
+            <span style="font-weight:700">Total Due</span><span id="qTotal" style="font-weight:800;font-size:1.1rem">—</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-sm text-muted mt16" id="qNotes"></div>
+      <div class="text-sm text-muted mt8" id="qValid"></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer class="app-footer">
+  Laser Engraving Price &amp; Profit Calculator · jonsDesignerShop
+</footer>
+
+<!-- MODAL: Confirm Reset -->
+<div class="modal-overlay" id="resetModal">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle">
+    <h2 id="resetModalTitle">Reset All Data?</h2>
+    <p class="text-sm">This will restore all calculator inputs to example defaults and clear presets and quote data from localStorage. This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('resetModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="doReset()">Yes, Reset Everything</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Preset Detail -->
+<div class="modal-overlay" id="presetModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h2 id="presetModalTitle">Load Preset</h2>
+    <p class="text-sm" id="presetModalDesc"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('presetModal')">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="presetDeleteBtn">Delete</button>
+      <button class="btn btn-primary" id="presetLoadBtn">Load Preset</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ═══════════════════════════════════════════════════
+//  STATE & PERSISTENCE
+// ═══════════════════════════════════════════════════
+const STORAGE_KEY = 'laser-calc-v1';
+
+const DEFAULT_STATE = {
+  matCost: '12.50', matUsage: '35', consumables: '0.50', failRate: '5',
+  machineCost: '6000', machineLife: '5000', cutTime: '15', engraveTime: '20',
+  electricRate: '0.13', machineWatts: '800', laborRate: '25', designTime: '10',
+  targetMargin: '40', customPrice: '',
+  batchDiscount: '5', batchSetup: '5.00', batchMinMargin: '20',
+  quoteCustomer: 'Sarah Miller', quoteProject: 'Personalized cutting board, oak 12x18 in', quoteDate: '2026-01-15', quoteValidDays: '30', quoteQty: '1', quoteNotes: '50% deposit to start, balance due on delivery.',
+  presets: []
+};
+
+let state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+const RECOVERY_KEY = STORAGE_KEY + ':pre-import';
+
+// A corrupt or non-array `presets` value (a string/number/object from a hand-edited or wrong file) would
+// make renderPresets / .map throw, and a partial import could persist it and re-break the app on the NEXT
+// load. Always coerce presets to a clean array of valid entries before it is used or saved (L-99).
+function sanitizePresets(s) {
+  if (!s || typeof s !== 'object') return JSON.parse(JSON.stringify(DEFAULT_STATE));
+  if (!Array.isArray(s.presets)) s.presets = [];
+  else s.presets = s.presets
+    .filter(p => p && typeof p === 'object' && typeof p.name === 'string')
+    // A preset whose `data` is missing/not-an-object would throw a TypeError in renderPresets (d.machineCost),
+    // openPresetModal (d[f]) and loadPreset (p.data[f]) — bricking Presets on import AND every later load.
+    // Guarantee a clean `data` object here so all three consumers are safe (L-99 extension).
+    .map(p => ({ name: p.name, data: (p.data && typeof p.data === 'object') ? p.data : {}, ts: p.ts }));
+  return s;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state = sanitizePresets(Object.assign({}, DEFAULT_STATE, parsed));
+    }
+  } catch(e) {}
+  applyStateToUI();
+}
+
+function saveState() {
+  collectStateFromUI();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { try { showToast('Could not save: your browser storage may be full or disabled. Export a backup so you do not lose your work.'); } catch(_){} }
+}
+
+function collectStateFromUI() {
+  const ids = ['matCost','matUsage','consumables','failRate','machineCost','machineLife',
+    'cutTime','engraveTime','electricRate','machineWatts','laborRate','designTime',
+    'targetMargin','customPrice','batchDiscount','batchSetup','batchMinMargin',
+    'quoteCustomer','quoteProject','quoteDate','quoteValidDays','quoteQty','quoteNotes'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) state[id] = el.value;
+  });
+}
+
+function applyStateToUI() {
+  const ids = ['matCost','matUsage','consumables','failRate','machineCost','machineLife',
+    'cutTime','engraveTime','electricRate','machineWatts','laborRate','designTime',
+    'targetMargin','customPrice','batchDiscount','batchSetup','batchMinMargin',
+    'quoteCustomer','quoteProject','quoteDate','quoteValidDays','quoteQty','quoteNotes'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && state[id] !== undefined) el.value = state[id];
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  SAFE NUMBER HELPERS
+// ═══════════════════════════════════════════════════
+function n(val, fallback = 0) {
+  const v = parseFloat(val);
+  return (isFinite(v) && !isNaN(v)) ? v : fallback;
+}
+
+function clamp(v, lo, hi) { return Math.min(Math.max(v, lo), hi); }
+
+// Costs and times are never negative. A pasted/typed negative used to subtract from true cost and
+// silently recommend a price BELOW cost — for a tool whose whole pitch is "stop undercharging."
+function nneg(val, fallback = 0) { return Math.max(0, n(val, fallback)); }
+
+function fmt(v, dec = 2) {
+  if (!isFinite(v) || isNaN(v)) return '—';
+  return v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function fmtCur(v) {
+  if (!isFinite(v) || isNaN(v)) return '—';
+  return '$' + fmt(v, 2);
+}
+
+function fmtPct(v) {
+  if (!isFinite(v) || isNaN(v)) return '—';
+  return fmt(v, 1) + '%';
+}
+
+// Inline field-level validation: costs/times/rates can't be negative and must be numeric. We still
+// clamp them in the math (nneg), but the buyer needs to SEE why a value was ignored.
+const NONNEG_FIELDS = ['matCost','matUsage','consumables','failRate','machineCost','machineLife','cutTime','engraveTime','electricRate','machineWatts','laborRate','designTime','targetMargin','customPrice','batchDiscount','batchSetup','batchMinMargin'];
+function validateInputs() {
+  NONNEG_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const raw = el.value.trim();
+    const num = parseFloat(raw);
+    const bad = raw !== '' && (!isFinite(num) || num < 0);
+    el.classList.toggle('err', bad);
+    const field = el.closest('.field') || el.parentElement;
+    let msg = field.querySelector('.input-error');
+    if (bad) {
+      if (!msg) { msg = document.createElement('div'); msg.className = 'input-error'; msg.setAttribute('role', 'alert'); field.appendChild(msg); }
+      msg.textContent = (!isFinite(num)) ? 'Enter a number' : 'Cannot be negative, treated as 0';
+      msg.style.display = 'block';
+    } else if (msg) { msg.style.display = 'none'; }
+  });
+}
+
+// ═══════════════════════════════════════════════════
+//  CORE CALCULATIONS
+// ═══════════════════════════════════════════════════
+function computeCosts() {
+  const matCost    = nneg(document.getElementById('matCost').value);
+  const matUsage   = clamp(n(document.getElementById('matUsage').value), 0, 100);
+  const consumables= nneg(document.getElementById('consumables').value);
+  const failRate   = clamp(n(document.getElementById('failRate').value), 0, 99);
+  const machineCost= nneg(document.getElementById('machineCost').value);
+  const machineLife= Math.max(n(document.getElementById('machineLife').value), 0.001);
+  const cutTime    = nneg(document.getElementById('cutTime').value);
+  const engraveTime= nneg(document.getElementById('engraveTime').value);
+  const electricRate = nneg(document.getElementById('electricRate').value);
+  const machineWatts = nneg(document.getElementById('machineWatts').value);
+  const laborRate  = nneg(document.getElementById('laborRate').value);
+  const designTime = nneg(document.getElementById('designTime').value);
+  const targetMargin = clamp(n(document.getElementById('targetMargin').value), 0, 99.99);
+
+  const totalMachineMinutes = cutTime + engraveTime;
+  const totalJobMinutes = totalMachineMinutes + designTime;
+  const totalJobHours = totalJobMinutes / 60;
+  const totalMachineHours = totalMachineMinutes / 60;
+
+  // Material cost for this job
+  const materialCost = matCost * (matUsage / 100);
+
+  // Machine depreciation: purchase price / lifespan hours × machine hours used
+  const depreciationPerHour = machineCost / machineLife;
+  const depreciation = depreciationPerHour * totalMachineHours;
+
+  // Electricity: watts × hours × $/kWh / 1000
+  const electricity = machineWatts * totalMachineHours * electricRate / 1000;
+
+  // Labor: (machine time + design time) in hours × rate
+  const labor = totalJobHours * laborRate;
+
+  // Base cost (before failure rate)
+  const baseCost = materialCost + consumables + depreciation + electricity + labor;
+
+  // Failure rate overhead: if N% fail, expected attempts per good unit = 1/(1-N/100)
+  // Extra cost = baseCost * failRate/(100 - failRate)
+  const failFraction = failRate / 100;
+  const failOverhead = (failRate >= 100) ? baseCost * 99 : baseCost * (failFraction / (1 - failFraction));
+
+  const totalCost = baseCost + failOverhead;
+
+  // Recommended price at target margin: price = cost / (1 - margin%)
+  const marginFrac = targetMargin / 100;
+  const recommendedPrice = (marginFrac >= 1) ? totalCost * 100 : totalCost / (1 - marginFrac);
+
+  // Custom price override
+  const customPriceRaw = document.getElementById('customPrice').value.trim();
+  const useCustom = customPriceRaw !== '' && isFinite(parseFloat(customPriceRaw));
+  const activePrice = useCustom ? nneg(customPriceRaw) : recommendedPrice;
+
+  // Profit
+  const profit = activePrice - totalCost;
+  const profitMargin = (activePrice > 0) ? (profit / activePrice) * 100 : 0;
+
+  // Effective hourly shop rate
+  const shopRate = (totalJobHours > 0) ? activePrice / totalJobHours : 0;
+
+  return {
+    materialCost, consumables, depreciation, electricity, labor, failOverhead,
+    baseCost, totalCost, recommendedPrice, activePrice, profit, profitMargin,
+    shopRate, targetMargin, totalJobHours, totalMachineHours, depreciationPerHour,
+    useCustom
+  };
+}
+
+// ═══════════════════════════════════════════════════
+//  MAIN CALC & UI UPDATE
+// ═══════════════════════════════════════════════════
+function calc() {
+  saveState();
+  validateInputs();
+  const c = computeCosts();
+
+  // Check if we have any meaningful inputs
+  const hasInputs = c.totalCost > 0 || c.activePrice > 0;
+
+  // Result cards
+  document.getElementById('r-cost').textContent = hasInputs ? fmtCur(c.totalCost) : '—';
+  document.getElementById('r-price').textContent = hasInputs ? fmtCur(c.recommendedPrice) : '—';
+  // Derive the label from the SAME clamped target margin the price math used (c.targetMargin), not the
+  // raw field. A raw ">100%" would otherwise print an impossible margin that disagrees with the price shown.
+  document.getElementById('r-margin-label').textContent = 'at ' + fmt(c.targetMargin, (c.targetMargin % 1 ? 1 : 0)) + '% target margin';
+
+  if (hasInputs) {
+    const profitCard = document.getElementById('r-profit-card');
+    const profitEl = document.getElementById('r-profit');
+    const profitPct = document.getElementById('r-profit-pct');
+
+    profitEl.textContent = fmtCur(c.profit);
+    profitPct.textContent = fmtPct(c.profitMargin) + ' margin';
+
+    profitCard.className = 'result-card ' + (c.profit >= 0 ? (c.profitMargin >= 30 ? 'green' : 'orange') : 'red');
+
+    document.getElementById('r-hourly').textContent = hasInputs ? fmtCur(c.shopRate) + '/hr' : '—';
+  } else {
+    document.getElementById('r-profit').textContent = '—';
+    document.getElementById('r-profit-pct').textContent = 'margin %';
+    document.getElementById('r-profit-card').className = 'result-card';
+    document.getElementById('r-hourly').textContent = '—';
+  }
+
+  // Update slider range
+  if (hasInputs) {
+    const slider = document.getElementById('priceSlider');
+    const maxSlide = Math.max(c.recommendedPrice * 3, 50);
+    slider.max = Math.round(maxSlide * 4) / 4;
+    // calc() is ONLY called from input changes (the slider uses sliderChange(), not calc), so always
+    // re-sync the test-price slider to the active price here. Otherwise the slider line keeps showing
+    // profit/margin for a STALE price while the result cards show the new recommended one — the two
+    // readouts then disagree on screen (and in the demo video freeze-frame). Dragging the slider is
+    // unaffected (it never calls calc).
+    slider.value = c.activePrice;
+    // show the EXACT active price (not the slider's 0.25-snapped value) so the test-price readout
+    // matches the result cards to the cent after an input change. Dragging still shows the snapped price.
+    updateSliderDisplay(c.activePrice, c);
+  } else {
+    // Reset the test-price block in lockstep with the result cards when there are no inputs, otherwise the
+    // slider readout keeps showing a stale profit/margin that disagrees with the cleared result cards.
+    const slider = document.getElementById('priceSlider');
+    slider.value = 0;
+    document.getElementById('sliderVal').textContent = '—';
+    document.getElementById('sliderProfit').textContent = '—';
+    document.getElementById('sliderMargin').textContent = '—';
+  }
+
+  // Breakdown table
+  renderBreakdown(c, hasInputs);
+
+  // Batch
+  calcBatch(c);
+
+  // Quote
+  updateQuoteCalc(c);
+}
+
+function renderBreakdown(c, hasInputs) {
+  const tbody = document.getElementById('breakdownBody');
+  if (!hasInputs) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-muted" style="text-align:center;padding:20px">Enter values to see breakdown</td></tr>';
+    document.getElementById('chartWrap').style.display = 'none';
+    return;
+  }
+
+  const items = [
+    { name: 'Material (sheet usage)', cost: c.materialCost },
+    { name: 'Consumables / supplies', cost: c.consumables },
+    { name: 'Machine depreciation', cost: c.depreciation },
+    { name: 'Electricity', cost: c.electricity },
+    { name: 'Labor', cost: c.labor },
+    { name: 'Failure / scrap overhead', cost: c.failOverhead }
+  ].filter(item => item.cost > 0 || item.name === 'Material (sheet usage)');
+
+  const total = c.totalCost;
+  let rows = '';
+  items.forEach(item => {
+    const pct = total > 0 ? (item.cost / total * 100) : 0;
+    rows += `<tr>
+      <td>${item.name}</td>
+      <td class="amt">${fmtCur(item.cost)}</td>
+      <td class="pct">${fmtPct(pct)}</td>
+    </tr>`;
+  });
+  rows += `<tr>
+    <td><strong>Total Cost / Job</strong></td>
+    <td class="amt"><strong>${fmtCur(total)}</strong></td>
+    <td class="pct"></td>
+  </tr>`;
+
+  tbody.innerHTML = rows;
+  renderChart(items, total);
+}
+
+// ═══════════════════════════════════════════════════
+//  CHART
+// ═══════════════════════════════════════════════════
+const CHART_COLORS = ['#6B9BD1','#3DAA7A','#E07A30','#A87BD1','#D15B6B','#D1B96B'];
+
+function renderChart(items, total) {
+  const wrap = document.getElementById('chartWrap');
+  const barsEl = document.getElementById('chartBars');
+  if (!items.length || total <= 0) { wrap.style.display='none'; return; }
+  wrap.style.display = 'block';
+
+  const maxCost = Math.max(...items.map(i=>i.cost));
+  barsEl.innerHTML = items.map((item, idx) => {
+    const pct = total > 0 ? item.cost/total*100 : 0;
+    const heightPct = maxCost > 0 ? item.cost/maxCost*100 : 0;
+    const color = CHART_COLORS[idx % CHART_COLORS.length];
+    const shortName = item.name.replace('Failure / scrap overhead','Failure').replace('Machine depreciation','Depreciation').replace('Material (sheet usage)','Material').replace('Consumables / supplies','Consumables');
+    return `<div class="chart-bar-col">
+      <div class="chart-val">${fmtPct(pct)}</div>
+      <div style="flex:1;display:flex;align-items:flex-end;width:100%">
+        <div class="chart-bar" style="height:${Math.max(heightPct,2)}%;background:${color};width:100%"></div>
+      </div>
+      <div class="chart-label">${shortName}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════
+//  PRICE SLIDER
+// ═══════════════════════════════════════════════════
+function sliderChange(val) {
+  const c = computeCosts();
+  updateSliderDisplay(parseFloat(val), c);
+}
+
+function updateSliderDisplay(price, c) {
+  document.getElementById('sliderVal').textContent = fmtCur(price);
+  if (!isFinite(price)) { document.getElementById('sliderProfit').textContent='—'; return; }
+  const p = price - c.totalCost;
+  const m = price > 0 ? p/price*100 : 0;
+  document.getElementById('sliderProfit').textContent = fmtCur(p);
+  document.getElementById('sliderMargin').textContent = fmtPct(m);
+}
+
+// ═══════════════════════════════════════════════════
+//  BATCH PRICING
+// ═══════════════════════════════════════════════════
+const BATCH_QTYS = [1,5,10,25,50,100,250,500];
+const BATCH_DISCOUNT_TIERS = [0,1,2,3,4,5,6,7]; // index into BATCH_QTYS, discount multiplied by tier
+
+function calcBatch(cIn) {
+  const c = cIn || computeCosts();
+  const discount = clamp(n(document.getElementById('batchDiscount').value), 0, 50);
+  const setupFee = nneg(document.getElementById('batchSetup').value);
+  const minMargin = clamp(n(document.getElementById('batchMinMargin').value), 0, 99);
+
+  const tbody = document.getElementById('batchBody');
+  const note = document.getElementById('batchNote');
+
+  if (c.totalCost <= 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--ink-faint)">Complete the Calculator tab first</td></tr>';
+    note.textContent = '';
+    return;
+  }
+
+  note.textContent = discount > 0
+    ? `Volume discount: ${discount}% applied per tier (Tier 1 = ${discount}%, Tier 2 = ${2*discount}%, etc., capped at 50%)`
+    : 'No volume discount configured.';
+
+  let rows = '', anyFloored = false;
+  BATCH_QTYS.forEach((qty, tierIdx) => {
+    // Discount grows per tier
+    const tierDiscount = clamp(discount * tierIdx, 0, 50);
+    const discountFrac = tierDiscount / 100;
+
+    // Unit cost improves slightly with qty (setup fee amortized)
+    const unitCost = c.totalCost + (qty > 0 ? setupFee / qty : setupFee);
+
+    // Unit price: recommend at target margin, apply the volume discount, but never below the min-margin floor
+    const baseNoDiscount = unitCost / (1 - c.targetMargin/100);     // price at this qty with NO discount
+    const baseUnitPrice = baseNoDiscount * (1 - discountFrac);
+    const minPrice = unitCost / (1 - minMargin/100);
+    const unitPrice = Math.max(baseUnitPrice, minPrice);
+    const floored = unitPrice > baseUnitPrice + 1e-9;              // the floor overrode the volume discount
+    if (floored) anyFloored = true;
+
+    // EFFECTIVE discount actually reflected in the unit price. When the floor wins, the real reduction
+    // is smaller than the nominal tier %; showing the nominal % would quote a discount never applied.
+    const effDiscount = baseNoDiscount > 0 ? clamp((1 - unitPrice/baseNoDiscount) * 100, 0, 100) : 0;
+
+    const totalRevenue = unitPrice * qty;
+    const totalProfit = (unitPrice - unitCost) * qty;
+    const margin = unitPrice > 0 ? (unitPrice - unitCost) / unitPrice * 100 : 0;
+
+    const isBase = qty === 1;
+    rows += `<tr class="${isBase ? 'highlight' : ''}">
+      <td><strong>${qty}</strong></td>
+      <td>${fmtCur(unitCost)}</td>
+      <td>${effDiscount >= 0.5 ? Math.round(effDiscount) + '%' + (floored ? ' *' : '') : '—'}</td>
+      <td><strong>${fmtCur(unitPrice)}</strong></td>
+      <td>${fmtCur(totalRevenue)}</td>
+      <td>${fmtCur(totalProfit)}</td>
+      <td><span class="badge ${margin >= 30 ? 'badge-green' : margin >= 15 ? 'badge-blue' : 'badge-orange'}">${fmtPct(margin)}</span></td>
+    </tr>`;
+  });
+  if (anyFloored) note.textContent += ' Rows marked * hit your minimum-margin floor, so the discount shown is the real (smaller) amount actually applied.';
+  tbody.innerHTML = rows;
+}
+
+// ═══════════════════════════════════════════════════
+//  PRESETS
+// ═══════════════════════════════════════════════════
+const PRESET_FIELDS = ['matCost','matUsage','consumables','failRate','machineCost','machineLife',
+  'cutTime','engraveTime','electricRate','machineWatts','laborRate','designTime','targetMargin'];
+
+function savePreset() {
+  const name = document.getElementById('presetName').value.trim();
+  if (!name) { showToast('Enter a preset name first.'); return; }
+
+  collectStateFromUI();
+  const data = {};
+  PRESET_FIELDS.forEach(f => data[f] = state[f]);
+
+  if (!Array.isArray(state.presets)) state.presets = [];
+  const idx = state.presets.findIndex(p => p.name === name);
+  if (idx >= 0) state.presets[idx] = { name, data, ts: Date.now() };
+  else state.presets.push({ name, data, ts: Date.now() });
+
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { try { showToast('Could not save: your browser storage may be full or disabled. Export a backup so you do not lose your work.'); } catch(_){} }
+  document.getElementById('presetName').value = '';
+  renderPresets();
+  showToast('Preset "' + name + '" saved!');
+}
+
+function renderPresets() {
+  const wrap = document.getElementById('presetListWrap');
+  if (!Array.isArray(state.presets) || !state.presets.length) {
+    wrap.innerHTML = '<div class="text-muted text-sm" style="padding:16px 0">No presets saved yet. Use the Calculator tab to save presets.</div>';
+    return;
+  }
+  wrap.innerHTML = '<div class="preset-list">' + state.presets.map((p, idx) => {
+    const d = p.data;
+    const meta = [
+      d.machineCost ? '$'+n(d.machineCost,0).toLocaleString()+' machine' : '',
+      d.matCost ? '$'+n(d.matCost,0) + ' sheet' : '',
+      d.targetMargin ? n(d.targetMargin,0) + '% margin' : ''
+    ].filter(Boolean).join(' · ');
+    return `<button class="preset-item" onclick="openPresetModal(${idx})">
+      <span class="pi-name">${escHtml(p.name)}</span>
+      <span class="pi-meta">${escHtml(meta)}</span>
+    </button>`;
+  }).join('') + '</div>';
+}
+
+let _presetModalIdx = -1;
+
+function openPresetModal(idx) {
+  _presetModalIdx = idx;
+  const p = state.presets[idx];
+  document.getElementById('presetModalTitle').textContent = p.name;
+  const d = p.data;
+  const lines = PRESET_FIELDS.map(f => {
+    const labels = {
+      matCost:'Sheet cost',matUsage:'Sheet usage %',consumables:'Consumables',failRate:'Fail rate %',
+      machineCost:'Machine cost',machineLife:'Machine life (hr)',cutTime:'Cut time (min)',
+      engraveTime:'Engrave time (min)',electricRate:'Electricity $/kWh',machineWatts:'Watts',
+      laborRate:'Labor $/hr',designTime:'Design time (min)',targetMargin:'Target margin %'
+    };
+    return d[f] ? `${labels[f]}: ${d[f]}` : null;
+  }).filter(Boolean).join(' · ');
+  document.getElementById('presetModalDesc').textContent = lines;
+  document.getElementById('presetLoadBtn').onclick = () => { loadPreset(idx); closeModal('presetModal'); };
+  document.getElementById('presetDeleteBtn').onclick = () => { deletePreset(idx); closeModal('presetModal'); };
+  openModal('presetModal');
+}
+
+function loadPreset(idx) {
+  const p = state.presets[idx];
+  PRESET_FIELDS.forEach(f => {
+    const el = document.getElementById(f);
+    if (el && p.data[f] !== undefined) el.value = p.data[f];
+  });
+  showToast('Preset "' + p.name + '" loaded.');
+  showTab('calculator');
+  calc();
+}
+
+function deletePreset(idx) {
+  const name = state.presets[idx].name;
+  state.presets.splice(idx, 1);
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) { try { showToast('Could not save: your browser storage may be full or disabled. Export a backup so you do not lose your work.'); } catch(_){} }
+  renderPresets();
+  showToast('Preset "' + name + '" deleted.');
+}
+
+// ═══════════════════════════════════════════════════
+//  QUOTE SHEET
+// ═══════════════════════════════════════════════════
+function updateQuoteCalc(cIn) {
+  const c = cIn || computeCosts();
+
+  document.getElementById('qCustomer').textContent = document.getElementById('quoteCustomer').value || 'Customer';
+  document.getElementById('qProject').textContent = document.getElementById('quoteProject').value || 'Project';
+  const date = document.getElementById('quoteDate').value;
+  document.getElementById('qDate').textContent = date ? 'Date: ' + date : '';
+  const validDays = n(document.getElementById('quoteValidDays').value);
+  document.getElementById('qValid').textContent = validDays > 0 ? 'This quote is valid for ' + validDays + ' days.' : '';
+  const notes = document.getElementById('quoteNotes').value;
+  document.getElementById('qNotes').textContent = notes;
+
+  const qty = Math.max(1, n(document.getElementById('quoteQty').value, 1));
+
+  if (c.totalCost <= 0) {
+    document.getElementById('quoteLineBody').innerHTML = '<tr><td colspan="4" class="text-muted" style="text-align:center;padding:16px">Complete the Calculator tab to populate this quote.</td></tr>';
+    document.getElementById('qSubtotal').textContent = '—';
+    document.getElementById('qTotal').textContent = '—';
+    return;
+  }
+
+  const unitPrice = c.activePrice;
+  const total = unitPrice * qty;
+
+  // Build description
+  const parts = [];
+  const matCostRaw = n(document.getElementById('matCost').value);
+  const matUsage = n(document.getElementById('matUsage').value);
+  if (matCostRaw > 0 && matUsage > 0) parts.push('materials');
+  const cutTime = n(document.getElementById('cutTime').value);
+  const engraveTime = n(document.getElementById('engraveTime').value);
+  if (cutTime > 0 || engraveTime > 0) parts.push((cutTime + engraveTime) + ' min laser time');
+  const designTime = n(document.getElementById('designTime').value);
+  if (designTime > 0) parts.push(designTime + ' min setup');
+  const description = parts.length ? 'Laser engraving: ' + parts.join(', ') : 'Laser engraving';
+
+  document.getElementById('quoteLineBody').innerHTML = `<tr>
+    <td>${escHtml(description)}</td>
+    <td class="amt">${fmtCur(unitPrice)}</td>
+    <td class="amt">${qty}</td>
+    <td class="amt"><strong>${fmtCur(total)}</strong></td>
+  </tr>`;
+
+  document.getElementById('qSubtotal').textContent = fmtCur(total);
+  document.getElementById('qTotal').textContent = fmtCur(total);
+  saveState();
+}
+
+// ═══════════════════════════════════════════════════
+//  EXPORT / IMPORT / RESET
+// ═══════════════════════════════════════════════════
+function exportJSON() {
+  collectStateFromUI();
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'laser-calc-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Data exported!');
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const hadPresets = Array.isArray(state.presets) && state.presets.length;
+      if (hadPresets && !confirm('Importing will REPLACE your current saved presets and inputs with this file. Export a backup first if you want to keep them. Continue?')) { showToast('Import cancelled'); return; }
+      // L-99: snapshot the pre-import state BEFORE replacing so a wrong/partial/older file can be undone,
+      // and sanitize so a non-array presets value can never be persisted or thrown on.
+      const snapshot = JSON.stringify(state);
+      state = sanitizePresets(Object.assign({}, DEFAULT_STATE, parsed));
+      // L-129: if the write is rejected (quota / private mode) the recovery snapshot ISN'T saved, so offering
+      // an "Undo" that silently no-ops would be a lie. Warn instead, and only offer Undo when it really exists.
+      let _persisted = true;
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); localStorage.setItem(RECOVERY_KEY, snapshot); } catch(err) { _persisted = false; }
+      applyStateToUI();
+      renderPresets();
+      calc();
+      if (_persisted) showToast('Data imported. Wrong file?', { label: 'Undo', fn: undoImport });
+      else showToast('Imported into this session, but it could not be saved (browser storage may be full or in private mode). Undo is unavailable and the change will not persist. Export a backup now.');
+    } catch(err) {
+      showToast('Import failed: invalid JSON file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// L-99: restore the snapshot taken just before the last import — the safety net for "I clicked Import,
+// confirmed, then realised I picked the wrong/older file and lost my presets."
+function undoImport() {
+  try {
+    const snap = localStorage.getItem(RECOVERY_KEY);
+    if (!snap) { showToast('Nothing to undo.'); return; }
+    state = sanitizePresets(JSON.parse(snap));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); localStorage.removeItem(RECOVERY_KEY); } catch(e) { try { showToast('Undo applied, but it could not be saved (storage may be full or private mode). Export a backup so it persists.'); } catch(_){} }
+    applyStateToUI();
+    renderPresets();
+    calc();
+    showToast('Import undone. Your previous data is back.');
+  } catch(e) { showToast('Could not undo the import.'); }
+}
+
+function confirmReset() {
+  openModal('resetModal');
+}
+
+function doReset() {
+  state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  applyStateToUI();
+  renderPresets();
+  calc();
+  closeModal('resetModal');
+  showToast('All data cleared.');
+}
+
+// ═══════════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════════
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  document.getElementById('panel-' + id).classList.add('active');
+  const btn = document.getElementById('tab-' + id);
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected','true'); }
+  if (id === 'presets') renderPresets();
+  if (id === 'batch') calcBatch();
+  if (id === 'quote') updateQuoteCalc();
+}
+
+// ═══════════════════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════════════════
+function openModal(id) {
+  const el = document.getElementById(id);
+  el.classList.add('open');
+  el.addEventListener('click', function outsideClick(e) {
+    if (e.target === el) { closeModal(id); el.removeEventListener('click', outsideClick); }
+  });
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  }
+});
+
+// ═══════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, action) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; // also clears any button from a previous toast
+  if (action && action.label && typeof action.fn === 'function') {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = action.label;
+    btn.style.cssText = 'margin-left:12px;background:transparent;border:1px solid currentColor;color:inherit;border-radius:6px;padding:2px 12px;cursor:pointer;font:inherit;font-weight:700';
+    btn.onclick = () => { el.classList.remove('show'); clearTimeout(toastTimer); action.fn(); };
+    el.appendChild(btn);
+  }
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), action ? 8000 : 2800); // longer when there's an action to click
+}
+
+// ═══════════════════════════════════════════════════
+//  UTILITY
+// ═══════════════════════════════════════════════════
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════
+// Two tabs open at once would otherwise silently last-writer-wins clobber each other's presets/inputs.
+// Warn (do NOT auto-reload or auto-overwrite an in-progress edit, which would itself lose data).
+window.addEventListener('storage', e => {
+  if (e.key === STORAGE_KEY) showToast('Your data was changed in another tab. Reload this page to see the latest and avoid overwriting it.');
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  // Set today's date in quote if blank
+  if (!state.quoteDate) {
+    const today = new Date().toISOString().slice(0,10);
+    document.getElementById('quoteDate').value = today;
+  }
+  renderPresets();
+  calc();
+});
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Laser Engraving Price &amp; Profit Calculator. It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4519403061?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($19) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

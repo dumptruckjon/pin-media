@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Bakery Order Manager &amp; Profit Tracker</title>
+<style>
+:root {
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--sp-8:32px;--sp-12:48px;
+  --fs-xs:13px;--fs-sm:15px;--fs-base:17px;--fs-lg:20px;--fs-xl:26px;--fs-2xl:34px;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;
+  --shadow-sm:0 1px 3px rgba(43,58,74,.08),0 1px 2px rgba(43,58,74,.04);
+  --shadow-md:0 4px 12px rgba(43,58,74,.10),0 2px 4px rgba(43,58,74,.06);
+  --shadow-lg:0 8px 24px rgba(43,58,74,.14),0 4px 8px rgba(43,58,74,.06);
+  --shadow-panel:-4px 0 40px rgba(43,58,74,.18);
+  --trans:150ms ease;
+  --bg:#f0f4f8;--surface:#fff;--surface-2:#f8fafc;--surface-3:#edf2f7;
+  --border:#d8e2ec;--border-focus:#6b9bd1;
+  --text:#2b3a4a;--text-2:#5a6a7a;--text-3:#8898a8;
+  --accent:#6b9bd1;--accent-dk:#4a7ab5;--accent-lt:#dbeafe;
+  --success:#16a34a;--success-bg:#f0fdf4;
+  --warn:#d97706;--warn-bg:#fffbeb;
+  --danger:#dc2626;--danger-bg:#fef2f2;
+  --pend-bg:#f3f4f6;--pend-txt:#6b7280;
+  --prog-bg:#fffbeb;--prog-txt:#d97706;
+  --ready-bg:#f0fdf4;--ready-txt:#16a34a;
+  --done-bg:#f9fafb;--done-txt:#9ca3af;
+}
+[data-theme="dark"] {
+  --bg:#0d1520;--surface:#162030;--surface-2:#1c2a3e;--surface-3:#243246;
+  --border:#2a3a50;--text:#e2e8f0;--text-2:#94a3b8;--text-3:#64748b;
+  --accent:#7eb3e8;--accent-dk:#9cc5f0;--accent-lt:#1e3a5f;
+  --success:#4ade80;--success-bg:#052e16;
+  --warn:#fbbf24;--warn-bg:#1c1400;
+  --danger:#f87171;--danger-bg:#1c0a0a;
+  --pend-bg:#1e2736;--pend-txt:#94a3b8;
+  --prog-bg:#2a1e00;--prog-txt:#fbbf24;
+  --ready-bg:#052e16;--ready-txt:#4ade80;
+  --done-bg:#1a2030;--done-txt:#64748b;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.3);--shadow-md:0 4px 12px rgba(0,0,0,.35);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.4);--shadow-panel:-4px 0 40px rgba(0,0,0,.5);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:'Segoe UI','SF Pro Text',Roboto,'Helvetica Neue',Arial,sans-serif;font-size:var(--fs-sm);color:var(--text);background:var(--bg);min-height:100vh;line-height:1.5}
+a{color:var(--accent);text-decoration:none}
+button{cursor:pointer;font-family:inherit;font-size:inherit}
+input,select,textarea{font-family:inherit;font-size:var(--fs-sm)}
+table{border-collapse:collapse;width:100%}
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* LAYOUT */
+.app-header{position:fixed;top:0;left:0;right:0;z-index:100;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.header-inner{display:flex;align-items:center;gap:var(--sp-4);padding:0 var(--sp-6);height:56px;max-width:1400px;margin:0 auto}
+.app-logo{display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0}
+.app-logo svg{color:var(--accent)}
+.app-logo h1{font-size:var(--fs-base);font-weight:700;color:var(--text);white-space:nowrap}
+.tab-nav{display:flex;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{display:flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);border:none;background:none;color:var(--text-2);font-size:var(--fs-sm);font-weight:500;border-radius:var(--r-md);white-space:nowrap;transition:color var(--trans),background var(--trans)}
+.tab-btn:hover{background:var(--surface-3);color:var(--text)}
+.tab-btn.active{background:var(--accent-lt);color:var(--accent-dk)}
+[data-theme="dark"] .tab-btn.active{color:var(--accent)}
+.header-actions{display:flex;align-items:center;gap:var(--sp-2);flex-shrink:0}
+#theme-toggle{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border:1px solid var(--border);background:none;border-radius:var(--r-md);color:var(--text-2);transition:all var(--trans)}
+#theme-toggle:hover{background:var(--surface-3);color:var(--text)}
+.app-main{margin-top:56px;padding:var(--sp-6);max-width:1400px;margin-left:auto;margin-right:auto}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);border:none;border-radius:var(--r-md);font-size:var(--fs-sm);font-weight:500;cursor:pointer;transition:all var(--trans);text-align:center;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dk)}
+.btn-secondary{background:var(--surface-3);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--border)}
+.btn-danger{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-ghost{background:none;color:var(--text-2);border:none;padding:var(--sp-2)}
+.btn-ghost:hover{color:var(--text);background:var(--surface-3)}
+.btn-icon{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border:none;background:none;color:var(--text-3);border-radius:var(--r-sm);transition:all var(--trans);padding:0}
+.btn-icon:hover{background:var(--surface-3);color:var(--text)}
+.btn-icon.danger:hover{background:var(--danger-bg);color:var(--danger)}
+.btn-sm{padding:var(--sp-1) var(--sp-3);font-size:var(--fs-xs)}
+
+/* TOOLBAR */
+.toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3);margin-bottom:var(--sp-4)}
+.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+.section-title{font-size:var(--fs-lg);font-weight:700;color:var(--text)}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm)}
+.card-body{padding:var(--sp-6)}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;border-radius:var(--r-lg);border:1px solid var(--border);background:var(--surface)}
+.data-table{width:100%}
+.data-table th{font-size:var(--fs-xs);font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--border);white-space:nowrap;background:var(--surface-2)}
+.data-table td{padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--border);vertical-align:middle;font-size:var(--fs-sm)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tbody tr{transition:background var(--trans)}
+.data-table tbody tr:hover{background:var(--surface-2)}
+.data-table tbody tr.delivered{opacity:.65}
+.no-data{text-align:center;color:var(--text-3);padding:var(--sp-12) var(--sp-6);font-size:var(--fs-sm)}
+
+/* STATUS CHIPS */
+.status-chip{display:inline-flex;align-items:center;padding:2px var(--sp-2);border-radius:99px;font-size:var(--fs-xs);font-weight:600;white-space:nowrap}
+.status-chip.Pending{background:var(--pend-bg);color:var(--pend-txt)}
+.status-chip.In-Progress{background:var(--prog-bg);color:var(--prog-txt)}
+.status-chip.Ready{background:var(--ready-bg);color:var(--ready-txt)}
+.status-chip.Delivered{background:var(--done-bg);color:var(--done-txt)}
+.urgent-badge{display:inline-flex;align-items:center;gap:3px;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:2px 6px;border-radius:99px;animation:pulse-urgent 1.5s ease-in-out infinite}
+@keyframes pulse-urgent{0%,100%{opacity:1}50%{opacity:.7}}
+
+/* FORMS */
+.form-group{margin-bottom:var(--sp-4)}
+.form-label{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--text-2);margin-bottom:var(--sp-1);text-transform:uppercase;letter-spacing:.04em}
+.input-field{width:100%;padding:var(--sp-2) var(--sp-3);border:1px solid var(--border);border-radius:var(--r-md);background:var(--surface);color:var(--text);font-size:var(--fs-sm);transition:border-color var(--trans),box-shadow var(--trans)}
+.input-field:focus{outline:none;border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(107,155,209,.15)}
+.input-field.error{border-color:var(--danger);background:var(--danger-bg)}
+.input-error{display:block;color:var(--danger);font-size:var(--fs-xs);margin-top:var(--sp-1)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)}
+@media(max-width:540px){.form-row{grid-template-columns:1fr}}
+
+/* SIDE PANEL */
+.panel-backdrop{position:fixed;inset:0;background:rgba(13,21,32,.45);z-index:200;opacity:0;pointer-events:none;transition:opacity 250ms ease}
+.panel-backdrop.open{opacity:1;pointer-events:auto}
+.side-panel{position:fixed;top:0;right:0;bottom:0;width:min(580px,100vw);background:var(--surface);z-index:201;transform:translateX(100%);transition:transform 300ms cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow-panel);display:flex;flex-direction:column;overflow:hidden}
+.side-panel.open{transform:translateX(0)}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border);flex-shrink:0}
+.panel-title{font-size:var(--fs-base);font-weight:700;color:var(--text)}
+.panel-body{flex:1;overflow-y:auto;padding:var(--sp-6)}
+.panel-footer{padding:var(--sp-4) var(--sp-6);border-top:1px solid var(--border);display:flex;gap:var(--sp-2);justify-content:flex-end;flex-shrink:0;flex-wrap:wrap}
+
+/* COST SUMMARY */
+.cost-summary{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-4);margin-top:var(--sp-6)}
+.cost-summary-title{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:var(--sp-3)}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:var(--fs-sm)}
+.cost-row.total{border-top:1px solid var(--border);margin-top:var(--sp-2);padding-top:var(--sp-2);font-weight:700}
+.cost-row.profit{font-size:var(--fs-base);font-weight:700}
+.cost-row.margin-row{padding-bottom:0}
+.text-danger{color:var(--danger)!important}
+.text-success{color:var(--success)!important}
+.text-warn{color:var(--warn)!important}
+.text-mono{font-variant-numeric:tabular-nums}
+.text-right{text-align:right}
+
+/* ITEMS TABLE in panel */
+.items-section{margin-top:var(--sp-4)}
+.items-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-2)}
+.items-section-title{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
+.items-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r-md)}
+.items-table{width:100%;min-width:560px}
+.items-table th{font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;padding:var(--sp-2) var(--sp-3);background:var(--surface-2);white-space:nowrap;border-bottom:1px solid var(--border)}
+.items-table td{padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--border);vertical-align:middle}
+.items-table tr:last-child td{border-bottom:none}
+.items-table input,.items-table select{width:100%;min-width:60px}
+.item-cost-cell{font-size:var(--fs-xs);color:var(--text-3);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.margin-warn{display:none;align-items:center;gap:var(--sp-2);color:var(--danger);font-size:var(--fs-sm);font-weight:600;background:var(--danger-bg);padding:var(--sp-2) var(--sp-3);border-radius:var(--r-md);margin-top:var(--sp-3)}
+.margin-warn.show{display:flex}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-4);margin-bottom:var(--sp-6)}
+@media(max-width:900px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:540px){.kpi-grid{grid-template-columns:1fr 1fr}}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-6);box-shadow:var(--shadow-sm)}
+.kpi-label{font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);margin-bottom:var(--sp-2)}
+.kpi-value{font-size:var(--fs-xl);font-weight:800;color:var(--text);font-variant-numeric:tabular-nums;transition:all 200ms ease}
+.kpi-sub{font-size:var(--fs-xs);color:var(--text-3);margin-top:2px}
+
+/* CHARTS */
+.chart-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:var(--sp-6);margin-bottom:var(--sp-6);box-shadow:var(--shadow-sm)}
+.chart-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+.chart-title{font-size:var(--fs-base);font-weight:700;color:var(--text)}
+.chart-legend{display:flex;gap:var(--sp-4)}
+.legend-item{display:flex;align-items:center;gap:var(--sp-1);font-size:var(--fs-xs);color:var(--text-2)}
+.legend-dot{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+.chart-container{overflow-x:auto}
+.chart-container svg{display:block}
+.chart-empty{text-align:center;color:var(--text-3);padding:var(--sp-12);font-size:var(--fs-sm)}
+
+/* DASHBOARD GRID */
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);margin-bottom:var(--sp-6)}
+.dash-grid>*{min-width:0} /* grid children default min-width:auto and refuse to shrink — blew out 12px at 390px */
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr}}
+
+/* INGREDIENTS PANEL */
+.ing-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:var(--sp-2);align-items:center;margin-bottom:var(--sp-2)}
+.ing-row input{width:100%}
+.ing-header{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:var(--sp-2);font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;padding-bottom:var(--sp-2);border-bottom:1px solid var(--border);margin-bottom:var(--sp-2)}
+
+/* CUSTOMER EXPAND */
+.customer-row{cursor:pointer}
+.customer-row:hover td{background:var(--surface-2)}
+.customer-expand{display:none;background:var(--surface-2)}
+.customer-expand.open{display:table-row-group}
+.customer-expand td{padding:var(--sp-3) var(--sp-4);font-size:var(--fs-xs);color:var(--text-2)}
+.customer-orders-table{width:100%;font-size:var(--fs-xs)}
+.customer-orders-table th{font-size:11px;color:var(--text-3);padding:var(--sp-2) var(--sp-3);background:var(--surface-3);font-weight:600}
+.customer-orders-table td{padding:var(--sp-2) var(--sp-3);border-top:1px solid var(--border)}
+
+/* FILTER PILLS */
+.filter-pills{display:flex;gap:var(--sp-2);margin-bottom:var(--sp-4);flex-wrap:wrap}
+.filter-pill{padding:var(--sp-1) var(--sp-3);border:1px solid var(--border);border-radius:99px;background:none;font-size:var(--fs-xs);font-weight:500;color:var(--text-2);cursor:pointer;transition:all var(--trans)}
+.filter-pill:hover{background:var(--surface-3)}
+.filter-pill.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* TOAST */
+.toast{position:fixed;bottom:var(--sp-6);right:var(--sp-6);z-index:300;display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);font-size:var(--fs-sm);max-width:320px;transform:translateY(120%);transition:transform 300ms cubic-bezier(.4,0,.2,1);pointer-events:none}
+.toast.show{transform:translateY(0)}
+.toast.success{border-left:3px solid var(--success)}
+.toast.error{border-left:3px solid var(--danger)}
+
+/* PULSE */
+@keyframes pulse-val{0%{background:var(--accent-lt)}60%{background:var(--accent-lt)}100%{background:transparent}}
+.pulse{animation:pulse-val 600ms ease forwards;border-radius:var(--r-sm);padding:1px 3px}
+[data-theme="dark"] @keyframes pulse-val{0%{background:var(--accent-lt)}60%{background:var(--accent-lt)}100%{background:transparent}}
+
+/* FOOTER */
+.app-footer{padding:var(--sp-4) var(--sp-6);border-top:1px solid var(--border);background:var(--surface);margin-top:var(--sp-12);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-3)}
+.footer-brand{font-size:var(--fs-xs);color:var(--text-3)}
+.footer-controls{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+.import-label{display:inline-flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);border:1px solid var(--border);background:var(--surface-3);border-radius:var(--r-md);font-size:var(--fs-sm);font-weight:500;color:var(--text);cursor:pointer;transition:all var(--trans)}
+.import-label:hover{background:var(--border)}
+#btn-import-file{display:none}
+#import-error{color:var(--danger);font-size:var(--fs-xs);display:none}
+
+/* PRINT AREA */
+#print-area{display:none}
+.print-header{border-bottom:2px solid #2b3a4a;padding-bottom:12pt;margin-bottom:16pt}
+.print-header h2{font-size:18pt;font-weight:700;margin-bottom:4pt}
+.print-header p{font-size:10pt;color:#5a6a7a}
+.print-footer{border-top:1px solid #d8e2ec;padding-top:8pt;margin-top:16pt;font-size:9pt;color:#8898a8;text-align:center}
+.print-table{width:100%;border-collapse:collapse;margin-top:12pt}
+.print-table th{background:#f0f4f8;font-size:9pt;text-transform:uppercase;letter-spacing:.05em;padding:6pt 8pt;border:1px solid #d8e2ec;font-weight:700;text-align:left}
+.print-table td{padding:6pt 8pt;border:1px solid #d8e2ec;font-size:10pt;vertical-align:top}
+.print-table tr:nth-child(even) td{background:#f8fafc}
+.receipt-line-table th{background:#f0f4f8}
+.receipt-totals{margin-top:12pt;border-top:2pt solid #2b3a4a;padding-top:8pt}
+.receipt-total-row{display:flex;justify-content:space-between;font-size:11pt;padding:3pt 0}
+.receipt-total-row.grand{font-size:14pt;font-weight:700;border-top:1px solid #d8e2ec;margin-top:4pt;padding-top:4pt}
+
+@media print {
+  body > *:not(#print-area){display:none!important}
+  #print-area{display:block!important;padding:16pt 20pt;font-family:'Segoe UI',Arial,sans-serif;color:#000;max-width:100%}
+  .print-header h2{color:#000}
+  @page{margin:15mm}
+  .print-table{page-break-inside:auto}
+  .print-table tr{page-break-inside:avoid}
+}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .header-inner{padding:0 var(--sp-4);gap:var(--sp-2)}
+  .app-logo h1{font-size:var(--fs-sm)}
+  .app-main{padding:var(--sp-4)}
+  .kpi-value{font-size:var(--fs-lg)}
+  .data-table th,.data-table td{padding:var(--sp-2) var(--sp-3)}
+}
+@media(max-width:480px){
+  .side-panel{width:100vw}
+  .panel-body{padding:var(--sp-4)}
+  .panel-footer{padding:var(--sp-3) var(--sp-4)}
+}
+@media(max-width:390px){
+  .app-logo h1{display:none}
+}
+/* INV-2 mobile touch targets (Tier A: a baker uses this one-handed at the counter during an order) —
+   >=44px tap targets on phones; scoped to <=600px so desktop is untouched; last in the cascade so it wins. */
+@media(max-width:600px){
+  button,.btn,.tab-btn,select,input:not([type=checkbox]):not([type=radio]):not([type=color]){min-height:44px}
+  .btn-icon{width:44px;height:44px}
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="app-logo">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-8a2 2 0 00-2-2H6a2 2 0 00-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><line x1="2" y1="21" x2="22" y2="21"/><path d="M7 8v3M12 8v3M17 8v3M7 8a2 2 0 014 0M12 8a2 2 0 014 0"/></svg>
+      <h1>Bakery Tracker</h1>
+    </div>
+    <nav class="tab-nav" role="tablist" aria-label="Main navigation">
+      <button class="tab-btn active" data-tab="orders" id="tab-btn-orders" role="tab" aria-selected="true" aria-controls="tab-orders">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Orders
+      </button>
+      <button class="tab-btn" data-tab="recipes" id="tab-btn-recipes" role="tab" aria-selected="false" aria-controls="tab-recipes">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/><path d="M12 8v4l3 3"/></svg>
+        Recipes
+      </button>
+      <button class="tab-btn" data-tab="dashboard" id="tab-btn-dashboard" role="tab" aria-selected="false" aria-controls="tab-dashboard">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Dashboard
+      </button>
+      <button class="tab-btn" data-tab="customers" id="tab-btn-customers" role="tab" aria-selected="false" aria-controls="tab-customers">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+        Customers
+      </button>
+    </nav>
+    <div class="header-actions">
+      <button id="theme-toggle" aria-label="Toggle theme" title="Toggle light/dark theme">
+        <svg id="icon-sun" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="icon-moon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="app-main" id="app-main">
+
+  <!-- ORDERS TAB -->
+  <section class="tab-panel active" id="tab-orders" role="tabpanel" aria-labelledby="tab-btn-orders">
+    <div class="toolbar">
+      <span class="section-title">Orders</span>
+      <div class="toolbar-right">
+        <label for="print-date" class="form-label" style="margin:0;white-space:nowrap;font-size:var(--fs-xs)">Sheet date:</label>
+        <input type="date" id="print-date" class="input-field" style="width:auto" aria-label="Production sheet date">
+        <button class="btn btn-secondary btn-sm" id="btn-print-sheet" onclick="printProductionSheet()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Prep Sheet
+        </button>
+        <button class="btn btn-primary" id="btn-new-order" onclick="openOrderPanel(null)">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Order
+        </button>
+      </div>
+    </div>
+    <div class="filter-pills" id="order-filters">
+      <button class="filter-pill active" data-filter="all" onclick="setFilter('all')">All</button>
+      <button class="filter-pill" data-filter="Pending" onclick="setFilter('Pending')">Pending</button>
+      <button class="filter-pill" data-filter="In Progress" onclick="setFilter('In Progress')">In Progress</button>
+      <button class="filter-pill" data-filter="Ready" onclick="setFilter('Ready')">Ready</button>
+      <button class="filter-pill" data-filter="Delivered" onclick="setFilter('Delivered')">Delivered</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="orders-table">
+        <thead>
+          <tr>
+            <th style="width:32px"></th>
+            <th>Customer</th>
+            <th>Delivery</th>
+            <th class="text-right">Revenue</th>
+            <th class="text-right">Cost</th>
+            <th class="text-right">Profit</th>
+            <th class="text-right">Margin</th>
+            <th>Status</th>
+            <th style="width:80px"></th>
+          </tr>
+        </thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- RECIPES TAB -->
+  <section class="tab-panel" id="tab-recipes" role="tabpanel" aria-labelledby="tab-btn-recipes">
+    <div class="toolbar">
+      <span class="section-title">Recipe Presets</span>
+      <button class="btn btn-primary" onclick="openRecipePanel(null)">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        New Recipe
+      </button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="recipes-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th class="text-right">Ingredients</th>
+            <th class="text-right">Ingredient Cost/unit</th>
+            <th class="text-right">Packaging/unit</th>
+            <th class="text-right">Total Cost/unit</th>
+            <th style="width:80px"></th>
+          </tr>
+        </thead>
+        <tbody id="recipes-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- DASHBOARD TAB -->
+  <section class="tab-panel" id="tab-dashboard" role="tabpanel" aria-labelledby="tab-btn-dashboard">
+    <div class="toolbar"><span class="section-title">Dashboard</span></div>
+    <div class="kpi-grid">
+      <div class="kpi-card" id="kpi-week-revenue">
+        <div class="kpi-label">This Week Revenue</div>
+        <div class="kpi-value text-mono" id="val-week-revenue">$0.00</div>
+        <div class="kpi-sub" id="sub-week-revenue">0 orders</div>
+      </div>
+      <div class="kpi-card" id="kpi-month-revenue">
+        <div class="kpi-label">This Month Revenue</div>
+        <div class="kpi-value text-mono" id="val-month-revenue">$0.00</div>
+        <div class="kpi-sub" id="sub-month-revenue">0 orders</div>
+      </div>
+      <div class="kpi-card" id="kpi-outstanding">
+        <div class="kpi-label">Outstanding Orders</div>
+        <div class="kpi-value" id="val-outstanding">0</div>
+        <div class="kpi-sub">Pending + In Progress + Ready</div>
+      </div>
+      <div class="kpi-card" id="kpi-completed">
+        <div class="kpi-label">Completed Orders</div>
+        <div class="kpi-value" id="val-completed">0</div>
+        <div class="kpi-sub" id="sub-completed">Delivered</div>
+      </div>
+    </div>
+    <div class="chart-section">
+      <div class="chart-header">
+        <span class="chart-title">Revenue &amp; Profit - Trailing 8 Weeks</span>
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Revenue</span>
+          <span class="legend-item"><span class="legend-dot" style="background:var(--success)"></span>Profit</span>
+        </div>
+      </div>
+      <div class="chart-container" id="chart-revenue-container"></div>
+    </div>
+    <div class="dash-grid">
+      <div class="card">
+        <div class="card-body">
+          <div class="chart-title" style="margin-bottom:var(--sp-4)">Profit by Category</div>
+          <div class="table-wrap">
+          <table class="data-table" id="category-table">
+            <thead><tr><th>Category</th><th class="text-right">Revenue</th><th class="text-right">Profit</th><th class="text-right">Margin</th></tr></thead>
+            <tbody id="category-tbody"></tbody>
+          </table>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="chart-title" style="margin-bottom:var(--sp-4)">Top 5 Products by Profit</div>
+          <div id="top5-container"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUSTOMERS TAB -->
+  <section class="tab-panel" id="tab-customers" role="tabpanel" aria-labelledby="tab-btn-customers">
+    <div class="toolbar"><span class="section-title">Customer Ledger</span></div>
+    <div class="table-wrap">
+      <table class="data-table" id="customers-table">
+        <thead>
+          <tr>
+            <th style="width:20px"></th>
+            <th>Customer</th>
+            <th class="text-right">Orders</th>
+            <th class="text-right">Lifetime Revenue</th>
+            <th class="text-right">Lifetime Profit</th>
+            <th>Last Order</th>
+          </tr>
+        </thead>
+        <tbody id="customers-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<!-- ORDER PANEL -->
+<div class="panel-backdrop" id="order-backdrop" onclick="closeOrderPanel()"></div>
+<div class="side-panel" id="order-panel" role="dialog" aria-modal="true" aria-labelledby="order-panel-title">
+  <div class="panel-header">
+    <span class="panel-title" id="order-panel-title">New Order</span>
+    <button class="btn-icon" onclick="closeOrderPanel()" aria-label="Close panel">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="order-panel-body"></div>
+  <div class="panel-footer" id="order-panel-footer"></div>
+</div>
+
+<!-- RECIPE PANEL -->
+<div class="panel-backdrop" id="recipe-backdrop" onclick="closeRecipePanel()"></div>
+<div class="side-panel" id="recipe-panel" role="dialog" aria-modal="true" aria-labelledby="recipe-panel-title">
+  <div class="panel-header">
+    <span class="panel-title" id="recipe-panel-title">New Recipe</span>
+    <button class="btn-icon" onclick="closeRecipePanel()" aria-label="Close panel">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="panel-body" id="recipe-panel-body"></div>
+  <div class="panel-footer" id="recipe-panel-footer"></div>
+</div>
+
+<!-- PRINT AREA -->
+<div id="print-area"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- FOOTER -->
+<footer class="app-footer">
+  <span class="footer-brand">Bakery Order Manager &amp; Profit Tracker &middot; jonsDesignerShop</span>
+  <div class="footer-controls">
+    <span id="import-error" role="alert"></span>
+    <button class="btn btn-secondary btn-sm" id="btn-export" onclick="exportData()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <label class="import-label btn-sm" for="btn-import-file">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import
+    </label>
+    <input type="file" id="btn-import-file" accept=".json" onchange="importData(this)">
+    <button class="btn btn-secondary btn-sm" id="btn-reset" onclick="resetData()">Reset</button>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'bakery-tracker-v1:state';
+// In-progress order/recipe panel drafts are persisted here on every keystroke so an unsaved
+// draft survives a tab close/reload (makes the "saves itself as you type" promise literally true).
+const DRAFT_KEY = 'bakery-tracker-v1:draft';
+const CATEGORIES = ['Cakes','Cookies','Cupcakes','Bread','Other'];
+const STATUSES = ['Pending','In Progress','Ready','Delivered'];
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function esc(s){
+  if(s==null)return'';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function parseNum(v){const n=parseFloat(v);return(isNaN(n)||!isFinite(n))?0:n;}
+function safeDiv(a,b){return b===0?null:a/b;}
+function genId(){return'id-'+Math.random().toString(36).slice(2,10)+'-'+Date.now().toString(36);}
+function today(){return new Date().toISOString().slice(0,10);}
+function daysFromNow(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+// Demo DELIVERY dates are clamped to the CURRENT calendar month so the sample data's dashboard
+// tiles stay coherent every day of the year: "revenue this week" can never exceed "revenue this
+// month" on the ~6-8 boundary days when the ISO week straddles two months (L-215 time-window
+// consistency). Clamping only moves a date that crossed the month edge, and only TO the edge, so a
+// past/Delivered order stays <= today and an upcoming/Pending order stays >= today (status stays honest).
+function demoDate(n){
+  const t=new Date();
+  const d=new Date();d.setDate(d.getDate()+n);
+  const first=new Date(t.getFullYear(),t.getMonth(),1);
+  const last=new Date(t.getFullYear(),t.getMonth()+1,0);
+  if(d<first)d.setTime(first.getTime());else if(d>last)d.setTime(last.getTime());
+  return d.toISOString().slice(0,10);
+}
+function debounce(fn,ms){let t;return(...a)=>{clearTimeout(t);t=setTimeout(()=>fn(...a),ms);};}
+function setText(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+
+function fmt$(n){
+  if(!isFinite(n))return'$0.00';
+  const abs=Math.abs(n);
+  const s=abs.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  return(n<0?'-':'')+'$'+s;
+}
+function fmtPct(n){
+  if(n==null||!isFinite(n))return'N/A';
+  return n.toFixed(2)+'%';
+}
+function fmtDate(s){
+  if(!s)return'—';
+  const d=new Date(s+'T00:00:00');
+  if(isNaN(d))return s;
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function fmtDateShort(s){
+  if(!s)return'—';
+  const d=new Date(s+'T00:00:00');
+  if(isNaN(d))return s;
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function fmt$K(n){
+  if(!isFinite(n))return'$0';
+  if(Math.abs(n)>=1000)return'$'+(n/1000).toFixed(1)+'k';
+  return'$'+n.toFixed(0);
+}
+function isUrgent(order){
+  if(order.status==='Delivered')return false;
+  if(!order.deliveryDate)return false;
+  const ms=new Date(order.deliveryDate+'T23:59:59').getTime()-Date.now();
+  return ms<=72*3600*1000&&ms>-86400000;
+}
+function getWeekStart(d){
+  const dt=new Date(d);
+  dt.setDate(dt.getDate()-dt.getDay());
+  dt.setHours(0,0,0,0);
+  return dt;
+}
+function isThisWeek(dateStr){
+  if(!dateStr)return false;
+  const d=new Date(dateStr+'T00:00:00');
+  const ws=getWeekStart(new Date());
+  const we=new Date(ws);we.setDate(we.getDate()+7);
+  return d>=ws&&d<we;
+}
+function isThisMonth(dateStr){
+  if(!dateStr)return false;
+  const now=new Date();
+  const d=new Date(dateStr+'T00:00:00');
+  return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth();
+}
+
+// ─── SAMPLE DATA ──────────────────────────────────────────────────────────────
+function makeSampleData(){
+  const r1={id:'demo-r1',name:'Chocolate Cake',category:'Cakes',ingredients:[
+    {id:'i1',name:'Flour',qty:2,unit:'cups',unitCost:0.30},
+    {id:'i2',name:'Butter',qty:0.5,unit:'lb',unitCost:4.00},
+    {id:'i3',name:'Eggs',qty:3,unit:'each',unitCost:0.35},
+    {id:'i4',name:'Chocolate',qty:4,unit:'oz',unitCost:0.50},
+    {id:'i5',name:'Sugar',qty:1,unit:'cup',unitCost:0.25}
+  ],packagingCost:1.50};
+  const r2={id:'demo-r2',name:'Vanilla Cupcakes',category:'Cupcakes',ingredients:[
+    {id:'i6',name:'Flour',qty:1,unit:'cup',unitCost:0.15},
+    {id:'i7',name:'Butter',qty:0.25,unit:'lb',unitCost:1.00},
+    {id:'i8',name:'Eggs',qty:1,unit:'each',unitCost:0.25},
+    {id:'i9',name:'Sugar',qty:0.5,unit:'cup',unitCost:0.20},
+    {id:'i10',name:'Vanilla',qty:1,unit:'tsp',unitCost:0.10}
+  ],packagingCost:0.25};
+  const r3={id:'demo-r3',name:'Sourdough Loaf',category:'Bread',ingredients:[
+    {id:'i11',name:'Bread Flour',qty:3,unit:'cups',unitCost:0.20},
+    {id:'i12',name:'Salt',qty:1,unit:'tsp',unitCost:0.02},
+    {id:'i13',name:'Starter',qty:0.25,unit:'cup',unitCost:0.50}
+  ],packagingCost:0.75};
+  const o1={id:'demo-o1',customerName:'Sarah Mitchell',orderDate:daysFromNow(-5),deliveryDate:demoDate(0),notes:'Pink roses on top, "Happy Birthday Jessica"',status:'In Progress',
+    items:[{id:'li1',productName:'Chocolate Birthday Cake',qty:1,unitPrice:45,recipeId:'demo-r1'},{id:'li2',productName:'Vanilla Cupcakes',qty:12,unitPrice:3.50,recipeId:'demo-r2'}],
+    laborMinutes:120,hourlyRate:20};
+  const o2={id:'demo-o2',customerName:'Marcus Chen',orderDate:daysFromNow(-2),deliveryDate:demoDate(3),notes:'Gluten-free request noted',status:'Pending',
+    items:[{id:'li3',productName:'Sourdough Loaf',qty:2,unitPrice:12,recipeId:'demo-r3'}],
+    laborMinutes:45,hourlyRate:20};
+  const o3={id:'demo-o3',customerName:'Diane Foster',orderDate:daysFromNow(-10),deliveryDate:demoDate(-3),notes:'',status:'Delivered',
+    items:[{id:'li4',productName:'Chocolate Cake',qty:1,unitPrice:48,recipeId:'demo-r1'},{id:'li5',productName:'Vanilla Cupcakes',qty:24,unitPrice:3.25,recipeId:'demo-r2'}],
+    laborMinutes:150,hourlyRate:20};
+  const o4={id:'demo-o4',customerName:'Sarah Mitchell',orderDate:daysFromNow(-14),deliveryDate:demoDate(-7),notes:'',status:'Delivered',
+    items:[{id:'li6',productName:'Vanilla Cupcakes',qty:36,unitPrice:3.75,recipeId:'demo-r2'}],
+    laborMinutes:90,hourlyRate:20};
+  return{orders:[o1,o2,o3,o4],recipes:[r1,r2,r3],settings:{hourlyRate:20,theme:'light'}};
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let data={orders:[],recipes:[],settings:{hourlyRate:20,theme:'light'}};
+let ui={activeTab:'orders',orderFilter:'all',expandedCustomers:new Set(),draftOrder:null,draftRecipe:null,editingOrderId:null,editingRecipeId:null};
+
+// ─── PERSISTENCE ──────────────────────────────────────────────────────────────
+function saveData(){
+  try{
+    const toSave={orders:data.orders,recipes:data.recipes,settings:data.settings};
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(toSave));
+  }catch(e){console.warn('Save failed',e); try{ showToast('Could not save: your browser storage may be full or disabled. Export a backup so you do not lose your work.'); }catch(_){}}
+}
+const debouncedSave=debounce(saveData,300);
+// Flush any pending in-progress panel draft synchronously (the debounced draft-save may not have
+// fired yet when the tab is closing mid-keystroke). Reads straight from the open panel's inputs.
+function flushDraftNow(){
+  try{
+    if(ui.draftOrder&&document.getElementById('order-panel')?.classList.contains('open')){ saveDraft('order',readOrderFromPanel()); }
+    else if(ui.draftRecipe&&document.getElementById('recipe-panel')?.classList.contains('open')){ saveDraft('recipe',readRecipeFromPanel()); }
+  }catch(_){}
+}
+// L-98: flush the pending debounced save the instant the tab is hidden or closed, so a fast tab-close or
+// reload right after an edit never loses the last change (committed data AND an unsaved panel draft).
+window.addEventListener('pagehide',()=>{ saveData(); flushDraftNow(); });
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'){ saveData(); flushDraftNow(); } });
+// Cross-tab safety: if another tab writes our data, WARN (do not auto-reload/auto-overwrite, that would
+// itself discard an in-progress edit). The user reloads when ready, avoiding silent last-writer-wins loss.
+window.addEventListener('storage',e=>{ if(e.key===STORAGE_KEY){ try{ showToast('Your data was changed in another tab. Reload this page to see the latest and avoid overwriting it.'); }catch(_){}}});
+
+let _loadWarning=false;
+function loadData(){
+  let raw=null; try{ raw=localStorage.getItem(STORAGE_KEY); }catch(_){}
+  try{
+    if(!raw)throw new Error('empty');
+    const parsed=JSON.parse(raw);
+    if(!parsed||typeof parsed!=='object')throw new Error('bad');
+    data.orders=Array.isArray(parsed.orders)?parsed.orders.map(normalizeOrder):[];
+    data.recipes=Array.isArray(parsed.recipes)?parsed.recipes.map(normalizeRecipe):[];
+    data.settings=Object.assign({hourlyRate:20,theme:'light'},parsed.settings||{});
+    if(data.orders.length===0&&data.recipes.length===0){
+      const s=makeSampleData();
+      data.orders=s.orders;data.recipes=s.recipes;
+    }
+  }catch(e){
+    // L-129: if there WAS saved data we couldn't read, stash the raw bytes + warn (the next save would
+    // overwrite it = irreversible loss). A genuinely empty first run (no raw) does NOT warn.
+    if(raw){ try{ localStorage.setItem(STORAGE_KEY+'__corrupt-backup', raw); }catch(_){} _loadWarning=true; }
+    const s=makeSampleData();
+    data.orders=s.orders;data.recipes=s.recipes;data.settings={hourlyRate:20,theme:'light'};
+  }
+  applyTheme(data.settings.theme);
+}
+window.addEventListener('load',()=>{ if(_loadWarning){ try{ showToast('Your saved data could not be read, so it was set aside (a backup was kept) and the app started fresh. Message me your order number to recover it.'); }catch(_){}}});
+
+// ─── IN-PROGRESS DRAFT PERSISTENCE ──────────────────────────────────────────────
+// Saves the live order/recipe panel contents on every keystroke so a draft you are still
+// typing is never lost if the tab closes before you click Save. Cleared on save/close.
+function saveDraft(kind,draft){
+  try{ localStorage.setItem(DRAFT_KEY,JSON.stringify({kind,draft,editingId:kind==='order'?ui.editingOrderId:ui.editingRecipeId})); }catch(_){ try{ showToast('Could not save: your browser storage may be full or disabled. Export a backup so you do not lose your work.'); }catch(__){} }
+}
+const debouncedSaveDraft=debounce(saveDraft,300);
+function clearDraft(){ try{ localStorage.removeItem(DRAFT_KEY); }catch(_){} }
+function restoreDraft(){
+  let raw=null; try{ raw=localStorage.getItem(DRAFT_KEY); }catch(_){ return; }
+  if(!raw)return;
+  let d=null; try{ d=JSON.parse(raw); }catch(_){ clearDraft(); return; }
+  if(!d||typeof d!=='object'||!d.draft)return;
+  if(d.kind==='order'){
+    ui.editingOrderId=d.editingId||null;
+    ui.draftOrder=normalizeOrder(d.draft); ui.draftOrder.id=d.editingId||null;
+    document.getElementById('order-panel-title').textContent=d.editingId?'Edit Order':'New Order';
+    renderOrderPanelBody();
+    document.getElementById('order-panel').classList.add('open');
+    document.getElementById('order-backdrop').classList.add('open');
+  } else if(d.kind==='recipe'){
+    ui.editingRecipeId=d.editingId||null;
+    ui.draftRecipe=normalizeRecipe(d.draft); ui.draftRecipe.id=d.editingId||null;
+    document.getElementById('recipe-panel-title').textContent=d.editingId?'Edit Recipe':'New Recipe';
+    renderRecipePanelBody();
+    document.getElementById('recipe-panel').classList.add('open');
+    document.getElementById('recipe-backdrop').classList.add('open');
+  } else { return; }
+  try{ showToast('Restored the order you were still editing.'); }catch(_){}
+}
+
+function normalizeOrder(o){
+  return{
+    id:o.id||genId(),customerName:String(o.customerName||''),orderDate:String(o.orderDate||today()),
+    deliveryDate:String(o.deliveryDate||''),notes:String(o.notes||''),status:STATUSES.includes(o.status)?o.status:'Pending',
+    items:Array.isArray(o.items)?o.items.map(normalizeItem):[],
+    laborMinutes:parseNum(o.laborMinutes),hourlyRate:parseNum(o.hourlyRate)||20
+  };
+}
+function normalizeItem(it){
+  // Preserve a stored 0 quantity (do NOT coerce 0->1): the save-time it.qty<=0 guard is the single
+  // place a zero line is rejected, so inflating it here would let a 0 slip through and overstate totals.
+  return{id:it.id||genId(),productName:String(it.productName||''),qty:parseNum(it.qty),unitPrice:parseNum(it.unitPrice),recipeId:String(it.recipeId||'')};
+}
+function normalizeRecipe(r){
+  return{
+    id:r.id||genId(),name:String(r.name||''),category:CATEGORIES.includes(r.category)?r.category:'Other',
+    ingredients:Array.isArray(r.ingredients)?r.ingredients.map(normalizeIngredient):[],
+    packagingCost:parseNum(r.packagingCost)
+  };
+}
+function normalizeIngredient(ing){
+  return{id:ing.id||genId(),name:String(ing.name||''),qty:parseNum(ing.qty),unit:String(ing.unit||''),unitCost:parseNum(ing.unitCost)};
+}
+
+// ─── FORMULA ENGINE ───────────────────────────────────────────────────────────
+function recipeIngCostPerUnit(recipe){
+  if(!recipe||!Array.isArray(recipe.ingredients))return 0;
+  return recipe.ingredients.reduce((s,ing)=>s+parseNum(ing.qty)*parseNum(ing.unitCost),0);
+}
+function recipeTotalCostPerUnit(recipe){
+  return recipeIngCostPerUnit(recipe)+parseNum(recipe.packagingCost);
+}
+function computeOrderTotals(order){
+  let revenue=0,ingCost=0,pkgCost=0;
+  (order.items||[]).forEach(item=>{
+    const qty=parseNum(item.qty);const price=parseNum(item.unitPrice);
+    revenue+=qty*price;
+    const recipe=data.recipes.find(r=>r.id===item.recipeId);
+    if(recipe){ingCost+=recipeIngCostPerUnit(recipe)*qty;pkgCost+=parseNum(recipe.packagingCost)*qty;}
+  });
+  const laborMin=parseNum(order.laborMinutes);const rate=parseNum(order.hourlyRate);
+  const laborCost=(laborMin/60)*rate;
+  const totalCost=ingCost+pkgCost+laborCost;
+  const grossProfit=revenue-totalCost;
+  const marginPct=revenue>0?(grossProfit/revenue)*100:null;
+  return{revenue,ingCost,pkgCost,laborCost,totalCost,grossProfit,marginPct};
+}
+// Per-item profit that INCLUDES labor — the order's labor is allocated across its items by
+// revenue share, so category/product breakdowns reconcile exactly with the order, ledger, KPI
+// and chart figures (which all use computeOrderTotals/grossProfit, labor included). Without this
+// the dashboard showed a different, labor-free profit for the same data.
+function itemProfit(order,item){
+  const qty=parseNum(item.qty),price=parseNum(item.unitPrice);
+  const rev=qty*price;
+  const recipe=data.recipes.find(r=>r.id===item.recipeId);
+  const direct=recipe?(recipeIngCostPerUnit(recipe)+parseNum(recipe.packagingCost))*qty:0;
+  const t=computeOrderTotals(order);
+  // allocate the order's labor by revenue share; if the order has zero revenue (free / $0-priced
+  // items), split labor evenly across its items so the dashboard still reconciles with the order
+  // total instead of silently dropping the labor cost.
+  const nItems=(order.items||[]).length||1;
+  const laborShare=t.revenue>0?t.laborCost*(rev/t.revenue):t.laborCost/nItems;
+  return{rev,profit:rev-direct-laborShare};
+}
+
+// ─── THEME ────────────────────────────────────────────────────────────────────
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t==='dark'?'dark':'light');
+  document.getElementById('icon-sun').style.display=t==='dark'?'none':'block';
+  document.getElementById('icon-moon').style.display=t==='dark'?'block':'none';
+  data.settings.theme=t;
+}
+document.getElementById('theme-toggle').addEventListener('click',()=>{
+  const next=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';
+  applyTheme(next);saveData(); // immediate save: a debounce window here loses the choice on quick reload/close
+});
+(function initTheme(){
+  if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){
+    applyTheme('dark');
+  }
+})();
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const tab=btn.dataset.tab;
+    ui.activeTab=tab;
+    document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab);b.setAttribute('aria-selected',b.dataset.tab===tab);});
+    document.querySelectorAll('.tab-panel').forEach(p=>{p.classList.toggle('active',p.id==='tab-'+tab);});
+    if(tab==='dashboard')renderDashboard();
+    if(tab==='customers')renderCustomers();
+  });
+});
+
+// ─── FILTER ───────────────────────────────────────────────────────────────────
+function setFilter(f){
+  ui.orderFilter=f;
+  document.querySelectorAll('.filter-pill').forEach(p=>p.classList.toggle('active',p.dataset.filter===f));
+  renderOrders();
+}
+
+// ─── RENDER ORDERS ────────────────────────────────────────────────────────────
+function renderOrders(){
+  const tbody=document.getElementById('orders-tbody');
+  if(!tbody)return;
+  const orders=data.orders.filter(o=>{
+    if(ui.orderFilter==='all')return true;
+    return o.status===ui.orderFilter;
+  }).sort((a,b)=>{
+    if(!a.deliveryDate&&!b.deliveryDate)return 0;
+    if(!a.deliveryDate)return 1;
+    if(!b.deliveryDate)return-1;
+    return a.deliveryDate.localeCompare(b.deliveryDate);
+  });
+  if(orders.length===0){
+    tbody.innerHTML=`<tr><td colspan="9" class="no-data">No orders yet - add your first order to see your numbers.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=orders.map(o=>{
+    const tot=computeOrderTotals(o);
+    const urg=isUrgent(o);
+    const cls=o.status==='Delivered'?'delivered':'';
+    const statusCls=o.status.replace(' ','-');
+    return`<tr class="${cls}">
+      <td>${urg?`<span class="urgent-badge" title="Delivery within 72 hours">!</span>`:''}</td>
+      <td><strong>${esc(o.customerName)}</strong></td>
+      <td>${esc(fmtDate(o.deliveryDate))}</td>
+      <td class="text-right text-mono">${esc(fmt$(tot.revenue))}</td>
+      <td class="text-right text-mono">${esc(fmt$(tot.totalCost))}</td>
+      <td class="text-right text-mono ${tot.grossProfit<0?'text-danger':'text-success'}">${esc(fmt$(tot.grossProfit))}</td>
+      <td class="text-right text-mono ${tot.marginPct!=null&&tot.marginPct<0?'text-danger':''}">${esc(fmtPct(tot.marginPct))}</td>
+      <td><span class="status-chip ${statusCls}">${esc(o.status)}</span></td>
+      <td>
+        <div style="display:flex;gap:4px;justify-content:flex-end">
+          <button class="btn-icon" data-act="printReceipt" data-arg="${esc(o.id)}" title="Print receipt">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          </button>
+          <button class="btn-icon" data-act="openOrderPanel" data-arg="${esc(o.id)}" title="Edit order">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon danger" data-act="deleteOrder" data-arg="${esc(o.id)}" title="Delete order">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── RENDER RECIPES ───────────────────────────────────────────────────────────
+function renderRecipes(){
+  const tbody=document.getElementById('recipes-tbody');
+  if(!tbody)return;
+  if(data.recipes.length===0){
+    tbody.innerHTML=`<tr><td colspan="7" class="no-data">No recipes yet. Add a recipe preset to link ingredient costs to your orders.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=data.recipes.map(r=>{
+    const ingCost=recipeIngCostPerUnit(r);
+    const pkgCost=parseNum(r.packagingCost);
+    const total=ingCost+pkgCost;
+    return`<tr>
+      <td><strong>${esc(r.name)}</strong></td>
+      <td><span class="status-chip" style="background:var(--accent-lt);color:var(--accent-dk)">${esc(r.category)}</span></td>
+      <td class="text-right">${r.ingredients.length}</td>
+      <td class="text-right text-mono">${esc(fmt$(ingCost))}</td>
+      <td class="text-right text-mono">${esc(fmt$(pkgCost))}</td>
+      <td class="text-right text-mono"><strong>${esc(fmt$(total))}</strong></td>
+      <td>
+        <div style="display:flex;gap:4px;justify-content:flex-end">
+          <button class="btn-icon" data-act="openRecipePanel" data-arg="${esc(r.id)}" title="Edit recipe">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon danger" data-act="deleteRecipe" data-arg="${esc(r.id)}" title="Delete recipe">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── RENDER DASHBOARD ─────────────────────────────────────────────────────────
+function renderDashboard(){
+  // KPIs
+  let wkRev=0,wkCnt=0,moRev=0,moCnt=0,outstanding=0,completed=0;
+  data.orders.forEach(o=>{
+    const tot=computeOrderTotals(o);
+    if(isThisWeek(o.deliveryDate)){wkRev+=tot.revenue;wkCnt++;}
+    if(isThisMonth(o.deliveryDate)){moRev+=tot.revenue;moCnt++;}
+    if(o.status==='Delivered')completed++;else outstanding++;
+  });
+  setText('val-week-revenue',fmt$(wkRev));
+  setText('sub-week-revenue',wkCnt+' order'+(wkCnt!==1?'s':''));
+  setText('val-month-revenue',fmt$(moRev));
+  setText('sub-month-revenue',moCnt+' order'+(moCnt!==1?'s':''));
+  setText('val-outstanding',outstanding);
+  setText('val-completed',completed);
+
+  // Revenue chart
+  renderRevenueChart();
+
+  // Category breakdown
+  const cats={};
+  data.orders.forEach(o=>{
+    (o.items||[]).forEach(item=>{
+      const recipe=data.recipes.find(r=>r.id===item.recipeId);
+      const cat=recipe?recipe.category:'Uncategorized';
+      const ip=itemProfit(o,item); // labor-inclusive, reconciles with the KPIs/ledger
+      if(!cats[cat])cats[cat]={cat,rev:0,profit:0};
+      cats[cat].rev+=ip.rev;cats[cat].profit+=ip.profit;
+    });
+  });
+  const catArr=Object.values(cats).sort((a,b)=>b.rev-a.rev);
+  const catTbody=document.getElementById('category-tbody');
+  if(catTbody){
+    if(catArr.length===0){
+      catTbody.innerHTML=`<tr><td colspan="4" class="no-data" style="padding:var(--sp-6)">No data yet</td></tr>`;
+    } else {
+      catTbody.innerHTML=catArr.map(c=>{
+        const m=c.rev>0?(c.profit/c.rev)*100:null;
+        return`<tr>
+          <td>${esc(c.cat)}</td>
+          <td class="text-right text-mono">${esc(fmt$(c.rev))}</td>
+          <td class="text-right text-mono ${c.profit<0?'text-danger':'text-success'}">${esc(fmt$(c.profit))}</td>
+          <td class="text-right text-mono">${esc(fmtPct(m))}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // Top 5
+  renderTop5();
+}
+
+function renderRevenueChart(){
+  const container=document.getElementById('chart-revenue-container');
+  if(!container)return;
+  const weeks=[];
+  for(let w=7;w>=0;w--){
+    const ws=getWeekStart(new Date());ws.setDate(ws.getDate()-w*7);
+    const we=new Date(ws);we.setDate(we.getDate()+7);
+    let rev=0,prof=0;
+    data.orders.forEach(o=>{
+      if(!o.deliveryDate)return;
+      const d=new Date(o.deliveryDate+'T00:00:00');
+      if(d>=ws&&d<we){const t=computeOrderTotals(o);rev+=t.revenue;prof+=t.grossProfit;}
+    });
+    const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    weeks.push({label:w===0?'This Wk':mo[ws.getMonth()]+' '+ws.getDate(),rev,prof});
+  }
+  const maxVal=Math.max(...weeks.map(w=>Math.max(w.rev,Math.abs(w.prof))),1);
+  const W=640,H=220,pL=52,pR=16,pT=20,pB=36;
+  const cW=W-pL-pR,cH=H-pT-pB;
+  const bGrp=cW/8,bW=Math.floor(bGrp*0.35);
+  let parts=[`<svg id="chart-revenue" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:${W}px;height:auto;display:block">`];
+  for(let i=0;i<=4;i++){
+    const y=pT+cH-(i/4)*cH;
+    const v=maxVal*(i/4);
+    parts.push(`<line x1="${pL}" y1="${y.toFixed(1)}" x2="${pL+cW}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="1" stroke-dasharray="${i===0?'none':'4,4'}"/>`);
+    parts.push(`<text x="${pL-5}" y="${(y+4).toFixed(1)}" text-anchor="end" fill="var(--text-3)" font-size="11" font-family="inherit">${fmt$K(v)}</text>`);
+  }
+  weeks.forEach((wk,i)=>{
+    const grpX=pL+i*bGrp;const mx=grpX+bGrp/2;
+    const rH=Math.max(2,(wk.rev/maxVal)*cH);
+    const pHabs=Math.max(2,(Math.abs(wk.prof)/maxVal)*cH);
+    const pColor=wk.prof>=0?'var(--success)':'var(--danger)';
+    const pY=wk.prof>=0?pT+cH-pHabs:pT+cH;
+    parts.push(`<rect x="${(mx-bW-1).toFixed(1)}" y="${(pT+cH-rH).toFixed(1)}" width="${bW}" height="${rH.toFixed(1)}" rx="2" fill="var(--accent)" opacity="0.85"/>`);
+    parts.push(`<rect x="${(mx+1).toFixed(1)}" y="${pY.toFixed(1)}" width="${bW}" height="${pHabs.toFixed(1)}" rx="2" fill="${pColor}" opacity="0.85"/>`);
+    parts.push(`<text x="${mx.toFixed(1)}" y="${H-8}" text-anchor="middle" fill="var(--text-3)" font-size="10" font-family="inherit">${esc(wk.label)}</text>`);
+  });
+  parts.push('</svg>');
+  container.innerHTML=parts.join('');
+}
+
+function renderTop5(){
+  const prods={};
+  data.orders.forEach(o=>{
+    (o.items||[]).forEach(item=>{
+      const n=item.productName||'Unnamed';
+      const ip=itemProfit(o,item); // labor-inclusive, consistent with the rest of the app
+      if(!prods[n])prods[n]={name:n,rev:0,profit:0};
+      prods[n].rev+=ip.rev;prods[n].profit+=ip.profit;
+    });
+  });
+  const top5=Object.values(prods).sort((a,b)=>b.profit-a.profit).slice(0,5);
+  const container=document.getElementById('top5-container');
+  if(!container)return;
+  if(top5.length===0){container.innerHTML=`<p class="no-data" style="padding:var(--sp-6)">No product data yet</p>`;return;}
+  const maxP=Math.max(...top5.map(p=>Math.abs(p.profit)),1);
+  const W=360,barH=24,gap=8,padL=110,padR=60,padT=4;
+  const H=padT+top5.length*(barH+gap)-gap+4;
+  let parts=[`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">`];
+  top5.forEach((p,i)=>{
+    const y=padT+i*(barH+gap);
+    const bW=Math.max(4,(p.profit/maxP)*(W-padL-padR));
+    const col=p.profit>=0?'var(--success)':'var(--danger)';
+    const shortName=p.name.length>14?p.name.slice(0,13)+'.':p.name;
+    parts.push(`<text x="${padL-6}" y="${y+barH/2+4}" text-anchor="end" fill="var(--text-2)" font-size="12" font-family="inherit">${esc(shortName)}</text>`);
+    parts.push(`<rect x="${padL}" y="${y}" width="${bW.toFixed(1)}" height="${barH}" rx="3" fill="${col}" opacity="0.8"/>`);
+    parts.push(`<text x="${padL+bW+6}" y="${y+barH/2+4}" fill="var(--text-2)" font-size="11" font-family="inherit">${esc(fmt$(p.profit))}</text>`);
+  });
+  parts.push('</svg>');
+  container.innerHTML=parts.join('');
+}
+
+// ─── RENDER CUSTOMERS ─────────────────────────────────────────────────────────
+function renderCustomers(){
+  const tbody=document.getElementById('customers-tbody');
+  if(!tbody)return;
+  const ledger={};
+  data.orders.forEach(o=>{
+    const n=o.customerName||'Unknown';
+    if(!ledger[n])ledger[n]={name:n,orders:[],rev:0,profit:0,lastDate:''};
+    const t=computeOrderTotals(o);
+    ledger[n].orders.push({...o,totals:t});
+    ledger[n].rev+=t.revenue;ledger[n].profit+=t.grossProfit;
+    if(!ledger[n].lastDate||o.deliveryDate>ledger[n].lastDate)ledger[n].lastDate=o.deliveryDate;
+  });
+  const rows=Object.values(ledger).sort((a,b)=>b.rev-a.rev);
+  if(rows.length===0){
+    tbody.innerHTML=`<tr><td colspan="6" class="no-data">No customers yet. Your customer history builds automatically as you add orders.</td></tr>`;
+    return;
+  }
+  let html='';
+  rows.forEach(c=>{
+    const open=ui.expandedCustomers.has(c.name);
+    const chevron=open?
+      `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>`:
+      `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
+    html+=`<tr class="customer-row" data-act="toggleCustomer" data-arg="${esc(c.name)}" style="cursor:pointer">
+      <td>${chevron}</td>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td class="text-right">${c.orders.length}</td>
+      <td class="text-right text-mono">${esc(fmt$(c.rev))}</td>
+      <td class="text-right text-mono ${c.profit<0?'text-danger':'text-success'}">${esc(fmt$(c.profit))}</td>
+      <td>${esc(fmtDate(c.lastDate))}</td>
+    </tr>`;
+    if(open){
+      html+=`<tr><td colspan="6" style="padding:0;background:var(--surface-2)">
+        <div style="padding:var(--sp-3) var(--sp-6)">
+          <table class="customer-orders-table">
+            <thead><tr><th>Delivery</th><th>Revenue</th><th>Profit</th><th>Margin</th><th>Status</th></tr></thead>
+            <tbody>
+              ${c.orders.map(o=>`<tr>
+                <td>${esc(fmtDate(o.deliveryDate))}</td>
+                <td>${esc(fmt$(o.totals.revenue))}</td>
+                <td class="${o.totals.grossProfit<0?'text-danger':'text-success'}">${esc(fmt$(o.totals.grossProfit))}</td>
+                <td>${esc(fmtPct(o.totals.marginPct))}</td>
+                <td><span class="status-chip ${esc(o.status.replace(' ','-'))}">${esc(o.status)}</span></td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </td></tr>`;
+    }
+  });
+  tbody.innerHTML=html;
+}
+
+function toggleCustomer(name){
+  if(ui.expandedCustomers.has(name))ui.expandedCustomers.delete(name);
+  else ui.expandedCustomers.add(name);
+  renderCustomers();
+}
+
+// SECURITY (L-128): action buttons + rows carry data-act/data-arg (read via getAttribute, never eval'd) instead
+// of interpolating a name/id into an inline on* handler. A typed or imported value with a quote would otherwise
+// break out of the JS-string-inside-the-HTML-attribute and execute (stored XSS) or silently break the control
+// (e.g. a customer named O'Brien). One delegated listener dispatches by name.
+document.addEventListener('click',function(e){
+  const el=e.target.closest('[data-act]');
+  if(!el)return;
+  const fn=el.getAttribute('data-act');
+  const arg=el.getAttribute('data-arg');
+  const arg2=el.getAttribute('data-arg2');
+  const map={printReceipt,openOrderPanel,deleteOrder,openRecipePanel,deleteRecipe,toggleCustomer};
+  if(map[fn])map[fn](arg,arg2==='true'?true:undefined);
+});
+
+// ─── ORDER PANEL ──────────────────────────────────────────────────────────────
+function openOrderPanel(orderId){
+  ui.editingOrderId=orderId;
+  if(orderId){
+    const o=data.orders.find(x=>x.id===orderId);
+    if(!o)return;
+    ui.draftOrder=JSON.parse(JSON.stringify(o));
+    document.getElementById('order-panel-title').textContent='Edit Order';
+  } else {
+    ui.draftOrder={id:null,customerName:'',orderDate:today(),deliveryDate:daysFromNow(7),notes:'',status:'Pending',
+      items:[{id:genId(),productName:'',qty:1,unitPrice:0,recipeId:''}],
+      laborMinutes:60,hourlyRate:data.settings.hourlyRate};
+    document.getElementById('order-panel-title').textContent='New Order';
+  }
+  renderOrderPanelBody();
+  document.getElementById('order-panel').classList.add('open');
+  document.getElementById('order-backdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('order-customer')?.focus(),300);
+}
+function closeOrderPanel(){
+  document.getElementById('order-panel').classList.remove('open');
+  document.getElementById('order-backdrop').classList.remove('open');
+  ui.draftOrder=null;ui.editingOrderId=null;
+  clearDraft();
+}
+
+function renderOrderPanelBody(){
+  const d=ui.draftOrder;if(!d)return;
+  const customerNames=[...new Set(data.orders.map(o=>o.customerName).filter(Boolean))];
+  const recipeOptions=data.recipes.map(r=>`<option value="${esc(r.id)}">${esc(r.name)}</option>`).join('');
+
+  const itemsHtml=d.items.map((item,idx)=>{
+    const recipe=data.recipes.find(r=>r.id===item.recipeId);
+    const ingC=recipe?recipeIngCostPerUnit(recipe)*item.qty:0;
+    const pkgC=recipe?parseNum(recipe.packagingCost)*item.qty:0;
+    return`<tr class="item-row" data-idx="${idx}">
+      <td><input class="input-field item-name" type="text" placeholder="Product name" value="${esc(item.productName)}" aria-label="Product name" autocomplete="off"></td>
+      <td><input class="input-field item-qty" type="number" min="0.01" step="any" value="${esc(String(item.qty))}" aria-label="Quantity" style="width:70px"></td>
+      <td><input class="input-field item-price" type="number" min="0" step="0.01" value="${esc(String(item.unitPrice))}" aria-label="Unit price" style="width:80px"></td>
+      <td>
+        <select class="input-field item-recipe" aria-label="Recipe preset" style="width:100%;min-width:120px">
+          <option value="">(no preset)</option>
+          ${data.recipes.map(r=>`<option value="${esc(r.id)}"${r.id===item.recipeId?' selected':''}>${esc(r.name)}</option>`).join('')}
+        </select>
+      </td>
+      <td class="item-cost-cell">${esc(fmt$(ingC))}</td>
+      <td class="item-cost-cell">${esc(fmt$(pkgC))}</td>
+      <td><button type="button" class="btn-icon danger btn-remove-item" data-idx="${idx}" aria-label="Remove item" onclick="removeItem(${idx})">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+      </button></td>
+    </tr>`;
+  }).join('');
+
+  const body=document.getElementById('order-panel-body');
+  body.innerHTML=`
+    <datalist id="customer-list">${customerNames.map(n=>`<option value="${esc(n)}">`).join('')}</datalist>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="order-customer">Customer Name *</label>
+        <input id="order-customer" class="input-field" type="text" list="customer-list" value="${esc(d.customerName)}" placeholder="e.g. Sarah Mitchell" autocomplete="off" required>
+        <span class="input-error" id="err-customer" role="alert"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="order-status">Status</label>
+        <select id="order-status" class="input-field">
+          ${STATUSES.map(s=>`<option value="${esc(s)}"${s===d.status?' selected':''}>${esc(s)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="order-date">Order Date</label>
+        <input id="order-date" class="input-field" type="date" value="${esc(d.orderDate)}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="order-delivery">Delivery Date *</label>
+        <input id="order-delivery" class="input-field" type="date" value="${esc(d.deliveryDate)}" required>
+        <span class="input-error" id="err-delivery" role="alert"></span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="order-notes">Notes</label>
+      <textarea id="order-notes" class="input-field" rows="2" placeholder="Decoration details, allergies, special requests...">${esc(d.notes)}</textarea>
+    </div>
+    <div class="items-section">
+      <div class="items-section-header">
+        <span class="items-section-title">Line Items</span>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addItem()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Item
+        </button>
+      </div>
+      <span class="input-error" id="err-items" role="alert"></span>
+      <div class="items-table-wrap">
+        <table class="items-table">
+          <thead><tr><th>Product</th><th>Qty</th><th>Unit Price</th><th>Recipe Preset</th><th>Ing. Cost</th><th>Pkg Cost</th><th></th></tr></thead>
+          <tbody id="items-tbody">${itemsHtml}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:var(--sp-4)">
+      <div class="form-group">
+        <label class="form-label" for="order-labor-min">Labor (minutes)</label>
+        <input id="order-labor-min" class="input-field" type="number" min="0" step="1" value="${esc(String(d.laborMinutes))}" placeholder="e.g. 120">
+        <span class="input-error" id="err-labor" role="alert"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="order-labor-rate">Hourly Rate ($)</label>
+        <input id="order-labor-rate" class="input-field" type="number" min="0" step="0.01" value="${esc(String(d.hourlyRate))}" placeholder="e.g. 20">
+      </div>
+    </div>
+    <div id="order-summary"></div>`;
+
+  document.getElementById('order-panel-footer').innerHTML=`
+    ${d.id?`<button type="button" class="btn btn-danger btn-sm" data-act="deleteOrder" data-arg="${esc(d.id)}" data-arg2="true">Delete</button>`:''}
+    <button type="button" class="btn btn-secondary" onclick="closeOrderPanel()">Cancel</button>
+    <button type="button" class="btn btn-primary" id="btn-save-order" onclick="saveOrder()">Save Order</button>`;
+
+  // Attach live event listener
+  const panelBody=document.getElementById('order-panel-body');
+  panelBody.addEventListener('input',onOrderPanelInput);
+
+  updateOrderSummary();
+}
+
+function onOrderPanelInput(e){
+  // Validate numeric fields
+  const target=e.target;
+  if(target.classList.contains('item-qty')||target.classList.contains('item-price')){
+    const v=parseFloat(target.value);
+    if(target.classList.contains('item-qty')&&v<=0&&target.value!==''){
+      target.classList.add('error');
+      let errSpan=target.parentNode.querySelector('.input-error');
+      if(!errSpan){errSpan=document.createElement('span');errSpan.className='input-error';errSpan.setAttribute('role','alert');target.parentNode.appendChild(errSpan);}
+      errSpan.textContent='Must be greater than 0';
+    } else {
+      target.classList.remove('error');
+      const errSpan=target.parentNode.querySelector('.input-error');
+      if(errSpan)errSpan.textContent='';
+    }
+  }
+  if(target.classList.contains('item-recipe')){
+    // update cost cells for this row
+    const row=target.closest('tr');
+    if(row)updateItemCostCells(row);
+  }
+  if(target.classList.contains('item-qty')){
+    const row=target.closest('tr');
+    if(row)updateItemCostCells(row);
+  }
+  updateOrderSummary();
+  // Persist the in-progress draft so it survives a tab close before Save.
+  if(ui.draftOrder)debouncedSaveDraft('order',readOrderFromPanel());
+}
+
+function updateItemCostCells(row){
+  const qty=parseNum(row.querySelector('.item-qty')?.value);
+  const recipeId=row.querySelector('.item-recipe')?.value;
+  const recipe=data.recipes.find(r=>r.id===recipeId);
+  const ingC=recipe?recipeIngCostPerUnit(recipe)*qty:0;
+  const pkgC=recipe?parseNum(recipe.packagingCost)*qty:0;
+  const cells=row.querySelectorAll('.item-cost-cell');
+  if(cells[0])cells[0].textContent=fmt$(ingC);
+  if(cells[1])cells[1].textContent=fmt$(pkgC);
+}
+
+function readOrderFromPanel(){
+  return{
+    customerName:(document.getElementById('order-customer')?.value||'').trim(),
+    orderDate:document.getElementById('order-date')?.value||today(),
+    deliveryDate:document.getElementById('order-delivery')?.value||'',
+    notes:(document.getElementById('order-notes')?.value||'').trim(),
+    status:document.getElementById('order-status')?.value||'Pending',
+    laborMinutes:parseNum(document.getElementById('order-labor-min')?.value),
+    hourlyRate:parseNum(document.getElementById('order-labor-rate')?.value),
+    items:Array.from(document.querySelectorAll('#items-tbody .item-row')).map(row=>({
+      id:row.dataset.idx!=null?(ui.draftOrder?.items[+row.dataset.idx]?.id||genId()):genId(),
+      productName:(row.querySelector('.item-name')?.value||'').trim(),
+      // Read the raw quantity (do NOT default 0 to 1): a legitimate 0 must reach the save-time
+      // it.qty<=0 guard instead of being silently inflated to 1, which would overstate revenue/profit.
+      qty:parseNum(row.querySelector('.item-qty')?.value),
+      unitPrice:Math.max(0,parseNum(row.querySelector('.item-price')?.value)),
+      recipeId:row.querySelector('.item-recipe')?.value||''
+    }))
+  };
+}
+
+function updateOrderSummary(){
+  const draft=readOrderFromPanel();
+  if(!draft)return;
+  const t=computeOrderTotals(draft);
+  const marginClass=t.marginPct!=null&&t.marginPct<0?'text-danger':(t.grossProfit>0?'text-success':'');
+  const profitClass=t.grossProfit<0?'text-danger':'text-success';
+  // only warn once the order is actually PRICED (has revenue) — an unpriced order isn't "losing
+  // money", it's just incomplete, and a big red alarm on every half-entered order is bad UX.
+  const warnShow=t.revenue>0&&(t.grossProfit<0||t.marginPct!=null&&t.marginPct<5)?'show':'';
+  const warnMsg=t.grossProfit<0?`Negative margin: losing ${fmt$(Math.abs(t.grossProfit))} on this order`:`Low margin (${fmtPct(t.marginPct)}) - check your pricing`;
+  const summaryEl=document.getElementById('order-summary');
+  if(!summaryEl)return;
+  summaryEl.innerHTML=`
+    <div class="margin-warn ${warnShow}">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>${esc(warnMsg)}</span>
+    </div>
+    <div class="cost-summary">
+      <div class="cost-summary-title">Cost Breakdown</div>
+      <div class="cost-row"><span>Ingredient cost</span><span class="text-mono" id="result-ingredient-cost">${esc(fmt$(t.ingCost))}</span></div>
+      <div class="cost-row"><span>Packaging cost</span><span class="text-mono" id="result-packaging-cost">${esc(fmt$(t.pkgCost))}</span></div>
+      <div class="cost-row"><span>Labor cost (<span id="result-labor-cost-label">${Math.round(parseNum(document.getElementById('order-labor-min')?.value)||0)} min @ $${parseNum(document.getElementById('order-labor-rate')?.value)||0}/hr</span>)</span><span class="text-mono" id="result-labor-cost">${esc(fmt$(t.laborCost))}</span></div>
+      <div class="cost-row total"><span>Total cost</span><span class="text-mono" id="result-total-cost">${esc(fmt$(t.totalCost))}</span></div>
+      <div class="cost-row" style="margin-top:var(--sp-2)"><span>Order revenue</span><span class="text-mono" id="result-revenue">${esc(fmt$(t.revenue))}</span></div>
+      <div class="cost-row profit"><span>Gross profit</span><span class="text-mono ${profitClass}" id="result-gross-profit">${esc(fmt$(t.grossProfit))}</span></div>
+      <div class="cost-row margin-row"><span>Margin</span><span class="text-mono ${marginClass} pulse" id="result-margin">${esc(fmtPct(t.marginPct))}</span></div>
+    </div>`;
+}
+
+function addItem(){
+  if(!ui.draftOrder)return;
+  const current=readOrderFromPanel();
+  ui.draftOrder={...ui.draftOrder,...current};
+  ui.draftOrder.items=[...current.items,{id:genId(),productName:'',qty:1,unitPrice:0,recipeId:''}];
+  renderOrderPanelBody();
+  // Focus last product name input
+  const rows=document.querySelectorAll('#items-tbody .item-row');
+  if(rows.length>0)rows[rows.length-1].querySelector('.item-name')?.focus();
+}
+
+function removeItem(idx){
+  if(!ui.draftOrder)return;
+  const current=readOrderFromPanel();
+  const items=[...current.items];
+  items.splice(idx,1);
+  if(items.length===0)items.push({id:genId(),productName:'',qty:1,unitPrice:0,recipeId:''});
+  ui.draftOrder={...ui.draftOrder,...current,items};
+  renderOrderPanelBody();
+}
+
+function saveOrder(){
+  // Validate
+  let valid=true;
+  const setErr=(id,msg)=>{const el=document.getElementById(id);if(el){el.textContent=msg;el.style.display=msg?'block':'none';}valid=!!msg?false:valid;};
+  setErr('err-customer','');setErr('err-delivery','');setErr('err-items','');
+  const draft=readOrderFromPanel();
+  if(!draft.customerName){setErr('err-customer','Customer name is required');document.getElementById('order-customer')?.classList.add('error');}
+  if(!draft.deliveryDate){setErr('err-delivery','Delivery date is required');document.getElementById('order-delivery')?.classList.add('error');}
+  if(draft.items.length===0)setErr('err-items','Add at least one item');
+  const hasInvalidQty=draft.items.some(it=>it.qty<=0);
+  if(hasInvalidQty){setErr('err-items','All quantities must be greater than 0');valid=false;}
+  if(!valid)return;
+
+  const orderId=ui.editingOrderId;
+  const finalOrder={...draft,id:orderId||genId()};
+  if(orderId){
+    const idx=data.orders.findIndex(o=>o.id===orderId);
+    if(idx>=0)data.orders[idx]=finalOrder;else data.orders.push(finalOrder);
+  } else {
+    data.orders.push(finalOrder);
+  }
+  debouncedSave();
+  closeOrderPanel();
+  renderOrders();
+  if(ui.activeTab==='dashboard')renderDashboard();
+  if(ui.activeTab==='customers')renderCustomers();
+  showToast(orderId?'Order updated':'Order saved','success');
+}
+
+function deleteOrder(id,fromPanel){
+  if(!confirm('Delete this order? This cannot be undone.'))return;
+  data.orders=data.orders.filter(o=>o.id!==id);
+  debouncedSave();
+  if(fromPanel)closeOrderPanel();
+  renderOrders();
+  if(ui.activeTab==='dashboard')renderDashboard();
+  if(ui.activeTab==='customers')renderCustomers();
+  showToast('Order deleted');
+}
+
+// ─── RECIPE PANEL ─────────────────────────────────────────────────────────────
+function openRecipePanel(recipeId){
+  ui.editingRecipeId=recipeId;
+  if(recipeId){
+    const r=data.recipes.find(x=>x.id===recipeId);
+    if(!r)return;
+    ui.draftRecipe=JSON.parse(JSON.stringify(r));
+    document.getElementById('recipe-panel-title').textContent='Edit Recipe';
+  } else {
+    ui.draftRecipe={id:null,name:'',category:'Cakes',ingredients:[{id:genId(),name:'',qty:1,unit:'',unitCost:0}],packagingCost:0};
+    document.getElementById('recipe-panel-title').textContent='New Recipe';
+  }
+  renderRecipePanelBody();
+  document.getElementById('recipe-panel').classList.add('open');
+  document.getElementById('recipe-backdrop').classList.add('open');
+  setTimeout(()=>document.getElementById('recipe-name')?.focus(),300);
+}
+function closeRecipePanel(){
+  document.getElementById('recipe-panel').classList.remove('open');
+  document.getElementById('recipe-backdrop').classList.remove('open');
+  ui.draftRecipe=null;ui.editingRecipeId=null;
+  clearDraft();
+}
+
+function renderRecipePanelBody(){
+  const d=ui.draftRecipe;if(!d)return;
+  const ingsHtml=d.ingredients.map((ing,i)=>`
+    <div class="ing-row" data-ing-idx="${i}">
+      <input class="input-field ing-name" type="text" placeholder="Ingredient name" value="${esc(ing.name)}" aria-label="Ingredient name" autocomplete="off">
+      <input class="input-field ing-qty" type="number" min="0" step="any" value="${esc(String(ing.qty))}" aria-label="Quantity used" placeholder="Qty">
+      <input class="input-field ing-unit" type="text" placeholder="cups, oz..." value="${esc(ing.unit)}" aria-label="Unit">
+      <input class="input-field ing-cost" type="number" min="0" step="0.001" value="${esc(String(ing.unitCost))}" aria-label="Cost per unit ($)" placeholder="$/unit">
+      <button type="button" class="btn-icon danger" onclick="removeIngredient(${i})" aria-label="Remove ingredient">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>
+      </button>
+    </div>`).join('');
+
+  const ingCost=d.ingredients.reduce((s,ing)=>s+parseNum(ing.qty)*parseNum(ing.unitCost),0);
+  const pkgCost=parseNum(d.packagingCost);
+
+  const body=document.getElementById('recipe-panel-body');
+  body.innerHTML=`
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="recipe-name">Recipe Name *</label>
+        <input id="recipe-name" class="input-field" type="text" value="${esc(d.name)}" placeholder="e.g. Chocolate Cake" required>
+        <span class="input-error" id="err-recipe-name" role="alert"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="recipe-category">Category</label>
+        <select id="recipe-category" class="input-field">
+          ${CATEGORIES.map(c=>`<option value="${esc(c)}"${c===d.category?' selected':''}>${esc(c)}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="items-section-header" style="margin-bottom:var(--sp-2)">
+        <span class="items-section-title">Ingredients (per 1 unit produced)</span>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="addIngredient()">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+      <div class="ing-header" style="padding-left:0">
+        <span>Ingredient</span><span>Qty Used</span><span>Unit</span><span>$/Unit</span><span></span>
+      </div>
+      <div id="ing-list">${ingsHtml}</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="recipe-packaging">Packaging Cost / unit ($)</label>
+        <input id="recipe-packaging" class="input-field" type="number" min="0" step="0.01" value="${esc(String(d.packagingCost))}" placeholder="e.g. 1.50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Computed Cost / unit</label>
+        <div style="display:flex;gap:var(--sp-4);padding-top:var(--sp-2)">
+          <div><div style="font-size:var(--fs-xs);color:var(--text-3)">Ingredients</div><div class="text-mono" id="result-ing-cost-per-unit">${esc(fmt$(ingCost))}</div></div>
+          <div><div style="font-size:var(--fs-xs);color:var(--text-3)">Total</div><div class="text-mono" style="font-weight:700" id="result-total-cost-per-unit">${esc(fmt$(ingCost+pkgCost))}</div></div>
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('recipe-panel-footer').innerHTML=`
+    ${d.id?`<button type="button" class="btn btn-danger btn-sm" data-act="deleteRecipe" data-arg="${esc(d.id)}" data-arg2="true">Delete</button>`:''}
+    <button type="button" class="btn btn-secondary" onclick="closeRecipePanel()">Cancel</button>
+    <button type="button" class="btn btn-primary" onclick="saveRecipe()">Save Recipe</button>`;
+
+  document.getElementById('recipe-panel-body').addEventListener('input',onRecipePanelInput);
+}
+
+function onRecipePanelInput(){
+  const ingCost=Array.from(document.querySelectorAll('.ing-row')).reduce((s,row)=>{
+    return s+parseNum(row.querySelector('.ing-qty')?.value)*parseNum(row.querySelector('.ing-cost')?.value);
+  },0);
+  const pkgCost=parseNum(document.getElementById('recipe-packaging')?.value);
+  setText('result-ing-cost-per-unit',fmt$(ingCost));
+  setText('result-total-cost-per-unit',fmt$(ingCost+pkgCost));
+  // Persist the in-progress draft so it survives a tab close before Save.
+  if(ui.draftRecipe)debouncedSaveDraft('recipe',readRecipeFromPanel());
+}
+
+function readRecipeFromPanel(){
+  const ingredients=Array.from(document.querySelectorAll('#ing-list .ing-row')).map((row,i)=>({
+    id:ui.draftRecipe?.ingredients[i]?.id||genId(),
+    name:(row.querySelector('.ing-name')?.value||'').trim(),
+    qty:parseNum(row.querySelector('.ing-qty')?.value),
+    unit:(row.querySelector('.ing-unit')?.value||'').trim(),
+    unitCost:parseNum(row.querySelector('.ing-cost')?.value)
+  }));
+  return{
+    name:(document.getElementById('recipe-name')?.value||'').trim(),
+    category:document.getElementById('recipe-category')?.value||'Other',
+    ingredients,
+    packagingCost:parseNum(document.getElementById('recipe-packaging')?.value)
+  };
+}
+
+function addIngredient(){
+  if(!ui.draftRecipe)return;
+  const cur=readRecipeFromPanel();
+  ui.draftRecipe={...ui.draftRecipe,...cur,ingredients:[...cur.ingredients,{id:genId(),name:'',qty:1,unit:'',unitCost:0}]};
+  renderRecipePanelBody();
+  const rows=document.querySelectorAll('#ing-list .ing-row');
+  if(rows.length>0)rows[rows.length-1].querySelector('.ing-name')?.focus();
+}
+
+function removeIngredient(idx){
+  if(!ui.draftRecipe)return;
+  const cur=readRecipeFromPanel();
+  const ings=[...cur.ingredients];ings.splice(idx,1);
+  if(ings.length===0)ings.push({id:genId(),name:'',qty:1,unit:'',unitCost:0});
+  ui.draftRecipe={...ui.draftRecipe,...cur,ingredients:ings};
+  renderRecipePanelBody();
+}
+
+function saveRecipe(){
+  let valid=true;
+  const errEl=document.getElementById('err-recipe-name');
+  if(errEl)errEl.textContent='';
+  const draft=readRecipeFromPanel();
+  if(!draft.name){
+    if(errEl)errEl.textContent='Recipe name is required';
+    document.getElementById('recipe-name')?.classList.add('error');
+    valid=false;
+  }
+  if(!valid)return;
+  const recipeId=ui.editingRecipeId;
+  const final={...draft,id:recipeId||genId()};
+  if(recipeId){const idx=data.recipes.findIndex(r=>r.id===recipeId);if(idx>=0)data.recipes[idx]=final;else data.recipes.push(final);}
+  else data.recipes.push(final);
+  debouncedSave();
+  closeRecipePanel();
+  renderRecipes();
+  showToast(recipeId?'Recipe updated':'Recipe saved','success');
+}
+
+function deleteRecipe(id,fromPanel){
+  if(!confirm('Delete this recipe? Orders using it will lose cost data.'))return;
+  data.recipes=data.recipes.filter(r=>r.id!==id);
+  debouncedSave();
+  if(fromPanel)closeRecipePanel();
+  renderRecipes();
+  showToast('Recipe deleted');
+}
+
+// ─── PRINT ────────────────────────────────────────────────────────────────────
+function printProductionSheet(){
+  const date=document.getElementById('print-date')?.value;
+  if(!date){showToast('Select a delivery date first','error');return;}
+  const orders=data.orders.filter(o=>o.deliveryDate===date&&o.status!=='Delivered');
+  const ingredients={};
+  orders.forEach(o=>{
+    (o.items||[]).forEach(item=>{
+      const qty=parseNum(item.qty);
+      const recipe=data.recipes.find(r=>r.id===item.recipeId);
+      if(!recipe)return;
+      recipe.ingredients.forEach(ing=>{
+        const key=ing.name+'|'+(ing.unit||'');
+        const amt=parseNum(ing.qty)*qty;
+        if(!ingredients[key])ingredients[key]={name:ing.name,unit:ing.unit||'',qty:0};
+        ingredients[key].qty+=amt;
+      });
+    });
+  });
+  const ingArr=Object.values(ingredients).sort((a,b)=>a.name.localeCompare(b.name));
+  const printArea=document.getElementById('print-area');
+  const now=new Date();
+  if(ingArr.length===0&&orders.length===0){
+    showToast('No orders found for that date','error');return;
+  }
+  printArea.innerHTML=`
+    <div class="print-header">
+      <h2>Production Prep Sheet</h2>
+      <p>Delivery date: ${esc(fmtDate(date))} &bull; ${orders.length} order${orders.length!==1?'s':''} &bull; Printed: ${esc(now.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}))}</p>
+    </div>
+    <h3 style="font-size:12pt;margin-bottom:8pt;margin-top:16pt">Aggregated Ingredients</h3>
+    ${ingArr.length>0?`
+    <table class="print-table">
+      <thead><tr><th>Ingredient</th><th>Total Qty</th><th>Unit</th><th>Checked</th></tr></thead>
+      <tbody>${ingArr.map(ing=>`<tr><td><strong>${esc(ing.name)}</strong></td><td>${esc(ing.qty.toLocaleString('en-US',{maximumFractionDigits:3}))}</td><td>${esc(ing.unit)}</td><td style="width:60pt"></td></tr>`).join('')}</tbody>
+    </table>`:`<p style="color:#666;margin:12pt 0">No recipe-linked ingredients found for these orders.</p>`}
+    <h3 style="font-size:12pt;margin-bottom:8pt;margin-top:16pt">Orders (${orders.length})</h3>
+    <table class="print-table">
+      <thead><tr><th>Customer</th><th>Items</th><th>Notes</th><th>Status</th></tr></thead>
+      <tbody>${orders.map(o=>`<tr><td><strong>${esc(o.customerName)}</strong></td><td>${esc(o.items.map(it=>it.qty+'x '+it.productName).join(', '))}</td><td>${esc(o.notes||'')}</td><td>${esc(o.status)}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="print-footer">Bakery Order Manager &amp; Profit Tracker &bull; jonsDesignerShop</div>`;
+  window.print();
+}
+
+function printReceipt(orderId){
+  const order=data.orders.find(o=>o.id===orderId);
+  if(!order)return;
+  const tot=computeOrderTotals(order);
+  const printArea=document.getElementById('print-area');
+  printArea.innerHTML=`
+    <div class="print-header">
+      <h2>Order Receipt</h2>
+      <p>Customer: <strong>${esc(order.customerName)}</strong> &bull; Delivery: ${esc(fmtDate(order.deliveryDate))} &bull; Order date: ${esc(fmtDate(order.orderDate))}</p>
+    </div>
+    <table class="print-table receipt-line-table" style="margin-top:16pt">
+      <thead><tr><th>Item</th><th style="text-align:right">Qty</th><th style="text-align:right">Unit Price</th><th style="text-align:right">Total</th></tr></thead>
+      <tbody>${order.items.map(it=>`<tr><td>${esc(it.productName||'Item')}</td><td style="text-align:right">${esc(String(it.qty))}</td><td style="text-align:right">${esc(fmt$(parseNum(it.unitPrice)))}</td><td style="text-align:right"><strong>${esc(fmt$(parseNum(it.qty)*parseNum(it.unitPrice)))}</strong></td></tr>`).join('')}</tbody>
+    </table>
+    <div class="receipt-totals">
+      <div class="receipt-total-row grand"><span>Order Total</span><span>${esc(fmt$(tot.revenue))}</span></div>
+      <div class="receipt-total-row" style="margin-top:12pt;padding-top:8pt;border-top:1px dashed #d8e2ec"><span>Amount Paid</span><span>$_________</span></div>
+      <div class="receipt-total-row"><span>Balance Due</span><span>$_________</span></div>
+    </div>
+    ${order.notes?`<div style="margin-top:16pt;padding:8pt;border:1px solid #d8e2ec;border-radius:4pt;font-size:10pt"><strong>Notes:</strong> ${esc(order.notes)}</div>`:''}
+    <div class="print-footer">Thank you for your order! &bull; jonsDesignerShop &bull; Bakery Order Manager &amp; Profit Tracker</div>`;
+  window.print();
+}
+
+// ─── EXPORT / IMPORT ─────────────────────────────────────────────────────────
+function exportData(){
+  const payload=JSON.stringify({orders:data.orders,recipes:data.recipes,settings:data.settings,exportedAt:new Date().toISOString(),version:1},null,2);
+  const blob=new Blob([payload],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const d=new Date();
+  a.href=url;a.download='bakery-tracker-'+d.toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},100);
+  showToast('Data exported','success');
+}
+
+function importData(input){
+  const file=input.files&&input.files[0];
+  if(!file)return;
+  const errEl=document.getElementById('import-error');
+  if(errEl){errEl.textContent='';errEl.style.display='none';}
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const parsed=JSON.parse(e.target.result);
+      if(!parsed||typeof parsed!=='object')throw new Error('bad format');
+      const newOrders=Array.isArray(parsed.orders)?parsed.orders.map(normalizeOrder):[];
+      const newRecipes=Array.isArray(parsed.recipes)?parsed.recipes.map(normalizeRecipe):[];
+      if(newOrders.length===0&&newRecipes.length===0)throw new Error('no data found');
+      if((data.orders.length||data.recipes.length)&&!confirm('This will REPLACE your current '+data.orders.length+' order(s) and '+data.recipes.length+' recipe(s) with the file contents. Export a backup first if you want to keep them. Continue?')){showToast('Import cancelled','info');return;}
+      data.orders=newOrders;data.recipes=newRecipes;
+      if(parsed.settings)data.settings=Object.assign({hourlyRate:20,theme:'light'},parsed.settings);
+      saveData();
+      renderAll();
+      showToast('Import successful: '+newOrders.length+' orders, '+newRecipes.length+' recipes','success');
+    }catch(err){
+      if(errEl){errEl.textContent='Import failed: invalid file format';errEl.style.display='inline';}
+      showToast('Import failed: invalid file format','error');
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+function resetData(){
+  if(!confirm('Reset all data? This will restore the sample data and cannot be undone.'))return;
+  const s=makeSampleData();
+  data.orders=s.orders;data.recipes=s.recipes;
+  saveData();renderAll();
+  showToast('Data reset to sample','success');
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg,type=''){
+  const toast=document.getElementById('toast');
+  if(!toast)return;
+  toast.textContent=msg;
+  toast.className='toast'+(type?' '+type:'');
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove('show'),3000);
+}
+
+// ─── RENDER ALL ───────────────────────────────────────────────────────────────
+function renderAll(){
+  renderOrders();
+  renderRecipes();
+  if(ui.activeTab==='dashboard')renderDashboard();
+  if(ui.activeTab==='customers')renderCustomers();
+}
+
+// ─── KEYBOARD SHORTCUTS ───────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    if(document.getElementById('order-panel').classList.contains('open'))closeOrderPanel();
+    else if(document.getElementById('recipe-panel').classList.contains('open'))closeRecipePanel();
+  }
+});
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+loadData();
+// Set today's date as default for print date
+const pd=document.getElementById('print-date');
+if(pd)pd.value=today();
+renderAll();
+// Reopen any in-progress order/recipe draft the user was still typing when the tab last closed.
+restoreDraft();
+// Preload dashboard so charts are ready
+setTimeout(renderDashboard,50);
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Bakery Order Manager &amp; Profit Tracker. It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4520805322?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($29) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

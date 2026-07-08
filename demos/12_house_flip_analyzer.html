@@ -1,0 +1,1466 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · House Flip Deal Analyzer (70% Rule / MAO)</title>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+  --fs-xs: 13px; --fs-sm: 15px; --fs-base: 17px;
+  --fs-lg: 20px; --fs-xl: 26px; --fs-2xl: 34px;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.08);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,.15), 0 4px 8px rgba(0,0,0,.10);
+  /* Light palette */
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #dde4ed;
+  --border-focus: #6B9BD1;
+  --text: #2B3A4A;
+  --text-muted: #5a7184;
+  --text-light: #8aa3b8;
+  --accent: #6B9BD1;
+  --accent-dark: #4a7ab5;
+  --accent-bg: #e8f0fa;
+  --green: #2e7d52;
+  --green-bg: #d4edda;
+  --yellow: #856404;
+  --yellow-bg: #fff3cd;
+  --red: #842029;
+  --red-bg: #f8d7da;
+  --red-light: #ffeaea;
+  --card-header-bg: #f4f7fb;
+  --input-bg: #ffffff;
+  --tab-inactive: #e8edf2;
+  --tab-active-border: #6B9BD1;
+  --transition: 150ms ease;
+}
+[data-theme="dark"] {
+  --bg: #111827;
+  --surface: #1f2937;
+  --surface-2: #273043;
+  --border: #374151;
+  --border-focus: #93b9e0;
+  --text: #e5ecf3;
+  --text-muted: #9bb0c5;
+  --text-light: #6b8ba4;
+  --accent: #93b9e0;
+  --accent-dark: #6B9BD1;
+  --accent-bg: #1e2d40;
+  --green: #6ee7a0;
+  --green-bg: #0d2d1d;
+  --yellow: #fcd34d;
+  --yellow-bg: #2d2000;
+  --red: #fca5a5;
+  --red-bg: #2d0a0a;
+  --red-light: #3d1010;
+  --card-header-bg: #273043;
+  --input-bg: #1a2535;
+  --tab-inactive: #273043;
+  --tab-active-border: #93b9e0;
+}
+
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:var(--fs-base);color:var(--text);background:var(--bg);font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding-bottom:var(--sp-12)}
+input,select,textarea,button{font-family:inherit;font-size:inherit;color:inherit}
+a{color:var(--accent)}
+
+/* ===== LAYOUT ===== */
+.app-wrapper{max-width:1100px;margin:0 auto;padding:var(--sp-4)}
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) 0 var(--sp-6);gap:var(--sp-4);flex-wrap:wrap}
+.app-title{display:flex;flex-direction:column;gap:var(--sp-1)}
+.app-title h1{font-size:var(--fs-xl);font-weight:700;color:var(--text);line-height:1.2}
+.app-title p{font-size:var(--fs-sm);color:var(--text-muted)}
+.header-actions{display:flex;align-items:center;gap:var(--sp-3)}
+
+/* ===== TABS ===== */
+.tab-bar{display:flex;gap:var(--sp-1);background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp-1);margin-bottom:var(--sp-6);overflow-x:auto}
+.tab-btn{flex:1;min-width:max-content;padding:var(--sp-2) var(--sp-4);border:none;background:transparent;border-radius:var(--radius-md);font-size:var(--fs-sm);font-weight:500;color:var(--text-muted);cursor:pointer;transition:all var(--transition);white-space:nowrap}
+.tab-btn:hover{background:var(--tab-inactive);color:var(--text)}
+.tab-btn.active{background:var(--accent-bg);color:var(--accent-dark);font-weight:600;border-bottom:2px solid var(--tab-active-border)}
+[data-theme="dark"] .tab-btn.active{color:var(--accent)}
+
+/* ===== PANELS ===== */
+.panel{display:none}
+.panel.active{display:block}
+
+/* ===== CARDS ===== */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);margin-bottom:var(--sp-6);overflow:hidden;transition:box-shadow var(--transition)}
+.card:hover{box-shadow:var(--shadow-md)}
+.card-header{background:var(--card-header-bg);padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:var(--sp-3)}
+.card-header h2{font-size:var(--fs-base);font-weight:600;color:var(--text)}
+.card-body{padding:var(--sp-6)}
+.card-icon{width:20px;height:20px;flex-shrink:0;color:var(--accent)}
+
+/* ===== FORM ELEMENTS ===== */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--sp-4)}
+.form-group{display:flex;flex-direction:column;gap:var(--sp-1)}
+.form-group label{font-size:var(--fs-sm);font-weight:500;color:var(--text-muted)}
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-prefix,.input-suffix{position:absolute;font-size:var(--fs-sm);color:var(--text-muted);pointer-events:none;z-index:1}
+.input-prefix{left:var(--sp-3)}
+.input-suffix{right:var(--sp-3)}
+input[type="text"],input[type="number"],select,textarea{
+  width:100%;padding:var(--sp-2) var(--sp-3);
+  border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--input-bg);color:var(--text);
+  transition:border-color var(--transition),box-shadow var(--transition);
+  -moz-appearance:textfield
+}
+input[type="text"]:focus,input[type="number"]:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--border-focus);
+  box-shadow:0 0 0 3px rgba(107,155,209,.2)
+}
+.has-prefix input{padding-left:var(--sp-8)}
+.has-suffix input{padding-right:var(--sp-8)}
+input.input-error-field{border-color:var(--red)!important}
+.input-error{font-size:var(--fs-xs);color:var(--red);margin-top:2px;min-height:16px}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+
+/* ===== RESULT CARDS ===== */
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4);margin-bottom:var(--sp-6)}
+.result-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-lg);padding:var(--sp-6);text-align:center;transition:all var(--transition)}
+.result-card.highlight{border-color:var(--accent);background:var(--accent-bg)}
+.result-card .result-label{font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:var(--sp-2)}
+.result-card .result-value{font-size:var(--fs-2xl);font-weight:700;color:var(--text);line-height:1;transition:all 200ms ease}
+.result-card .result-sub{font-size:var(--fs-xs);color:var(--text-muted);margin-top:var(--sp-1)}
+.result-card.positive .result-value{color:var(--green)}
+.result-card.negative .result-value{color:var(--red)}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+.result-pulse{animation:pulse 200ms ease}
+
+/* ===== BADGE / GO-NO-GO ===== */
+.badge{display:inline-flex;align-items:center;gap:var(--sp-1);padding:var(--sp-1) var(--sp-3);border-radius:20px;font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.05em}
+.badge-green{background:var(--green-bg);color:var(--green)}
+.badge-yellow{background:var(--yellow-bg);color:var(--yellow)}
+.badge-red{background:var(--red-bg);color:var(--red)}
+
+/* ===== CORRIDOR BAR ===== */
+.corridor-wrap{margin-bottom:var(--sp-6)}
+.corridor-label{font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);margin-bottom:var(--sp-2)}
+.corridor-bar{height:28px;border-radius:20px;position:relative;background:var(--border);overflow:hidden}
+.corridor-fill{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--accent),var(--accent-dark));transition:width var(--transition)}
+.corridor-gap-label{font-size:var(--fs-xs);color:var(--text-muted);text-align:center;margin-top:var(--sp-1)}
+
+/* ===== PROFIT/ROI ROW ===== */
+.metric-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--sp-4);margin-bottom:var(--sp-6)}
+.metric-box{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--sp-4);text-align:center}
+.metric-box .metric-label{font-size:var(--fs-xs);color:var(--text-muted);font-weight:500;text-transform:uppercase;letter-spacing:.05em;margin-bottom:var(--sp-1)}
+.metric-box .metric-val{font-size:var(--fs-lg);font-weight:700;color:var(--text)}
+
+/* ===== WATERFALL CHART ===== */
+.waterfall-wrap{width:100%;overflow-x:auto}
+#chart-waterfall{width:100%;height:auto;overflow:visible;display:block}
+
+/* ===== REPAIR TABLE ===== */
+.repair-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.repair-table th{text-align:left;padding:var(--sp-2) var(--sp-3);font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);border-bottom:1px solid var(--border)}
+.repair-table td{padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--border)}
+.repair-table tr:last-child td{border-bottom:none}
+.repair-table .total-row td{font-weight:700;background:var(--card-header-bg);color:var(--text)}
+.repair-table input{width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--sp-1) var(--sp-2);background:var(--input-bg);font-size:var(--fs-sm)}
+.repair-table input:focus{outline:none;border-color:var(--border-focus)}
+.btn-icon{background:none;border:none;cursor:pointer;padding:var(--sp-1);border-radius:var(--radius-sm);color:var(--text-muted);display:inline-flex;align-items:center;justify-content:center;transition:all var(--transition)}
+.btn-icon:hover{background:var(--red-bg);color:var(--red)}
+
+/* ===== SENSITIVITY TABLE ===== */
+.sensitivity-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sensitivity-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.sensitivity-table th,.sensitivity-table td{padding:var(--sp-2) var(--sp-3);text-align:center;border:1px solid var(--border);white-space:nowrap}
+.sensitivity-table th{background:var(--card-header-bg);font-weight:600;font-size:var(--fs-xs)}
+.sensitivity-table td.cell-red{background:var(--red-light);color:var(--red);font-weight:600}
+.sensitivity-table td.cell-green{background:var(--green-bg);color:var(--green)}
+.sensitivity-table td.cell-base{background:var(--accent-bg);color:var(--accent-dark);font-weight:700}
+.sensitivity-table .row-header{font-weight:600;background:var(--card-header-bg);text-align:left}
+
+/* ===== SAVED DEALS ===== */
+.deal-list{display:flex;flex-direction:column;gap:var(--sp-3)}
+.deal-item{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);transition:all var(--transition)}
+.deal-item:hover{border-color:var(--border-focus);box-shadow:var(--shadow-sm)}
+.deal-item-name{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.deal-item-meta{font-size:var(--fs-xs);color:var(--text-muted);flex-shrink:0}
+.deal-item-actions{display:flex;gap:var(--sp-2);flex-shrink:0}
+.compare-panel{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-md);overflow-x:auto;margin-top:var(--sp-6)}
+.compare-table{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+.compare-table th,.compare-table td{padding:var(--sp-2) var(--sp-4);border:1px solid var(--border);text-align:right}
+.compare-table th:first-child,.compare-table td:first-child{text-align:left;font-weight:500;color:var(--text-muted);background:var(--card-header-bg)}
+.compare-table th{background:var(--card-header-bg);font-weight:600}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:var(--sp-2);padding:var(--sp-2) var(--sp-4);border-radius:var(--radius-md);border:none;font-size:var(--fs-sm);font-weight:600;cursor:pointer;transition:all var(--transition)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-secondary{background:var(--surface-2);color:var(--text);border:1.5px solid var(--border)}
+.btn-secondary:hover{background:var(--tab-inactive)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-sm{padding:var(--sp-1) var(--sp-3);font-size:var(--fs-xs)}
+.btn-row{display:flex;flex-wrap:wrap;gap:var(--sp-3);align-items:center}
+
+/* ===== THEME TOGGLE ===== */
+#theme-toggle{background:var(--surface-2);border:1.5px solid var(--border);border-radius:20px;padding:var(--sp-1) var(--sp-3);cursor:pointer;font-size:var(--fs-sm);color:var(--text);display:flex;align-items:center;gap:var(--sp-2);transition:all var(--transition)}
+#theme-toggle:hover{border-color:var(--border-focus)}
+
+/* ===== TOAST ===== */
+.toast-container{position:fixed;bottom:var(--sp-6);right:var(--sp-6);z-index:9999;display:flex;flex-direction:column;gap:var(--sp-3);pointer-events:none;min-width:1px;min-height:1px}
+.toast{padding:var(--sp-3) var(--sp-4);background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:var(--fs-sm);max-width:320px;opacity:0;transform:translateY(8px);transition:all 200ms ease;pointer-events:auto}
+.toast.show{opacity:1;transform:translateY(0)}
+.toast.toast-warn{border-color:var(--yellow);background:var(--yellow-bg);color:var(--yellow)}
+.toast.toast-err{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+.toast.toast-ok{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+
+/* ===== ADDRESS / HOLDING ===== */
+.holding-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:var(--sp-4)}
+.section-title{font-size:var(--fs-sm);font-weight:600;color:var(--text);margin-bottom:var(--sp-3);padding-bottom:var(--sp-2);border-bottom:1px solid var(--border)}
+
+/* ===== PRINT ===== */
+@media print{
+  .no-print{display:none!important}
+  .app-wrapper{max-width:none;padding:0}
+  .card{box-shadow:none;page-break-inside:avoid}
+  .panel{display:block!important}
+  #tab-analyzer,#tab-costs,#tab-sensitivity{display:block!important}
+  #tab-saved{display:none!important}
+  .tab-bar{display:none!important}
+  .print-header{display:block!important}
+  body{background:#fff;color:#000}
+  .card{border:1px solid #ccc;margin-bottom:16px}
+  .result-grid{grid-template-columns:1fr 1fr}
+  .btn-row{display:none!important}
+  #btn-add-repair,.btn-icon{display:none!important}
+  .repair-table input{border:none;background:transparent}
+  input,select{border:1px solid #ccc!important;background:#fff!important;color:#000!important}
+}
+.print-header{display:none;margin-bottom:var(--sp-6)}
+.print-header h2{font-size:var(--fs-xl);margin-bottom:var(--sp-1)}
+.print-header p{font-size:var(--fs-sm);color:#666}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:600px){
+  .result-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .holding-grid{grid-template-columns:1fr}
+  .metric-row{grid-template-columns:1fr 1fr}
+  .app-header{flex-direction:column;align-items:flex-start}
+  .tab-btn{font-size:var(--fs-xs);padding:var(--sp-2) var(--sp-3)}
+}
+@media(max-width:390px){
+  .tab-btn,.btn,.btn-sm{min-height:44px;display:inline-flex;align-items:center;justify-content:center}
+  input[type="text"],input[type="number"],select{min-height:44px;padding:var(--sp-3)}
+  .repair-table input{min-height:44px}
+  .btn-icon{min-height:44px;min-width:44px}
+}
+
+/* ===== DIVIDER ===== */
+.divider{border:none;border-top:1px solid var(--border);margin:var(--sp-6) 0}
+.import-area{width:100%;height:120px;resize:vertical;font-size:var(--fs-xs);font-family:monospace;border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:var(--sp-3);background:var(--input-bg)}
+.pin-badge{display:inline-flex;align-items:center;gap:4px;background:var(--accent-bg);color:var(--accent-dark);border-radius:4px;font-size:var(--fs-xs);padding:2px 6px;font-weight:600;cursor:pointer;border:1px solid var(--accent)}
+.pin-badge.pinned{background:var(--accent);color:#fff}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toasts" aria-live="polite"></div>
+<div class="print-header" id="print-header">
+  <h2 id="print-title">House Flip Deal Analyzer</h2>
+  <p id="print-date"></p>
+</div>
+
+<div class="app-wrapper">
+  <!-- HEADER -->
+  <header class="app-header no-print">
+    <div class="app-title">
+      <h1>House Flip Deal Analyzer</h1>
+      <p>70% Rule + Full Cost-Stack MAO Calculator</p>
+    </div>
+    <div class="header-actions">
+      <button id="theme-toggle" aria-label="Toggle dark/light theme">
+        <svg id="theme-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span id="theme-label">Light</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ADDRESS INPUT -->
+  <div class="card no-print" style="margin-bottom:var(--sp-4)">
+    <div class="card-body" style="padding:var(--sp-4) var(--sp-6)">
+      <div class="form-group">
+        <label for="property-address">Property Address</label>
+        <input type="text" id="property-address" placeholder="e.g. 123 Main St, Springfield, IL 62701" autocomplete="off">
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <nav class="tab-bar no-print" role="tablist" aria-label="App sections">
+    <button class="tab-btn active" id="tab-btn-analyzer" role="tab" aria-selected="true" aria-controls="tab-analyzer">
+      Deal Analyzer
+    </button>
+    <button class="tab-btn" id="tab-btn-costs" role="tab" aria-selected="false" aria-controls="tab-costs">
+      Cost Breakdown
+    </button>
+    <button class="tab-btn" id="tab-btn-sensitivity" role="tab" aria-selected="false" aria-controls="tab-sensitivity">
+      Sensitivity
+    </button>
+    <button class="tab-btn" id="tab-btn-saved" role="tab" aria-selected="false" aria-controls="tab-saved">
+      Saved Deals
+    </button>
+  </nav>
+
+  <!-- ===== TAB 1: DEAL ANALYZER ===== -->
+  <div class="panel active" id="tab-analyzer" role="tabpanel">
+
+    <!-- ARV + ASKING -->
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <h2>Property Values</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="arv">After Repair Value (ARV)</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="arv" min="0" step="1000" placeholder="280000" aria-label="After Repair Value in dollars">
+            </div>
+            <div class="input-error" id="arv-error" role="alert"></div>
+          </div>
+          <div class="form-group">
+            <label for="asking-price">Seller Asking Price</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="asking-price" min="0" step="1000" placeholder="160000" aria-label="Seller asking price in dollars">
+            </div>
+            <div class="input-error" id="asking-error" role="alert"></div>
+          </div>
+          <div class="form-group">
+            <label for="desired-profit">Desired Profit</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="desired-profit" min="0" step="1000" placeholder="30000" aria-label="Desired profit in dollars">
+            </div>
+            <div class="input-error" id="profit-error" role="alert"></div>
+          </div>
+          <div class="form-group">
+            <label for="selling-pct">Selling Costs (% of ARV)</label>
+            <div class="input-wrap has-suffix">
+              <input type="number" id="selling-pct" min="0" max="30" step="0.1" placeholder="8.0" aria-label="Selling costs as percent of ARV">
+              <span class="input-suffix">%</span>
+            </div>
+            <div class="input-error" id="selling-error" role="alert"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAO RESULTS -->
+    <div class="result-grid" id="mao-results">
+      <div class="result-card" id="card-mao70">
+        <div class="result-label">MAO - 70% Rule (Conservative)</div>
+        <div class="result-value" id="result-mao70">--</div>
+        <div class="result-sub">(ARV x 70%) - Repairs</div>
+      </div>
+      <div class="result-card highlight" id="card-mao-full">
+        <div class="result-label">MAO - Full Cost Stack (Aggressive)</div>
+        <div class="result-value" id="result-mao-full">--</div>
+        <div class="result-sub">ARV - All Costs - Desired Profit</div>
+      </div>
+    </div>
+
+    <!-- GO/NO-GO BADGE -->
+    <div style="text-align:center;margin-bottom:var(--sp-6)">
+      <span class="badge" id="gonogo-badge">Enter values above</span>
+    </div>
+
+    <!-- CORRIDOR BAR -->
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="12" x2="20" y2="12"/><polyline points="14 6 20 12 14 18"/></svg>
+        <h2>Offer Negotiation Corridor</h2>
+      </div>
+      <div class="card-body">
+        <div class="corridor-label">Offer Range (MAO 70% Floor to MAO Full Ceiling)</div>
+        <div class="corridor-bar" id="corridor-bar">
+          <div class="corridor-fill" id="corridor-fill" style="width:60%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:var(--sp-2)">
+          <span style="font-size:var(--fs-xs);color:var(--text-muted)">Floor (MAO 70%): <strong id="corridor-floor">--</strong></span>
+          <span id="corridor-gap-label" class="corridor-gap-label" style="font-size:var(--fs-xs);color:var(--accent);font-weight:600"></span>
+          <span style="font-size:var(--fs-xs);color:var(--text-muted)">Ceiling (MAO Full): <strong id="corridor-ceiling">--</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFIT AT ASKING -->
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        <h2>Profit at Asking Price</h2>
+      </div>
+      <div class="card-body">
+        <div class="metric-row" id="profit-summary">
+          <div class="metric-box">
+            <div class="metric-label">Profit at Asking</div>
+            <div class="metric-val" id="result-profit">--</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">ROI at Asking</div>
+            <div class="metric-val" id="result-roi">--</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Total Cash Invested</div>
+            <div class="metric-val" id="result-cash-in">--</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Total Costs</div>
+            <div class="metric-val" id="result-total-fixed">--</div>
+          </div>
+          <div class="metric-box">
+            <div class="metric-label">Total Selling $</div>
+            <div class="metric-val" id="result-selling-dollar">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WATERFALL CHART -->
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <h2>Cost Waterfall Chart</h2>
+      </div>
+      <div class="card-body" style="padding-top:var(--sp-3)">
+        <div class="waterfall-wrap">
+          <svg id="chart-waterfall" aria-label="Cost waterfall chart" role="img">
+            <text x="50%" y="50%" text-anchor="middle" fill="var(--text-muted)" font-size="14">Enter ARV to see chart</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRINT BUTTON -->
+    <div class="btn-row no-print" style="margin-bottom:var(--sp-6)">
+      <button class="btn btn-primary" id="btn-print">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print Deal Sheet
+      </button>
+      <button class="btn btn-secondary" id="btn-save-deal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save Deal
+      </button>
+      <button class="btn btn-secondary" id="btn-reset">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+        Reset to Example
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== TAB 2: COST BREAKDOWN ===== -->
+  <div class="panel" id="tab-costs" role="tabpanel">
+
+    <!-- REPAIR LINE ITEMS -->
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 010 1.4l-8 8a1 1 0 01-1.4 0l-2-2a1 1 0 010-1.4l8-8a1 1 0 011.4 0z"/><path d="M22 10l-8-8-2 2 8 8"/></svg>
+        <h2>Repair Costs by Category</h2>
+      </div>
+      <div class="card-body" style="padding:0">
+        <table class="repair-table" id="repair-table" aria-label="Repair cost line items">
+          <thead>
+            <tr>
+              <th style="width:40%">Category</th>
+              <th style="width:40%">Estimated Cost</th>
+              <th style="width:20%"></th>
+            </tr>
+          </thead>
+          <tbody id="repair-tbody"></tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td>Total Repairs</td>
+              <td id="repair-total-cell">$0</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="card-body" style="padding-top:var(--sp-3)">
+        <button class="btn btn-secondary btn-sm" id="btn-add-repair">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Row
+        </button>
+      </div>
+    </div>
+
+    <!-- PURCHASE CLOSING & HOLDING -->
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <h2>Acquisition & Holding Costs</h2>
+      </div>
+      <div class="card-body">
+        <div class="section-title">Purchase Closing Costs (one-time flat fee)</div>
+        <div class="form-grid" style="margin-bottom:var(--sp-6)">
+          <div class="form-group">
+            <label for="purchase-closing">Purchase Closing Costs</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="purchase-closing" min="0" step="100" placeholder="3500" aria-label="Purchase closing costs in dollars">
+            </div>
+            <div class="input-error" id="closing-error" role="alert"></div>
+          </div>
+        </div>
+
+        <div class="section-title">Holding Cost Breakdown</div>
+        <div class="form-grid" style="margin-bottom:var(--sp-4)">
+          <div class="form-group">
+            <label for="holding-months">Holding Months</label>
+            <input type="number" id="holding-months" min="0" max="60" step="1" placeholder="6" aria-label="Number of months holding the property">
+            <div class="input-error" id="months-error" role="alert"></div>
+          </div>
+        </div>
+        <div class="holding-grid">
+          <div class="form-group">
+            <label for="h-loan">Loan Interest ($/mo)</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="h-loan" min="0" step="50" placeholder="800">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="h-taxes">Property Taxes ($/mo)</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="h-taxes" min="0" step="10" placeholder="200">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="h-insurance">Insurance ($/mo)</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="h-insurance" min="0" step="10" placeholder="150">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="h-utilities">Utilities ($/mo)</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="h-utilities" min="0" step="10" placeholder="100">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="h-other">Other Holding ($/mo)</label>
+            <div class="input-wrap has-prefix">
+              <span class="input-prefix">$</span>
+              <input type="number" id="h-other" min="0" step="10" placeholder="0">
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:var(--sp-4);padding:var(--sp-3) var(--sp-4);background:var(--accent-bg);border-radius:var(--radius-md);display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:var(--fs-sm);color:var(--text-muted)">Monthly x <strong id="months-display">6</strong> months = Total Holding</span>
+          <span style="font-size:var(--fs-lg);font-weight:700;color:var(--accent-dark)" id="holding-total-display">$7,500</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 3: SENSITIVITY ===== -->
+  <div class="panel" id="tab-sensitivity" role="tabpanel">
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        <h2>Sensitivity Analysis - MAO at Asking Price</h2>
+      </div>
+      <div class="card-body">
+        <p style="font-size:var(--fs-sm);color:var(--text-muted);margin-bottom:var(--sp-4)">Full cost-stack MAO across ARV and repair cost scenarios. <span style="display:inline-block;width:12px;height:12px;background:var(--red-light);border:1px solid var(--red);border-radius:2px;vertical-align:middle"></span> Red = MAO below asking price (bad deal at that price). <span style="display:inline-block;width:12px;height:12px;background:var(--green-bg);border:1px solid var(--green);border-radius:2px;vertical-align:middle"></span> Green = above asking. <span style="display:inline-block;width:12px;height:12px;background:var(--accent-bg);border:1px solid var(--accent);border-radius:2px;vertical-align:middle"></span> Blue = base case.</p>
+        <div class="sensitivity-wrap">
+          <table class="sensitivity-table" id="sensitivity-table" aria-label="Sensitivity analysis table">
+            <thead id="sensitivity-thead"></thead>
+            <tbody id="sensitivity-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 4: SAVED DEALS ===== -->
+  <div class="panel" id="tab-saved" role="tabpanel">
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/></svg>
+        <h2>Saved Deals (up to 10)</h2>
+      </div>
+      <div class="card-body">
+        <div class="deal-list" id="deal-list">
+          <p style="color:var(--text-muted);font-size:var(--fs-sm)">No saved deals yet. Fill out the analyzer and click "Save Deal".</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARE PANEL -->
+    <div class="card" id="compare-card" style="display:none">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        <h2>Side-by-Side Comparison</h2>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="compare-panel" style="border:none">
+          <table class="compare-table" id="compare-table" aria-label="Deal comparison table">
+            <thead id="compare-thead"></thead>
+            <tbody id="compare-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- JSON IMPORT/EXPORT -->
+    <div class="card">
+      <div class="card-header">
+        <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <h2>Export / Import</h2>
+      </div>
+      <div class="card-body">
+        <div class="btn-row" style="margin-bottom:var(--sp-4)">
+          <button class="btn btn-secondary" id="btn-export">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export All Deals (JSON)
+          </button>
+          <button class="btn btn-secondary" id="btn-import-trigger">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Import Deals (JSON)
+          </button>
+        </div>
+        <div id="import-section" style="display:none">
+          <div class="form-group" style="margin-bottom:var(--sp-3)">
+            <label for="import-json">Paste JSON or use file input below</label>
+            <textarea id="import-paste" class="import-area" placeholder='[{"name":"Deal 1","arv":280000,...}]'></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="import-btn">Import from Text</button>
+            <input type="file" id="import-file" accept=".json" style="display:none" aria-label="Import JSON file">
+            <button class="btn btn-secondary btn-sm" id="btn-import-file-trigger">Choose File</button>
+            <button class="btn btn-secondary btn-sm" id="btn-import-cancel">Cancel</button>
+          </div>
+          <div id="import-result" style="margin-top:var(--sp-3);font-size:var(--fs-sm)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer style="text-align:center;margin-top:var(--sp-8);padding-top:var(--sp-4);border-top:1px solid var(--border)">
+    <p style="font-size:var(--fs-xs);color:var(--text-light)">House Flip Deal Analyzer (70% Rule / MAO) &middot; jonsDesignerShop</p>
+    <p style="font-size:var(--fs-xs);color:var(--text-light);margin-top:var(--sp-1)">For educational purposes only. Not professional financial or investment advice.</p>
+  </footer>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+// ===== STORAGE KEY =====
+const KEY = 'house-flip-analyzer-v1:state';
+
+// ===== DEFAULT REPAIR ROWS =====
+function defaultRepairs(){
+  return [
+    {id:'r1', label:'Structural / Foundation', cost:0},
+    {id:'r2', label:'Roof', cost:8000},
+    {id:'r3', label:'HVAC', cost:6000},
+    {id:'r4', label:'Plumbing', cost:0},
+    {id:'r5', label:'Electrical', cost:0},
+    {id:'r6', label:'Kitchen', cost:15000},
+    {id:'r7', label:'Bathrooms', cost:8000},
+    {id:'r8', label:'Flooring', cost:5000},
+    {id:'r9', label:'Paint / Drywall', cost:3000},
+    {id:'r10', label:'Landscaping / Exterior', cost:0},
+    {id:'r11', label:'Other', cost:0}
+  ];
+}
+
+// ===== DEFAULT STATE =====
+function defaultState(){
+  return {
+    theme: 'light',
+    activeTab: 'analyzer',
+    address: '123 Elm Street, Springfield, IL 62701',
+    arv: 280000,
+    askingPrice: 160000,
+    desiredProfit: 30000,
+    sellingPct: 8.0,
+    purchaseClosing: 3500,
+    holdingMonths: 6,
+    hLoan: 800,
+    hTaxes: 200,
+    hInsurance: 150,
+    hUtilities: 100,
+    hOther: 0,
+    repairs: defaultRepairs(),
+    savedDeals: [],
+    pinnedDeals: [],
+    nextRepairId: 100
+  };
+}
+
+// ===== STATE =====
+let state = defaultState();
+let saveTimer = null;
+let pendingSave = false;
+
+// ===== LOAD STATE =====
+(function loadState(){
+  try {
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return;
+    const parsed = JSON.parse(raw);
+    if(typeof parsed !== 'object' || parsed === null) throw new Error('bad shape');
+    // Merge defaults for forward-compat
+    const def = defaultState();
+    state = { ...def, ...parsed, savedDeals: [], pinnedDeals: [] };
+    // Validate arrays
+    if(Array.isArray(parsed.savedDeals)){
+      state.savedDeals = parsed.savedDeals.filter(d => d && typeof d === 'object');
+    }
+    if(Array.isArray(parsed.pinnedDeals)){
+      state.pinnedDeals = parsed.pinnedDeals.filter(x => typeof x === 'string');
+    }
+    if(!Array.isArray(parsed.repairs)){
+      state.repairs = def.repairs;
+    } else {
+      state.repairs = parsed.repairs.filter(r => r && typeof r === 'object' && 'id' in r);
+    }
+    // Apply theme early
+    if(state.theme === 'dark') document.documentElement.dataset.theme = 'dark';
+  } catch(e){
+    try {
+      const raw = localStorage.getItem(KEY);
+      if(raw) localStorage.setItem(KEY+'__corrupt-backup', raw);
+    } catch(e2){}
+    state = defaultState();
+    showToast('Saved data was corrupted and reset to defaults. A backup was stored.', 'err');
+  }
+})();
+
+// ===== SAVE STATE =====
+function scheduleSave(){
+  if(saveTimer) clearTimeout(saveTimer);
+  pendingSave = true;
+  saveTimer = setTimeout(doSave, 300);
+}
+
+function doSave(){
+  pendingSave = false;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch(e){
+    showToast('Save failed -- browser storage full or restricted.', 'err');
+  }
+}
+
+document.addEventListener('pagehide', function(){ if(pendingSave){ clearTimeout(saveTimer); doSave(); } });
+document.addEventListener('visibilitychange', function(){ if(document.visibilityState === 'hidden' && pendingSave){ clearTimeout(saveTimer); doSave(); } });
+
+// Multi-tab safety
+window.addEventListener('storage', function(e){
+  if(e.key === KEY){
+    showToast('Your deal data was changed in another tab. Reload to see the latest.', 'warn');
+  }
+});
+
+// ===== TOAST =====
+function showToast(msg, type){
+  const container = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast' + (type === 'warn' ? ' toast-warn' : type === 'err' ? ' toast-err' : type === 'ok' ? ' toast-ok' : '');
+  t.textContent = msg;
+  container.appendChild(t);
+  requestAnimationFrame(() => { requestAnimationFrame(() => { t.classList.add('show'); }); });
+  setTimeout(() => {
+    t.classList.remove('show');
+    setTimeout(() => t.remove(), 300);
+  }, 4000);
+}
+
+// ===== ESCAPE =====
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// ===== FORMAT =====
+function fmt$(n){
+  if(!isFinite(n)) return '--';
+  const neg = n < 0;
+  const abs = Math.abs(Math.round(n));
+  const str = abs.toLocaleString('en-US');
+  return (neg ? '-$' : '$') + str;
+}
+function fmtPct(n, dec=2){
+  if(!isFinite(n)) return '--';
+  return n.toFixed(dec) + '%';
+}
+function num(v){
+  const n = parseFloat(String(v).replace(/[^0-9.\-]/g,''));
+  return isNaN(n) ? 0 : n;
+}
+
+// ===== COMPUTE =====
+function compute(){
+  const arv = num(state.arv);
+  const repairs = state.repairs.reduce((s,r)=>s+num(r.cost), 0);
+  const purchaseClosing = num(state.purchaseClosing);
+  const holdingMonths = num(state.holdingMonths);
+  const holdingMonthly = num(state.hLoan) + num(state.hTaxes) + num(state.hInsurance) + num(state.hUtilities) + num(state.hOther);
+  const totalHolding = holdingMonths * holdingMonthly;
+  const sellingPct = num(state.sellingPct) / 100;
+  const totalSelling = arv * sellingPct;
+  const desiredProfit = num(state.desiredProfit);
+  const askingPrice = num(state.askingPrice);
+
+  const totalFixed = repairs + purchaseClosing + totalHolding + totalSelling;
+
+  let mao70 = null, maoFull = null;
+  if(arv > 0){
+    mao70 = (arv * 0.70) - repairs;
+    maoFull = arv - totalFixed - desiredProfit;
+  }
+
+  let profitAtAsking = null, roi = null, cashIn = null;
+  if(arv > 0 && askingPrice > 0){
+    profitAtAsking = arv - askingPrice - totalFixed;
+    cashIn = askingPrice + purchaseClosing + repairs + totalHolding;
+    roi = cashIn > 0 ? (profitAtAsking / cashIn) * 100 : null;
+  }
+
+  return { arv, repairs, purchaseClosing, holdingMonths, holdingMonthly, totalHolding,
+           sellingPct, totalSelling, desiredProfit, askingPrice,
+           totalFixed, mao70, maoFull, profitAtAsking, roi, cashIn };
+}
+
+// ===== RENDER =====
+function render(){
+  const c = compute();
+  renderResults(c);
+  renderWaterfall(c);
+  renderRepairTable();
+  renderCostSummary(c);
+  renderSensitivity(c);
+  renderSavedDeals();
+  renderTheme();
+  renderTabs();
+  renderPrintHeader();
+}
+
+function renderResults(c){
+  // MAO outputs
+  const m70el = document.getElementById('result-mao70');
+  const mFull = document.getElementById('result-mao-full');
+  const prev70 = m70el.textContent;
+  const prevFull = mFull.textContent;
+
+  m70el.textContent = c.mao70 !== null ? fmt$(c.mao70) : '--';
+  mFull.textContent = c.maoFull !== null ? fmt$(c.maoFull) : '--';
+
+  if(prev70 !== m70el.textContent) pulse(m70el);
+  if(prevFull !== mFull.textContent) pulse(mFull);
+
+  // Color result cards
+  const c70 = document.getElementById('card-mao70');
+  const cFull = document.getElementById('card-mao-full');
+  c70.className = 'result-card' + (c.mao70 !== null && c.mao70 < 0 ? ' negative' : '');
+  cFull.className = 'result-card highlight' + (c.maoFull !== null && c.maoFull < 0 ? ' negative' : '');
+
+  // Repair warning on MAO card
+  if(c.arv > 0 && c.repairs > c.arv * 0.7){
+    c70.querySelector('.result-sub').textContent = 'Warning: Repairs exceed 70% of ARV';
+  } else {
+    c70.querySelector('.result-sub').textContent = '(ARV x 70%) - Repairs';
+  }
+  if(c.maoFull !== null && c.maoFull < 0){
+    cFull.querySelector('.result-sub').textContent = "Deal doesn't pencil -- costs exceed ARV";
+  } else {
+    cFull.querySelector('.result-sub').textContent = 'ARV - All Costs - Desired Profit';
+  }
+
+  // Profit/ROI
+  const profEl = document.getElementById('result-profit');
+  const roiEl = document.getElementById('result-roi');
+  profEl.textContent = c.profitAtAsking !== null ? fmt$(c.profitAtAsking) : '--';
+  roiEl.textContent = c.roi !== null ? fmtPct(c.roi) : '--';
+  document.getElementById('result-cash-in').textContent = c.cashIn !== null ? fmt$(c.cashIn) : '--';
+  document.getElementById('result-total-fixed').textContent = c.arv > 0 ? fmt$(c.totalFixed) : '--';
+  document.getElementById('result-selling-dollar').textContent = c.arv > 0 ? fmt$(c.totalSelling) : '--';
+
+  // Go/no-go badge
+  const badge = document.getElementById('gonogo-badge');
+  if(c.maoFull === null || c.askingPrice === 0){
+    badge.className = 'badge'; badge.textContent = 'Enter values above';
+  } else if(c.askingPrice <= c.maoFull){
+    badge.className = 'badge badge-green'; badge.textContent = 'GO -- Asking below Full-Stack MAO';
+  } else if(c.askingPrice <= c.mao70){
+    badge.className = 'badge badge-yellow'; badge.textContent = 'CAUTION -- Between MAO 70% and Full';
+  } else {
+    badge.className = 'badge badge-red'; badge.textContent = 'NO-GO -- Asking above both MAO methods';
+  }
+
+  // Corridor
+  const floor = c.mao70 !== null ? c.mao70 : 0;
+  const ceil = c.maoFull !== null ? c.maoFull : 0;
+  document.getElementById('corridor-floor').textContent = c.mao70 !== null ? fmt$(floor) : '--';
+  document.getElementById('corridor-ceiling').textContent = c.maoFull !== null ? fmt$(ceil) : '--';
+  const gap = ceil - floor;
+  document.getElementById('corridor-gap-label').textContent = gap > 0 ? 'Gap: ' + fmt$(gap) : (c.mao70 !== null ? 'Inverted corridor' : '');
+  const fill = document.getElementById('corridor-fill');
+  if(gap > 0 && c.arv > 0){
+    fill.style.width = Math.min(100, Math.abs(floor / ceil) * 100).toFixed(1) + '%';
+  } else {
+    fill.style.width = '50%';
+  }
+
+  // Holding display
+  document.getElementById('months-display').textContent = c.holdingMonths || 0;
+  document.getElementById('holding-total-display').textContent = fmt$(c.totalHolding);
+
+  // Inline validation
+  setError('arv-error', 'arv', c.arv < 0 ? 'ARV cannot be negative.' : '');
+  setError('asking-error', 'asking-price', c.askingPrice < 0 ? 'Asking price cannot be negative.' : '');
+  setError('profit-error', 'desired-profit', c.desiredProfit < 0 ? 'Desired profit cannot be negative.' : '');
+  setError('selling-error', 'selling-pct', c.sellingPct < 0 ? 'Selling % cannot be negative.' : c.sellingPct > 0.30 ? 'Selling % seems high (>30%). Please verify.' : '');
+}
+
+function setError(errId, inputId, msg){
+  const errEl = document.getElementById(errId);
+  const inputEl = document.getElementById(inputId);
+  if(errEl) errEl.textContent = msg;
+  if(inputEl) inputEl.classList.toggle('input-error-field', !!msg);
+}
+
+function pulse(el){
+  el.classList.remove('result-pulse');
+  void el.offsetWidth;
+  el.classList.add('result-pulse');
+}
+
+function renderCostSummary(c){
+  document.getElementById('repair-total-cell').textContent = fmt$(c.repairs);
+  const closingErr = document.getElementById('closing-error');
+  const monthsErr = document.getElementById('months-error');
+  if(closingErr) closingErr.textContent = c.purchaseClosing < 0 ? 'Cannot be negative.' : '';
+  if(monthsErr) monthsErr.textContent = c.holdingMonths < 0 ? 'Cannot be negative.' : '';
+}
+
+function renderTabs(){
+  const tabs = ['analyzer','costs','sensitivity','saved'];
+  tabs.forEach(t => {
+    const btn = document.getElementById('tab-btn-'+t);
+    const panel = document.getElementById('tab-'+t);
+    if(!btn||!panel) return;
+    const active = state.activeTab === t;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', active);
+    panel.classList.toggle('active', active);
+  });
+}
+
+function renderTheme(){
+  document.documentElement.dataset.theme = state.theme;
+  const icon = document.getElementById('theme-icon');
+  const label = document.getElementById('theme-label');
+  if(state.theme === 'dark'){
+    label.textContent = 'Dark';
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    icon.setAttribute('fill','currentColor');
+    icon.setAttribute('stroke','none');
+  } else {
+    label.textContent = 'Light';
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>';
+    icon.setAttribute('fill','none');
+    icon.setAttribute('stroke','currentColor');
+  }
+}
+
+function renderPrintHeader(){
+  const addr = state.address || 'Property Deal';
+  document.getElementById('print-title').textContent = 'House Flip Deal Analyzer -- ' + addr;
+  document.getElementById('print-date').textContent = 'Generated: ' + new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+}
+
+// ===== REPAIR TABLE RENDER =====
+function renderRepairTable(){
+  const tbody = document.getElementById('repair-tbody');
+  if(!tbody) return;
+  tbody.innerHTML = '';
+  (state.repairs||[]).forEach(function(row){
+    const tr = document.createElement('tr');
+    const tdLabel = document.createElement('td');
+    const inputLabel = document.createElement('input');
+    inputLabel.type = 'text';
+    inputLabel.value = row.label;
+    inputLabel.setAttribute('aria-label', 'Repair category name');
+    inputLabel.dataset.rid = row.id;
+    inputLabel.dataset.field = 'label';
+    tdLabel.appendChild(inputLabel);
+
+    const tdCost = document.createElement('td');
+    const wrap = document.createElement('div');
+    wrap.className = 'input-wrap has-prefix';
+    const prefix = document.createElement('span');
+    prefix.className = 'input-prefix';
+    prefix.textContent = '$';
+    const inputCost = document.createElement('input');
+    inputCost.type = 'number';
+    inputCost.min = '0';
+    inputCost.step = '100';
+    inputCost.value = row.cost || 0;
+    inputCost.setAttribute('aria-label', 'Cost for ' + row.label);
+    inputCost.dataset.rid = row.id;
+    inputCost.dataset.field = 'cost';
+    wrap.appendChild(prefix);
+    wrap.appendChild(inputCost);
+    tdCost.appendChild(wrap);
+
+    const tdDel = document.createElement('td');
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-icon';
+    delBtn.setAttribute('aria-label', 'Remove ' + row.label);
+    delBtn.dataset.action = 'remove-repair';
+    delBtn.dataset.rid = row.id;
+    delBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
+    tdDel.appendChild(delBtn);
+
+    tr.appendChild(tdLabel);
+    tr.appendChild(tdCost);
+    tr.appendChild(tdDel);
+    tbody.appendChild(tr);
+  });
+}
+
+// ===== WATERFALL CHART =====
+function renderWaterfall(c){
+  const svg = document.getElementById('chart-waterfall');
+  if(!svg) return;
+  if(!c.arv || c.arv <= 0){
+    svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="var(--text-muted)" font-size="14">Enter ARV to see chart</text>';
+    svg.setAttribute('viewBox','0 0 600 60');
+    return;
+  }
+
+  const segments = [
+    {label:'Repairs', value:c.repairs, color:'#e67e22'},
+    {label:'Purchase Closing', value:c.purchaseClosing, color:'#9b59b6'},
+    {label:'Holding Costs', value:c.totalHolding, color:'#3498db'},
+    {label:'Selling Costs', value:c.totalSelling, color:'#1abc9c'},
+    {label:'Desired Profit', value:c.desiredProfit, color:'#27ae60'},
+    {label:'MAO (Full)', value:Math.max(0, c.maoFull || 0), color:'#6B9BD1'},
+  ];
+
+  const width = 600;
+  const barH = 40;
+  const labelH = 56;
+  const totalH = barH + labelH + 24;
+  const padX = 8;
+  const barW = width - padX * 2;
+
+  const total = segments.reduce((s,seg)=>s+seg.value, 0);
+  const scale = total > 0 ? barW / total : 0;
+
+  let rects = '', x = padX;
+  segments.forEach(function(seg, i){
+    const w = seg.value * scale;
+    if(w < 1) { x += w; return; }
+    const pct = c.arv > 0 ? ((seg.value / c.arv)*100).toFixed(1) : '0';
+    rects += `<rect x="${x}" y="0" width="${w}" height="${barH}" fill="${seg.color}" rx="${i===0?4:0}" ry="${i===0?4:0}"/>`;
+    if(w > 40){
+      rects += `<text x="${x + w/2}" y="${barH/2+5}" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">${pct}%</text>`;
+    }
+    x += w;
+  });
+
+  // Legend below the bar (a WRAPPING swatch + name + value per segment). Labeling each segment inline at
+  // its center overlapped into an unreadable smear on the narrow segments (Purchase Closing, Holding); a
+  // legend labels every cost legibly and wraps to a new line when a row fills.
+  let legend = '', lx = padX, ly = barH + 22; const lineH = 16;
+  segments.forEach(function(seg){
+    if(seg.value <= 0) return;
+    const txt = seg.label + '  ' + fmt$(seg.value);
+    const itemW = 14 + txt.length * 5.4 + 16;
+    if(lx > padX && lx + itemW > width - padX){ lx = padX; ly += lineH; }
+    legend += `<rect x="${lx}" y="${ly-8}" width="9" height="9" rx="2" fill="${seg.color}"/>`;
+    legend += `<text x="${lx+13}" y="${ly}" fill="var(--text)" font-size="10">${esc(txt)}</text>`;
+    lx += itemW;
+  });
+  const bottom = ly + 10;
+
+  svg.innerHTML = `<g>${rects}</g><g>${legend}</g>
+    <text x="${padX}" y="${bottom + 12}" fill="var(--text-muted)" font-size="10">ARV: ${fmt$(c.arv)}</text>`;
+  svg.setAttribute('viewBox', `0 0 ${width} ${bottom + 22}`);
+  svg.style.height = (bottom + 22) + 'px';
+}
+
+// ===== SENSITIVITY TABLE =====
+function renderSensitivity(c){
+  const thead = document.getElementById('sensitivity-thead');
+  const tbody = document.getElementById('sensitivity-tbody');
+  if(!thead||!tbody) return;
+
+  const arvMults = [0.90, 0.95, 1.00, 1.05, 1.10];
+  const repairMults = [0.80, 0.90, 1.00, 1.10, 1.20];
+
+  let headHtml = '<tr><th class="row-header">Repairs \\ ARV</th>';
+  arvMults.forEach(function(m){
+    headHtml += `<th>${m===1?'Base':((m>1?'+':'')+Math.round((m-1)*100)+'%')}</th>`;
+  });
+  headHtml += '</tr>';
+  thead.innerHTML = headHtml;
+
+  let bodyHtml = '';
+  repairMults.forEach(function(rm){
+    const rowLabel = rm===1?'Base':((rm>1?'+':'')+Math.round((rm-1)*100)+'%');
+    bodyHtml += `<tr><td class="row-header">Repairs ${rowLabel}</td>`;
+    arvMults.forEach(function(am){
+      let cell = '--';
+      let cls = '';
+      if(c.arv > 0){
+        const arvAdj = c.arv * am;
+        const repAdj = c.repairs * rm;
+        const totalFixedAdj = repAdj + c.purchaseClosing + c.totalHolding + arvAdj * c.sellingPct;
+        const cellMao = arvAdj - totalFixedAdj - c.desiredProfit;
+        cell = fmt$(cellMao);
+        const isBase = am === 1.00 && rm === 1.00;
+        if(isBase) cls = 'cell-base';
+        else if(c.askingPrice > 0 && cellMao < c.askingPrice) cls = 'cell-red';
+        else cls = 'cell-green';
+      }
+      bodyHtml += `<td class="${cls}">${cell}</td>`;
+    });
+    bodyHtml += '</tr>';
+  });
+  tbody.innerHTML = bodyHtml;
+}
+
+// ===== SAVED DEALS =====
+function dealSnapshot(name){
+  const c = compute();
+  return {
+    id: 'deal-' + Date.now(),
+    name: name || state.address || 'Unnamed Deal',
+    savedAt: new Date().toISOString(),
+    arv: state.arv,
+    askingPrice: state.askingPrice,
+    desiredProfit: state.desiredProfit,
+    sellingPct: state.sellingPct,
+    purchaseClosing: state.purchaseClosing,
+    holdingMonths: state.holdingMonths,
+    hLoan: state.hLoan, hTaxes: state.hTaxes,
+    hInsurance: state.hInsurance, hUtilities: state.hUtilities, hOther: state.hOther,
+    repairs: JSON.parse(JSON.stringify(state.repairs)),
+    // computed
+    mao70: c.mao70, maoFull: c.maoFull,
+    profitAtAsking: c.profitAtAsking, roi: c.roi,
+    totalFixed: c.totalFixed
+  };
+}
+
+function renderSavedDeals(){
+  const list = document.getElementById('deal-list');
+  if(!list) return;
+  const deals = Array.isArray(state.savedDeals) ? state.savedDeals : [];
+
+  if(deals.length === 0){
+    list.innerHTML = '<p style="color:var(--text-muted);font-size:var(--fs-sm)">No saved deals yet. Fill out the analyzer and click "Save Deal".</p>';
+  } else {
+    let html = '';
+    deals.forEach(function(d){
+      const pinned = (state.pinnedDeals||[]).includes(d.id);
+      html += `<div class="deal-item" data-deal-id="${esc(d.id)}">
+        <div class="deal-item-name">${esc(d.name)}</div>
+        <div class="deal-item-meta">ARV: ${fmt$(d.arv)} &middot; MAO: ${fmt$(d.maoFull)}</div>
+        <div class="deal-item-actions">
+          <button class="btn btn-secondary btn-sm" data-action="load-deal" data-deal-id="${esc(d.id)}" title="Load this deal">Load</button>
+          <button class="pin-badge${pinned?' pinned':''}" data-action="pin-deal" data-deal-id="${esc(d.id)}" title="${pinned?'Unpin':'Pin to compare'}">${pinned?'Pinned':'Pin'}</button>
+          <button class="btn-icon" data-action="delete-deal" data-deal-id="${esc(d.id)}" title="Delete deal" aria-label="Delete deal ${esc(d.name)}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </div>
+      </div>`;
+    });
+    list.innerHTML = html;
+  }
+
+  // Compare panel
+  const pinned = (state.pinnedDeals||[]).slice(0,2);
+  const compareCard = document.getElementById('compare-card');
+  if(pinned.length === 2){
+    compareCard.style.display = '';
+    renderCompare(pinned);
+  } else {
+    compareCard.style.display = 'none';
+  }
+}
+
+function renderCompare(pinnedIds){
+  const deals = (state.savedDeals||[]).filter(d => pinnedIds.includes(d.id));
+  if(deals.length < 2){ document.getElementById('compare-card').style.display='none'; return; }
+  const [a,b] = deals;
+  const metrics = [
+    ['Property', d=>esc(d.name)],
+    ['ARV', d=>fmt$(d.arv)],
+    ['Asking Price', d=>fmt$(d.askingPrice)],
+    ['Total Repairs', d=>fmt$((d.repairs||[]).reduce((s,r)=>s+num(r.cost),0))],
+    ['Desired Profit', d=>fmt$(d.desiredProfit)],
+    ['MAO (70% Rule)', d=>fmt$(d.mao70)],
+    ['MAO (Full Cost)', d=>fmt$(d.maoFull)],
+    ['Profit at Asking', d=>fmt$(d.profitAtAsking)],
+    ['ROI at Asking', d=>d.roi!=null?fmtPct(d.roi):'--'],
+    ['Total Fixed Costs', d=>fmt$(d.totalFixed)],
+    ['Holding Months', d=>String(num(d.holdingMonths))],
+  ];
+  let html = `<thead><tr><th>Metric</th><th>${esc(a.name)}</th><th>${esc(b.name)}</th></tr></thead>`;
+  html += '<tbody>';
+  metrics.forEach(function([label, fn]){
+    html += `<tr><td>${esc(label)}</td><td>${fn(a)}</td><td>${fn(b)}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('compare-table').innerHTML = html;
+}
+
+// ===== EVENT DELEGATION =====
+document.addEventListener('click', function(e){
+  const t = e.target.closest('[data-action]');
+  if(!t) return;
+  const action = t.dataset.action;
+
+  if(action === 'remove-repair'){
+    const rid = t.dataset.rid;
+    state.repairs = (state.repairs||[]).filter(r=>r.id!==rid);
+    scheduleSave(); render();
+  }
+  else if(action === 'load-deal'){
+    const did = t.dataset.dealId;
+    const deal = (state.savedDeals||[]).find(d=>d.id===did);
+    if(!deal) return;
+    if(!confirm('Load "' + deal.name + '"? This will replace your current inputs.')) return;
+    state.arv = deal.arv;
+    state.askingPrice = deal.askingPrice;
+    state.desiredProfit = deal.desiredProfit;
+    state.sellingPct = deal.sellingPct;
+    state.purchaseClosing = deal.purchaseClosing;
+    state.holdingMonths = deal.holdingMonths;
+    state.hLoan = deal.hLoan; state.hTaxes = deal.hTaxes;
+    state.hInsurance = deal.hInsurance; state.hUtilities = deal.hUtilities;
+    state.hOther = deal.hOther;
+    state.repairs = deal.repairs ? JSON.parse(JSON.stringify(deal.repairs)) : defaultRepairs();
+    state.address = deal.name;
+    state.activeTab = 'analyzer';
+    scheduleSave(); render(); syncInputsFromState();
+  }
+  else if(action === 'pin-deal'){
+    const did = t.dataset.dealId;
+    const pins = state.pinnedDeals||[];
+    if(pins.includes(did)){
+      state.pinnedDeals = pins.filter(x=>x!==did);
+    } else {
+      if(pins.length >= 2) state.pinnedDeals = [pins[1], did];
+      else state.pinnedDeals = [...pins, did];
+    }
+    scheduleSave(); renderSavedDeals();
+  }
+  else if(action === 'delete-deal'){
+    const did = t.dataset.dealId;
+    const deal = (state.savedDeals||[]).find(d=>d.id===did);
+    state.savedDeals = (state.savedDeals||[]).filter(d=>d.id!==did);
+    state.pinnedDeals = (state.pinnedDeals||[]).filter(x=>x!==did);
+    scheduleSave(); renderSavedDeals();
+  }
+});
+
+// ===== REPAIR INPUT DELEGATION =====
+document.addEventListener('input', function(e){
+  const t = e.target;
+  if(t.closest('#repair-tbody') && t.dataset.rid){
+    const row = (state.repairs||[]).find(r=>r.id===t.dataset.rid);
+    if(!row) return;
+    if(t.dataset.field === 'label') row.label = t.value;
+    else if(t.dataset.field === 'cost') row.cost = num(t.value);
+    scheduleSave();
+    // Lightweight update: don't re-render the repair table (loses focus);
+    // just recompute outputs and update the total row
+    const c = compute();
+    document.getElementById('repair-total-cell').textContent = fmt$(c.repairs);
+    renderResults(c);
+    renderWaterfall(c);
+    renderSensitivity(c);
+    return;
+  }
+  // Main inputs
+  const id = t.id;
+  const map = {
+    'arv':'arv','asking-price':'askingPrice','desired-profit':'desiredProfit',
+    'selling-pct':'sellingPct','purchase-closing':'purchaseClosing',
+    'holding-months':'holdingMonths','h-loan':'hLoan','h-taxes':'hTaxes',
+    'h-insurance':'hInsurance','h-utilities':'hUtilities','h-other':'hOther',
+    'property-address':'address'
+  };
+  if(id && map[id]){
+    if(id==='property-address') state[map[id]] = t.value;
+    else state[map[id]] = t.value === '' ? '' : num(t.value);
+    scheduleSave(); render();
+  }
+});
+
+// ===== TAB SWITCHING =====
+document.getElementById('tab-btn-analyzer').addEventListener('click',function(){ state.activeTab='analyzer'; scheduleSave(); renderTabs(); });
+document.getElementById('tab-btn-costs').addEventListener('click',function(){ state.activeTab='costs'; scheduleSave(); renderTabs(); });
+document.getElementById('tab-btn-sensitivity').addEventListener('click',function(){ state.activeTab='sensitivity'; scheduleSave(); render(); });
+document.getElementById('tab-btn-saved').addEventListener('click',function(){ state.activeTab='saved'; scheduleSave(); renderSavedDeals(); renderTabs(); });
+
+// ===== THEME TOGGLE =====
+document.getElementById('theme-toggle').addEventListener('click',function(){
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  scheduleSave(); renderTheme();
+});
+
+// ===== ADD REPAIR ROW =====
+document.getElementById('btn-add-repair').addEventListener('click',function(){
+  const id = 'r' + (state.nextRepairId++);
+  state.repairs.push({id, label:'Other', cost:0});
+  scheduleSave(); render();
+});
+
+// ===== PRINT =====
+document.getElementById('btn-print').addEventListener('click',function(){
+  renderPrintHeader();
+  window.print();
+});
+
+// ===== SAVE DEAL =====
+document.getElementById('btn-save-deal').addEventListener('click',function(){
+  const deals = Array.isArray(state.savedDeals) ? state.savedDeals : [];
+  if(deals.length >= 10){ showToast('Max 10 saved deals. Delete one first.', 'warn'); return; }
+  const defaultName = state.address || ('Deal ' + (deals.length+1));
+  const name = prompt('Name this deal:', defaultName);
+  if(name === null) return;
+  state.savedDeals = [...deals, dealSnapshot(name.trim()||defaultName)];
+  scheduleSave(); render();
+  showToast('Deal saved: ' + (name.trim()||defaultName), 'ok');
+});
+
+// ===== RESET =====
+document.getElementById('btn-reset').addEventListener('click',function(){
+  if(!confirm('Reset to the worked example? Your current inputs will be replaced.')) return;
+  const def = defaultState();
+  state.arv = def.arv;
+  state.askingPrice = def.askingPrice;
+  state.desiredProfit = def.desiredProfit;
+  state.sellingPct = def.sellingPct;
+  state.purchaseClosing = def.purchaseClosing;
+  state.holdingMonths = def.holdingMonths;
+  state.hLoan = def.hLoan; state.hTaxes = def.hTaxes;
+  state.hInsurance = def.hInsurance; state.hUtilities = def.hUtilities;
+  state.hOther = def.hOther;
+  state.repairs = defaultRepairs();
+  state.address = def.address;
+  scheduleSave(); render(); syncInputsFromState();
+});
+
+// ===== EXPORT =====
+document.getElementById('btn-export').addEventListener('click',function(){
+  const data = JSON.stringify(state.savedDeals||[], null, 2);
+  const blob = new Blob([data], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'house-flip-deals.json';
+  a.click(); URL.revokeObjectURL(url);
+});
+
+// ===== IMPORT TRIGGER =====
+document.getElementById('btn-import-trigger').addEventListener('click',function(){
+  const sec = document.getElementById('import-section');
+  sec.style.display = sec.style.display==='none' ? '' : 'none';
+});
+document.getElementById('btn-import-cancel').addEventListener('click',function(){
+  document.getElementById('import-section').style.display='none';
+});
+document.getElementById('btn-import-file-trigger').addEventListener('click',function(){
+  document.getElementById('import-file').click();
+});
+document.getElementById('import-file').addEventListener('change',function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){ doImport(ev.target.result); };
+  reader.readAsText(file);
+  e.target.value='';
+});
+document.getElementById('import-btn').addEventListener('click',function(){
+  doImport(document.getElementById('import-paste').value);
+});
+
+function doImport(text){
+  const resultEl = document.getElementById('import-result');
+  try {
+    const parsed = JSON.parse(text);
+    if(!Array.isArray(parsed)) throw new Error('Expected a JSON array of deals.');
+    const existing = Array.isArray(state.savedDeals) ? state.savedDeals : [];
+    const existingIds = new Set(existing.map(d=>d.id));
+    let added=0, skipped=0;
+    parsed.forEach(function(d){
+      if(!d || typeof d !== 'object' || !d.name){ skipped++; return; }
+      if(existingIds.has(d.id)){ skipped++; return; }
+      if(existing.length >= 10){ skipped++; return; }
+      existing.push(d); existingIds.add(d.id); added++;
+    });
+    state.savedDeals = existing;
+    scheduleSave(); renderSavedDeals();
+    resultEl.textContent = 'Imported ' + added + ' deals. ' + (skipped ? skipped + ' skipped (duplicates or invalid).' : '');
+    resultEl.style.color = 'var(--green)';
+  } catch(e){
+    resultEl.textContent = 'Import failed: ' + e.message;
+    resultEl.style.color = 'var(--red)';
+  }
+}
+
+// ===== SYNC INPUTS FROM STATE =====
+function syncInputsFromState(){
+  const fields = [
+    ['arv','arv'],['asking-price','askingPrice'],['desired-profit','desiredProfit'],
+    ['selling-pct','sellingPct'],['purchase-closing','purchaseClosing'],
+    ['holding-months','holdingMonths'],['h-loan','hLoan'],['h-taxes','hTaxes'],
+    ['h-insurance','hInsurance'],['h-utilities','hUtilities'],['h-other','hOther'],
+    ['property-address','address']
+  ];
+  fields.forEach(function([id,key]){
+    const el = document.getElementById(id);
+    if(el) el.value = state[key] || (state[key]===0?'0':'');
+  });
+}
+
+// ===== INIT =====
+// Prefer prefers-color-scheme on very first load
+if(!localStorage.getItem(KEY)){
+  if(window.matchMedia('(prefers-color-scheme: dark)').matches){
+    state.theme = 'dark';
+    document.documentElement.dataset.theme = 'dark';
+  }
+}
+
+syncInputsFromState();
+render();
+})();
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of House Flip Deal Analyzer (70% Rule / MAO). It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4528427932?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($17) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

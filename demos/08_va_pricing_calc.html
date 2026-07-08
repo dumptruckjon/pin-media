@@ -1,0 +1,1859 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Virtual Assistant Pricing &amp; Capacity Calculator</title>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+  --fs-xs: 13px; --fs-sm: 15px; --fs-base: 17px; --fs-lg: 20px;
+  --fs-xl: 26px; --fs-2xl: 34px;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 16px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.10), 0 2px 6px rgba(0,0,0,.07);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.12), 0 4px 10px rgba(0,0,0,.08);
+  --transition: 150ms ease;
+
+  /* Light theme palette */
+  --bg: #f4f7fb;
+  --bg-card: #ffffff;
+  --bg-input: #f8fafc;
+  --bg-subtle: #eef2f7;
+  --text: #2B3A4A;
+  --text-muted: #5a6e82;
+  --text-light: #8a9fb5;
+  --border: #d4dde8;
+  --border-focus: #6B9BD1;
+  --accent: #6B9BD1;
+  --accent-dark: #4a7db5;
+  --accent-light: #e8f0f9;
+  --green: #2d8a4e;
+  --green-bg: #e6f5ec;
+  --yellow: #8a6d00;
+  --yellow-bg: #fff9e0;
+  --red: #b83232;
+  --red-bg: #fdecea;
+  --result-bg: #e8f0f9;
+  --result-border: #6B9BD1;
+}
+[data-theme="dark"] {
+  --bg: #141d27;
+  --bg-card: #1e2c3a;
+  --bg-input: #162231;
+  --bg-subtle: #243344;
+  --text: #e2eaf4;
+  --text-muted: #8da8c4;
+  --text-light: #5a7a99;
+  --border: #2d4058;
+  --border-focus: #6B9BD1;
+  --accent: #6B9BD1;
+  --accent-dark: #5585bb;
+  --accent-light: #1b2d40;
+  --green: #4caf70;
+  --green-bg: #112a1c;
+  --yellow: #e0c040;
+  --yellow-bg: #2a2210;
+  --red: #e06060;
+  --red-bg: #2a1212;
+  --result-bg: #1b2d40;
+  --result-border: #6B9BD1;
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--fs-sm);
+  line-height: 1.55;
+  color: var(--text);
+  background: var(--bg);
+  min-height: 100vh;
+  transition: color var(--transition);
+}
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
+button { cursor: pointer; }
+a { color: var(--accent); }
+
+/* ===== LAYOUT ===== */
+.app-header {
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  padding: var(--sp-4) var(--sp-6);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.app-header h1 {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+}
+.app-header .subtitle {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+.main-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--sp-6) var(--sp-4);
+}
+
+/* ===== TABS ===== */
+.tabs-nav {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-md);
+  padding: 4px;
+  margin-bottom: var(--sp-6);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.tab-btn {
+  flex: 1;
+  min-width: 110px;
+  padding: var(--sp-2) var(--sp-3);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--text); background: var(--bg-card); }
+.tab-btn.active {
+  background: var(--bg-card);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Panel visibility */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-4);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition);
+}
+.card-title {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--sp-4);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.card-title svg { flex-shrink: 0; }
+
+/* ===== FORM ELEMENTS ===== */
+.field-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+}
+.field-group.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.field-group.cols-1 { grid-template-columns: 1fr; }
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: .02em;
+}
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-prefix, .input-suffix {
+  position: absolute;
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  pointer-events: none;
+  user-select: none;
+}
+.input-prefix { left: var(--sp-3); }
+.input-suffix { right: var(--sp-3); }
+input[type="text"], input[type="number"], textarea, select {
+  width: 100%;
+  padding: 10px var(--sp-3);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text);
+  font-size: var(--fs-sm);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  -webkit-appearance: none;
+}
+input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input.has-prefix { padding-left: calc(var(--sp-3) + 14px); }
+input.has-suffix { padding-right: calc(var(--sp-3) + 20px); }
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(107,155,209,.18);
+}
+input.invalid { border-color: var(--red); }
+.input-error {
+  font-size: var(--fs-xs);
+  color: var(--red);
+  margin-top: 2px;
+  min-height: 16px;
+  display: none;
+}
+.input-error.visible { display: block; }
+textarea { resize: vertical; min-height: 90px; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 10px var(--sp-4);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(107,155,209,.35);
+}
+.btn-primary:hover { background: var(--accent-dark); box-shadow: 0 4px 12px rgba(107,155,209,.4); }
+.btn-secondary {
+  background: var(--bg-subtle);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+}
+.btn-ghost:hover { color: var(--text); background: var(--bg-subtle); }
+.btn-danger {
+  background: var(--red-bg);
+  color: var(--red);
+  border: 1.5px solid var(--red);
+}
+.btn-danger:hover { background: var(--red); color: #fff; }
+.btn-sm { padding: 6px var(--sp-3); font-size: var(--fs-xs); }
+.btn-icon {
+  width: 38px; height: 38px;
+  padding: 0;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+/* ===== RESULT BOX ===== */
+.result-box {
+  background: var(--result-bg);
+  border: 2px solid var(--result-border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-6);
+  text-align: center;
+  margin-bottom: var(--sp-4);
+  transition: background var(--transition);
+}
+.result-box .result-label {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: var(--sp-2);
+}
+.result-box .result-value {
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  color: var(--accent-dark);
+  letter-spacing: -.01em;
+  transition: transform 200ms ease;
+}
+.result-box .result-value.pulse {
+  animation: pulse-scale 200ms ease;
+}
+@keyframes pulse-scale {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+.result-box .result-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: var(--sp-1);
+}
+
+/* ===== METRICS ROW ===== */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+.metric-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  text-align: center;
+}
+.metric-label {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: var(--sp-1);
+}
+.metric-value {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--text);
+}
+.metric-value.positive { color: var(--green); }
+.metric-value.negative { color: var(--red); }
+.metric-value.accent { color: var(--accent-dark); }
+.metric-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ===== TABLE ===== */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  min-width: 480px;
+}
+thead th {
+  text-align: left;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  border-bottom: 1.5px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--bg-subtle); }
+.tfoot-row td {
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 2px solid var(--border);
+  font-weight: 700;
+  background: var(--bg-subtle);
+}
+
+/* ===== BADGE ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-yellow { background: var(--yellow-bg); color: var(--yellow); }
+.badge-red { background: var(--red-bg); color: var(--red); }
+
+/* ===== CHARTS ===== */
+.chart-wrap {
+  margin: var(--sp-4) 0;
+}
+.chart-wrap svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  display: block;
+}
+#chart-donut { max-width: 260px; margin: 0 auto; }
+#chart-gap { width: 100%; }
+
+/* ===== WHAT-IF ===== */
+.whatif-panel {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+
+/* ===== PACKAGE TIERS ===== */
+.package-tier {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: var(--sp-3);
+  align-items: center;
+}
+.package-tier .tier-price {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  color: var(--accent-dark);
+  text-align: right;
+}
+.package-tier .tier-eff {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  text-align: right;
+}
+
+/* ===== RATE CARD (Tab 4) ===== */
+.rate-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: var(--sp-8);
+  max-width: 680px;
+  margin: 0 auto;
+}
+.rate-card-header {
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+.rate-card-header h2 {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+}
+.rate-card-header p {
+  color: var(--text-muted);
+  margin-top: var(--sp-1);
+}
+.rc-pkg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-6);
+}
+.rc-pkg {
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  text-align: center;
+}
+.rc-pkg.featured { border-color: var(--accent); }
+.rc-pkg .pkg-name {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin-bottom: var(--sp-2);
+}
+.rc-pkg .pkg-price {
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  color: var(--text);
+}
+.rc-pkg .pkg-detail {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.rate-card-services { margin-bottom: var(--sp-6); }
+.rate-card-services h3 { font-size: var(--fs-base); margin-bottom: var(--sp-2); }
+.services-display {
+  color: var(--text-muted);
+  white-space: pre-wrap;
+  font-size: var(--fs-sm);
+}
+.rate-card-footer {
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+.rc-hourly .hl { font-size: var(--fs-lg); font-weight: 700; }
+.rc-contact { text-align: right; color: var(--text-muted); font-size: var(--fs-sm); }
+
+/* ===== IMPORT PANEL ===== */
+.import-section {
+  background: var(--bg-subtle);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.import-section h3 { font-size: var(--fs-sm); font-weight: 700; margin-bottom: var(--sp-3); }
+
+/* ===== TOAST ===== */
+#toast-container {
+  position: fixed;
+  bottom: var(--sp-6);
+  right: var(--sp-6);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  pointer-events: none;
+}
+.toast {
+  background: var(--text);
+  color: var(--bg);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--fs-sm);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 250ms ease, transform 250ms ease;
+  max-width: 340px;
+  pointer-events: auto;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+.toast.toast-error { background: var(--red); color: #fff; }
+.toast.toast-success { background: var(--green); color: #fff; }
+
+/* ===== THEME TOGGLE ===== */
+#theme-toggle {
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: background var(--transition), color var(--transition);
+  flex-shrink: 0;
+}
+#theme-toggle:hover { color: var(--text); background: var(--border); }
+
+/* ===== DIVIDER ===== */
+.divider { border: none; border-top: 1px solid var(--border); margin: var(--sp-4) 0; }
+
+/* ===== SECTION HEADER ===== */
+.section-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--sp-3);
+  gap: var(--sp-3);
+}
+.section-hdr h2 { font-size: var(--fs-base); font-weight: 700; }
+
+/* ===== UTIL ===== */
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.text-muted { color: var(--text-muted); }
+.text-small { font-size: var(--fs-xs); }
+.mt-2 { margin-top: var(--sp-2); }
+.mt-4 { margin-top: var(--sp-4); }
+.mb-4 { margin-bottom: var(--sp-4); }
+.flex { display: flex; align-items: center; gap: var(--sp-3); }
+.flex-wrap { flex-wrap: wrap; }
+.flex-end { justify-content: flex-end; }
+
+/* ===== PRINT ===== */
+@media print {
+  body { background: #fff; color: #000; }
+  .app-header, .tabs-nav, .panel:not(#panel-ratecard),
+  .rate-card-inputs, #btn-print, .btn, .header-actions { display: none !important; }
+  #panel-ratecard { display: block !important; }
+  .rate-card {
+    border: none;
+    box-shadow: none;
+    max-width: 100%;
+    padding: 0;
+  }
+  .rate-card-header { border-bottom: 2px solid #000; }
+  .rc-pkg { border-color: #999; }
+  .rc-pkg.featured { border-color: #000; }
+  .main-content { padding: 0; max-width: 100%; }
+  .rc-pkg, .rate-card-footer, .rc-pkg-grid { page-break-inside: avoid; }
+  .print-header-info { display: block !important; }
+}
+.print-header-info {
+  display: none;
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 600px) {
+  .app-header { padding: var(--sp-3) var(--sp-3); }
+  .app-header h1 { font-size: var(--fs-base); }
+  .main-content { padding: var(--sp-4) var(--sp-3); }
+  .tabs-nav { gap: 1px; padding: 3px; }
+  .tab-btn { min-width: 80px; padding: var(--sp-2) var(--sp-2); font-size: 11px; }
+  .field-group { grid-template-columns: 1fr; }
+  .field-group.cols-3 { grid-template-columns: 1fr; }
+  .metrics-row { grid-template-columns: 1fr 1fr; }
+  .package-tier { grid-template-columns: 1fr 1fr; }
+  .rc-pkg-grid { grid-template-columns: 1fr; }
+  .rate-card-footer { flex-direction: column; }
+  .rc-contact { text-align: left; }
+  input[type="text"], input[type="number"], textarea, select,
+  .btn, .tab-btn { min-height: 44px; }
+  .card { padding: var(--sp-4); }
+}
+@media (max-width: 390px) {
+  .metrics-row { grid-template-columns: 1fr; }
+  .package-tier { grid-template-columns: 1fr; }
+  .package-tier .tier-price { text-align: left; }
+}
+@media (max-width: 500px) {
+  .header-actions .btn-label { display: none; }
+  .header-actions .btn-sm { padding-left: var(--sp-2); padding-right: var(--sp-2); }
+}
+
+/* ===== OVERHEAD TABLE ===== */
+.overhead-row {
+  display: grid;
+  grid-template-columns: 1fr 140px 44px;
+  gap: var(--sp-2);
+  align-items: center;
+  margin-bottom: var(--sp-2);
+}
+@media (max-width: 500px) {
+  .overhead-row { grid-template-columns: 1fr 110px 44px; }
+}
+
+/* ===== IMPORT CSV NOTE ===== */
+.import-mapping {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  font-family: 'Cascadia Code', 'Consolas', monospace;
+}
+</style>
+</head>
+<body>
+<!-- ===== HEADER ===== -->
+<header class="app-header">
+  <div>
+    <h1>VA Pricing &amp; Capacity Calculator</h1>
+    <div class="subtitle">Find your minimum rate, fill your schedule, build packages</div>
+  </div>
+  <div class="header-actions">
+    <label class="btn btn-ghost btn-sm" title="Import data from JSON backup" style="cursor:pointer;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="btn-label">Import</span>
+      <input type="file" id="btn-import-file" accept=".json" style="display:none;">
+    </label>
+    <button id="btn-export" class="btn btn-ghost btn-sm" title="Export data as JSON">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span class="btn-label">Export</span>
+    </button>
+    <button id="btn-reset" class="btn btn-ghost btn-sm" title="Restore worked example">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+      <span class="btn-label">Reset</span>
+    </button>
+    <button id="theme-toggle" title="Toggle theme">
+      <svg id="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg id="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main class="main-content">
+  <!-- TABS NAV -->
+  <nav class="tabs-nav" role="tablist" aria-label="Calculator sections">
+    <button class="tab-btn active" data-tab="ratebuilder" role="tab" id="tab-ratebuilder" aria-selected="true" aria-controls="panel-ratebuilder">Rate Builder</button>
+    <button class="tab-btn" data-tab="capacity" role="tab" id="tab-capacity" aria-selected="false" aria-controls="panel-capacity">Capacity Planner</button>
+    <button class="tab-btn" data-tab="packages" role="tab" id="tab-packages" aria-selected="false" aria-controls="panel-packages">Package Builder</button>
+    <button class="tab-btn" data-tab="ratecard" role="tab" id="tab-ratecard" aria-selected="false" aria-controls="panel-ratecard">Rate Card</button>
+  </nav>
+
+  <!-- ===== TAB 1: RATE BUILDER ===== -->
+  <div id="panel-ratebuilder" class="panel active" role="tabpanel" aria-labelledby="tab-ratebuilder">
+    <!-- RESULT BOX -->
+    <div class="result-box">
+      <div class="result-label">Your minimum hourly rate</div>
+      <div class="result-value" id="result-min-rate">$74.51/hr</div>
+      <div class="result-sub" id="result-min-rate-sub">Based on $60,000/yr goal, 24 billable hrs/wk after admin, $1,800/yr overhead, 28% tax set-aside</div>
+    </div>
+
+    <!-- METRICS -->
+    <div class="metrics-row">
+      <div class="metric-box">
+        <div class="metric-label">Annual billable hours</div>
+        <div class="metric-value accent" id="metric-ann-hrs">1,152</div>
+        <div class="metric-sub">hrs/yr</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Gross revenue needed</div>
+        <div class="metric-value accent" id="metric-gross-rev">$85,833</div>
+        <div class="metric-sub">per year</div>
+      </div>
+      <div class="metric-box">
+        <div class="metric-label">Annual overhead</div>
+        <div class="metric-value" id="metric-overhead">$1,800</div>
+        <div class="metric-sub">per year</div>
+      </div>
+    </div>
+
+    <!-- INCOME & WORK WEEK -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Income &amp; Work Week
+      </div>
+      <div class="field-group cols-3">
+        <div class="field">
+          <label for="income-target">Take-home goal</label>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="income-target" class="has-prefix" value="60000" min="0" aria-describedby="income-target-err">
+          </div>
+          <span class="input-error" id="income-target-err" role="alert"></span>
+        </div>
+        <div class="field">
+          <label for="billable-hrs">Billable hrs/week</label>
+          <div class="input-wrap">
+            <input type="number" id="billable-hrs" value="30" min="0" max="80" aria-describedby="billable-hrs-err">
+            <span class="input-suffix">hrs</span>
+          </div>
+          <span class="input-error" id="billable-hrs-err" role="alert"></span>
+        </div>
+        <div class="field">
+          <label for="vacation-weeks">Vacation weeks/year</label>
+          <div class="input-wrap">
+            <input type="number" id="vacation-weeks" value="4" min="0" max="51" aria-describedby="vacation-weeks-err">
+            <span class="input-suffix">wks</span>
+          </div>
+          <span class="input-error" id="vacation-weeks-err" role="alert"></span>
+        </div>
+        <div class="field">
+          <label for="admin-leakage">Admin time leakage</label>
+          <div class="input-wrap">
+            <input type="number" id="admin-leakage" value="20" min="0" max="99" aria-describedby="admin-leakage-err">
+            <span class="input-suffix">%</span>
+          </div>
+          <span class="input-error" id="admin-leakage-err" role="alert"></span>
+        </div>
+        <div class="field">
+          <label for="tax-setaside">Tax set-aside</label>
+          <div class="input-wrap">
+            <input type="number" id="tax-setaside" value="28" min="0" max="99" aria-describedby="tax-setaside-err">
+            <span class="input-suffix">%</span>
+          </div>
+          <span class="input-error" id="tax-setaside-err" role="alert"></span>
+        </div>
+        <div class="field">
+          <label for="adjusted-hrs-display">Adjusted billable hrs/wk</label>
+          <div class="input-wrap">
+            <input type="text" id="adjusted-hrs-display" readonly value="24.00 hrs/wk" style="background:var(--bg-subtle);color:var(--text-muted);cursor:default;" tabindex="-1">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OVERHEAD -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Monthly Overhead
+      </div>
+      <div id="overhead-list"></div>
+      <button class="btn btn-ghost btn-sm mt-2" id="btn-add-overhead">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add item
+      </button>
+    </div>
+
+    <!-- REVENUE GAP CHART -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Revenue Gap Analysis
+      </div>
+      <div class="chart-wrap">
+        <svg id="chart-gap" viewBox="0 0 600 180" aria-label="Revenue gap bar chart"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 2: CAPACITY PLANNER ===== -->
+  <div id="panel-capacity" class="panel" role="tabpanel" aria-labelledby="tab-capacity">
+    <div class="card">
+      <div class="section-hdr">
+        <h2>Current Retainer Clients</h2>
+        <button class="btn btn-primary btn-sm" id="btn-add-client">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add client
+        </button>
+      </div>
+      <div class="table-wrap">
+        <table id="clients-table" aria-label="Retainer clients">
+          <thead>
+            <tr>
+              <th>Client name</th>
+              <th>Hrs/month</th>
+              <th>Rate/hr</th>
+              <th>Monthly rev.</th>
+              <th>Rate badge</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="clients-tbody"></tbody>
+          <tfoot id="clients-tfoot"></tfoot>
+        </table>
+      </div>
+      <!-- Import clients -->
+      <div class="import-section mt-4">
+        <h3>Import clients from spreadsheet</h3>
+        <div class="import-mapping">Column order: Name | Hours/month | Rate/hr<br>Header row optional. Paste from Excel/Sheets.</div>
+        <div class="field cols-1">
+          <label for="import-paste">Paste rows (tab- or comma-separated)</label>
+          <textarea id="import-paste" rows="4" placeholder="Acme Corp&#9;20&#9;80&#10;Jane's Bakery&#9;15&#9;75"></textarea>
+        </div>
+        <div class="flex mt-2">
+          <button class="btn btn-secondary btn-sm" id="import-btn">Import clients</button>
+          <button class="btn btn-ghost btn-sm" id="btn-csv-template">Download CSV template</button>
+          <span id="import-result" class="text-small text-muted"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAPACITY SUMMARY -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Capacity Overview
+      </div>
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-label">Available hrs/mo</div>
+          <div class="metric-value accent" id="cap-available">104.00</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Booked hrs/mo</div>
+          <div class="metric-value" id="cap-booked">45.00</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Remaining hrs/mo</div>
+          <div class="metric-value positive" id="cap-remaining">59.00</div>
+        </div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-box">
+          <div class="metric-label">Current monthly revenue</div>
+          <div class="metric-value accent" id="cap-current-rev">$3,425</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Revenue at full capacity</div>
+          <div class="metric-value positive" id="cap-full-rev">$7,821</div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-label">Utilization</div>
+          <div class="metric-value" id="cap-util-pct">43.3%</div>
+        </div>
+      </div>
+      <!-- DONUT CHART -->
+      <div class="chart-wrap">
+        <div id="chart-donut">
+          <svg viewBox="0 0 200 200" aria-label="Utilization donut chart"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHAT-IF -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        What-If: Add a New Client
+      </div>
+      <div class="field-group cols-3">
+        <div class="field">
+          <label for="whatif-hrs">Hours/month</label>
+          <div class="input-wrap">
+            <input type="number" id="whatif-hrs" value="20" min="0" aria-describedby="whatif-hrs-err">
+            <span class="input-suffix">hrs</span>
+          </div>
+          <span class="input-error" id="whatif-hrs-err" role="alert"></span>
+        </div>
+        <div class="field">
+          <label for="whatif-rate">Rate/hr</label>
+          <div class="input-wrap">
+            <span class="input-prefix">$</span>
+            <input type="number" id="whatif-rate" class="has-prefix" value="80" min="0" aria-describedby="whatif-rate-err">
+          </div>
+          <span class="input-error" id="whatif-rate-err" role="alert"></span>
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <div id="whatif-result" class="whatif-panel" style="padding:var(--sp-3);font-size:var(--fs-xs);"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 3: PACKAGE BUILDER ===== -->
+  <div id="panel-packages" class="panel" role="tabpanel" aria-labelledby="tab-packages">
+    <div class="card">
+      <div class="card-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        Package Tiers
+      </div>
+      <div class="text-small text-muted mb-4">Prices are rounded to the nearest $5 based on your minimum rate of <strong id="pkg-min-rate-display">$74.51/hr</strong>.</div>
+      <div id="pkg-tiers-container"></div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 4: RATE CARD ===== -->
+  <div id="panel-ratecard" class="panel" role="tabpanel" aria-labelledby="tab-ratecard">
+    <!-- INPUTS (hidden on print) -->
+    <div class="card rate-card-inputs">
+      <div class="card-title">Rate Card Details</div>
+      <div class="field-group">
+        <div class="field">
+          <label for="rc-name">Your name / business name</label>
+          <input type="text" id="rc-name" value="Jane Smith, VA">
+        </div>
+        <div class="field">
+          <label for="rc-tagline">Tagline</label>
+          <input type="text" id="rc-tagline" value="Administrative &amp; operations support for growing businesses">
+        </div>
+      </div>
+      <div class="field cols-1 mt-4">
+        <label for="rc-services">Services list (one per line)</label>
+        <textarea id="rc-services" rows="5">Email &amp; calendar management
+Client communication &amp; follow-up
+Project coordination &amp; task tracking
+Social media scheduling
+Research &amp; data entry</textarea>
+      </div>
+      <div class="field-group mt-4">
+        <div class="field">
+          <label for="rc-contact">Contact info</label>
+          <input type="text" id="rc-contact" value="hello@janesmith.co | (555) 012-3456">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" id="btn-print">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            Print Rate Card
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RATE CARD PREVIEW -->
+    <div class="rate-card" id="rate-card-preview">
+      <div class="print-header-info">Virtual Assistant Rate Card &mdash; <span id="print-date"></span></div>
+      <div class="rate-card-header">
+        <h2 id="rc-preview-name">Jane Smith, VA</h2>
+        <p id="rc-preview-tagline">Administrative &amp; operations support for growing businesses</p>
+      </div>
+      <h3 style="font-size:var(--fs-sm);font-weight:700;margin-bottom:var(--sp-3);color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;">Service Packages</h3>
+      <div class="rc-pkg-grid" id="rc-pkg-grid"></div>
+      <div class="rate-card-services">
+        <h3>Services Included</h3>
+        <div class="services-display" id="rc-services-display"></div>
+      </div>
+      <div class="rate-card-footer">
+        <div class="rc-hourly">
+          <div class="text-small text-muted">Hourly rate (a la carte)</div>
+          <div class="hl" id="rc-hourly-display">$74.51/hr</div>
+        </div>
+        <div class="rc-contact" id="rc-contact-display">hello@janesmith.co | (555) 012-3456</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container" aria-live="polite"></div>
+
+<footer style="text-align:center;padding:var(--sp-6) var(--sp-4);font-size:var(--fs-xs);color:var(--text-light);">
+  Virtual Assistant Pricing &amp; Capacity Calculator &middot; jonsDesignerShop &middot; For planning purposes only, not professional financial or tax advice.
+</footer>
+
+<script>
+'use strict';
+
+/* ===== CONSTANTS ===== */
+const KEY = 'va-pricing-v1:state';
+const CORRUPT_KEY = KEY + '__corrupt-backup';
+
+/* ===== DEFAULT STATE ===== */
+function defaultState() {
+  return {
+    theme: 'light',
+    activeTab: 'ratebuilder',
+    // Rate Builder
+    incomeTarget: 60000,
+    billableHrs: 30,
+    vacationWeeks: 4,
+    adminLeakage: 20,
+    taxSetaside: 28,
+    overhead: [
+      { id: 'oh1', name: 'Software & tools', monthly: 100 },
+      { id: 'oh2', name: 'Business insurance', monthly: 50 }
+    ],
+    // Capacity
+    clients: [
+      { id: 'cl1', name: 'Acme Corp', hrs: 20, rate: 80 },
+      { id: 'cl2', name: "Jane's Bakery", hrs: 15, rate: 75 },
+      { id: 'cl3', name: 'Studio North', hrs: 10, rate: 70 }
+    ],
+    // What-if
+    whatifHrs: 20,
+    whatifRate: 80,
+    // Package tiers
+    pkgTiers: [
+      { id: 'pt1', name: 'Starter', hrs: 10, discount: 5 },
+      { id: 'pt2', name: 'Growth', hrs: 20, discount: 10 },
+      { id: 'pt3', name: 'Retainer', hrs: 40, discount: 15 }
+    ],
+    // Rate card
+    rcName: 'Jane Smith, VA',
+    rcTagline: 'Administrative & operations support for growing businesses',
+    rcServices: 'Email & calendar management\nClient communication & follow-up\nProject coordination & task tracking\nSocial media scheduling\nResearch & data entry',
+    rcContact: 'hello@janesmith.co | (555) 012-3456'
+  };
+}
+
+/* ===== STATE ===== */
+let state = loadState();
+let saveTimer = null;
+let lastMinRate = null;
+
+/* ===== LOAD / SAVE ===== */
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return defaultState();
+    const parsed = JSON.parse(raw);
+    const def = defaultState();
+    // Merge: new fields fall back to defaults
+    const s = { ...def, ...parsed };
+    // Coerce arrays
+    if (!Array.isArray(s.overhead)) s.overhead = def.overhead;
+    if (!Array.isArray(s.clients)) s.clients = def.clients;
+    if (!Array.isArray(s.pkgTiers)) s.pkgTiers = def.pkgTiers;
+    // Clamp
+    s.adminLeakage = Math.min(99, Math.max(0, Number(s.adminLeakage) || 0));
+    s.taxSetaside = Math.min(99, Math.max(0, Number(s.taxSetaside) || 0));
+    return s;
+  } catch(e) {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) localStorage.setItem(KEY + '__corrupt-backup', raw);
+    } catch(_) {}
+    toast('Your saved data could not be loaded. Restored to example. (Backup saved as ' + CORRUPT_KEY + ')');
+    return defaultState();
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch(e) {
+    if (e && e.name === 'QuotaExceededError') {
+      toast('Save failed: storage full. Export your data to keep a backup.', 'error');
+    } else {
+      toast('Save failed: ' + (e && e.message ? e.message : 'unknown error'), 'error');
+    }
+  }
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 300);
+}
+
+// Flush on pagehide / hidden
+window.addEventListener('pagehide', saveState);
+window.addEventListener('visibilitychange', () => { if (document.hidden) saveState(); });
+
+// Another-tab warning
+window.addEventListener('storage', e => {
+  if (e.key === KEY) toast('Your data was changed in another tab. Reload to see the latest and avoid overwriting it.');
+});
+
+/* ===== COMPUTE ===== */
+function compute() {
+  const income = Math.max(0, Number(state.incomeTarget) || 0);
+  const rawHrs = Math.max(0, Number(state.billableHrs) || 0);
+  const vacWks = Math.max(0, Number(state.vacationWeeks) || 0);
+  const adminLeak = Math.min(99, Math.max(0, Number(state.adminLeakage) || 0));
+  const taxPct = Math.min(99, Math.max(0, Number(state.taxSetaside) || 0));
+
+  const billableAdjPerWk = rawHrs * (1 - adminLeak / 100);
+  const annualBillableHrs = billableAdjPerWk * Math.max(0, 52 - vacWks);
+  const annualOverhead = state.overhead.reduce((s, o) => s + (Math.max(0, Number(o.monthly) || 0)), 0) * 12;
+  const grossRevNeeded = (income + annualOverhead) / (1 - taxPct / 100);
+  const minRate = annualBillableHrs > 0 ? grossRevNeeded / annualBillableHrs : 0;
+
+  // Capacity
+  const monthlyAvail = billableAdjPerWk * (52 / 12);
+  const clients = Array.isArray(state.clients) ? state.clients : [];
+  const booked = clients.reduce((s, c) => s + (Math.max(0, Number(c.hrs) || 0)), 0);
+  const currentRev = clients.reduce((s, c) => s + (Math.max(0, Number(c.hrs) || 0)) * (Math.max(0, Number(c.rate) || 0)), 0);
+  const remaining = monthlyAvail - booked;
+  const utilPct = monthlyAvail > 0 ? booked / monthlyAvail * 100 : 0;
+  const revAtCap = currentRev + remaining * minRate;
+
+  // Monthly target
+  const monthlyTarget = income / 12;
+
+  // What-if
+  const wiHrs = Math.max(0, Number(state.whatifHrs) || 0);
+  const wiRate = Math.max(0, Number(state.whatifRate) || 0);
+  const wiNewBooked = booked + wiHrs;
+  const wiNewRev = currentRev + wiHrs * wiRate;
+  const wiNewUtil = monthlyAvail > 0 ? wiNewBooked / monthlyAvail * 100 : 0;
+
+  // Packages
+  const pkgs = (Array.isArray(state.pkgTiers) ? state.pkgTiers : []).map(t => {
+    const hrs = Math.max(0, Number(t.hrs) || 0);
+    const disc = Math.max(0, Math.min(100, Number(t.discount) || 0));
+    const raw = minRate * hrs * (1 - disc / 100);
+    const price = Math.round(raw / 5) * 5;
+    const effRate = hrs > 0 ? price / hrs : 0;
+    return { ...t, price, effRate, hrs, disc };
+  });
+
+  return {
+    income, rawHrs, vacWks, adminLeak, taxPct,
+    billableAdjPerWk, annualBillableHrs, annualOverhead,
+    grossRevNeeded, minRate,
+    monthlyAvail, booked, currentRev, remaining, utilPct, revAtCap,
+    monthlyTarget,
+    wiHrs, wiRate, wiNewBooked, wiNewRev, wiNewUtil,
+    pkgs
+  };
+}
+
+/* ===== FOCUS RESTORE HELPER ===== */
+function safeSetHTML(container, html) {
+  const ae = document.activeElement;
+  const inContainer = container && container.contains(ae);
+  let savedFocus = null;
+  if (inContainer && ae) {
+    savedFocus = {
+      dataset: Object.assign({}, ae.dataset),
+      selStart: ae.selectionStart,
+      selEnd: ae.selectionEnd,
+      tag: ae.tagName
+    };
+  }
+  container.innerHTML = html;
+  if (savedFocus) {
+    // Build a selector from data attributes to find the same input
+    const attrs = Object.entries(savedFocus.dataset)
+      .map(([k, v]) => `[data-${k.replace(/([A-Z])/g, '-$1').toLowerCase()}="${v}"]`)
+      .join('');
+    if (attrs) {
+      const el = container.querySelector(attrs);
+      if (el) {
+        el.focus();
+        try { el.setSelectionRange(savedFocus.selStart, savedFocus.selEnd); } catch(_) {}
+      }
+    }
+  }
+}
+
+/* ===== FORMATTERS ===== */
+function fmtCurrency(n, cents=true) {
+  if (!isFinite(n)) return '$0.00';
+  return '$' + Math.abs(n).toFixed(cents ? 2 : 0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function fmtNum(n, dec=2) {
+  if (!isFinite(n)) return '0';
+  return n.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function fmtPct(n) {
+  if (!isFinite(n)) return '0.0%';
+  return n.toFixed(1) + '%';
+}
+function esc(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+function escAttr(str) { return esc(str); }
+function round5(n) { return Math.round(n / 5) * 5; }
+
+/* ===== TOAST ===== */
+function toast(msg, type='') {
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' toast-' + type : '');
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  requestAnimationFrame(() => { el.classList.add('show'); });
+  setTimeout(() => {
+    el.classList.remove('show');
+    setTimeout(() => el.remove(), 300);
+  }, 4000);
+}
+
+/* ===== RENDER ===== */
+function render() {
+  const c = compute();
+  renderRateBuilder(c);
+  renderCapacity(c);
+  renderPackages(c);
+  renderRateCard(c);
+  renderThemeIcon();
+}
+
+/* ===== RENDER: RATE BUILDER ===== */
+function renderRateBuilder(c) {
+  // Result box
+  const minRateStr = fmtCurrency(c.minRate) + '/hr';
+  const rateEl = document.getElementById('result-min-rate');
+  if (rateEl.textContent !== minRateStr) {
+    rateEl.textContent = minRateStr;
+    rateEl.classList.remove('pulse');
+    void rateEl.offsetWidth;
+    rateEl.classList.add('pulse');
+  }
+  // Sub text
+  document.getElementById('result-min-rate-sub').textContent =
+    'Based on ' + fmtCurrency(c.income, false) + '/yr goal, ' +
+    fmtNum(c.billableAdjPerWk) + ' billable hrs/wk after admin, ' +
+    fmtCurrency(c.annualOverhead, false) + '/yr overhead, ' +
+    fmtNum(c.taxPct, 0) + '% tax set-aside';
+
+  // Metrics
+  document.getElementById('metric-ann-hrs').textContent = fmtNum(c.annualBillableHrs, 0);
+  document.getElementById('metric-gross-rev').textContent = fmtCurrency(c.grossRevNeeded, false);
+  document.getElementById('metric-overhead').textContent = fmtCurrency(c.annualOverhead, false);
+
+  // Adjusted hrs display
+  document.getElementById('adjusted-hrs-display').value = fmtNum(c.billableAdjPerWk) + ' hrs/wk';
+
+  // Overhead list
+  renderOverheadList();
+
+  // Gap bar chart
+  renderGapChart(c);
+}
+
+/* ===== RENDER: OVERHEAD LIST ===== */
+function renderOverheadList() {
+  const container = document.getElementById('overhead-list');
+  const items = Array.isArray(state.overhead) ? state.overhead : [];
+  let html = '';
+  items.forEach((item, i) => {
+    html += `<div class="overhead-row" data-idx="${i}">
+      <input type="text" aria-label="Overhead item name" value="${escAttr(item.name)}" data-oh-field="name" data-oh-idx="${i}" placeholder="e.g. Software tools" maxlength="60">
+      <div class="input-wrap">
+        <span class="input-prefix">$</span>
+        <input type="number" class="has-prefix" aria-label="Monthly cost" value="${escAttr(String(item.monthly))}" data-oh-field="monthly" data-oh-idx="${i}" min="0" placeholder="0">
+      </div>
+      <button class="btn btn-ghost btn-sm btn-icon" data-oh-delete="${i}" aria-label="Remove overhead item" title="Remove">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`;
+  });
+  if (items.length === 0) {
+    html = '<div class="text-small text-muted" style="padding:var(--sp-2) 0;">No overhead items. Click "Add item" to start.</div>';
+  }
+  safeSetHTML(container, html);
+}
+
+/* ===== RENDER: GAP BAR CHART ===== */
+function renderGapChart(c) {
+  const svg = document.getElementById('chart-gap');
+  if (!svg) return;
+  const w = 600, h = 160, pad = { left: 20, right: 20, top: 20, bottom: 40 };
+  const innerW = w - pad.left - pad.right;
+  const innerH = h - pad.top - pad.bottom;
+  const barCount = 3;
+  const barW = Math.floor(innerW / barCount * 0.55);
+  const barGap = Math.floor(innerW / barCount);
+
+  const vals = [c.currentRev, c.revAtCap, c.monthlyTarget];
+  const labels = ['Current monthly', 'At full capacity', 'Monthly target'];
+  const colors = ['var(--accent)', 'var(--green)', '#e07a38'];
+  const maxVal = Math.max(...vals, 1);
+
+  let pieces = '';
+  vals.forEach((v, i) => {
+    const bh = Math.max(2, (v / maxVal) * innerH);
+    const x = pad.left + i * barGap + barGap / 2 - barW / 2;
+    const y = pad.top + innerH - bh;
+    pieces += `<rect x="${x}" y="${y}" width="${barW}" height="${bh}" fill="${colors[i]}" rx="4" opacity="0.85"/>`;
+    pieces += `<text x="${x + barW / 2}" y="${y - 6}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--text)">${fmtCurrency(v, false)}</text>`;
+    pieces += `<text x="${x + barW / 2}" y="${pad.top + innerH + 18}" text-anchor="middle" font-size="11" fill="var(--text-muted)">${labels[i]}</text>`;
+  });
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.innerHTML = pieces;
+}
+
+/* ===== RENDER: CAPACITY ===== */
+function renderCapacity(c) {
+  // Metrics
+  document.getElementById('cap-available').textContent = fmtNum(c.monthlyAvail);
+  document.getElementById('cap-booked').textContent = fmtNum(c.booked);
+  const remEl = document.getElementById('cap-remaining');
+  remEl.textContent = fmtNum(c.remaining);
+  remEl.className = 'metric-value ' + (c.remaining < 0 ? 'negative' : 'positive');
+  document.getElementById('cap-current-rev').textContent = fmtCurrency(c.currentRev, false);
+  const fullRevEl = document.getElementById('cap-full-rev');
+  if (c.remaining < 0) {
+    // Overbooked: you're already earning more than sustainable capacity.
+    // Show current revenue first (the real "at full capacity" answer when above 100%),
+    // with the theoretical available-hours value in parens so both are readable.
+    fullRevEl.textContent = fmtCurrency(c.currentRev, false) + ' (at avail hrs: ' + fmtCurrency(c.revAtCap, false) + ')';
+  } else {
+    fullRevEl.textContent = fmtCurrency(c.revAtCap, false);
+  }
+  document.getElementById('cap-util-pct').textContent = c.utilPct.toFixed(2) + '%';
+
+  // Client table
+  renderClientsTable(c);
+
+  // Donut chart
+  renderDonutChart(c);
+
+  // What-if result
+  renderWhatif(c);
+}
+
+/* ===== RENDER: CLIENTS TABLE ===== */
+function renderClientsTable(c) {
+  const tbody = document.getElementById('clients-tbody');
+  const tfoot = document.getElementById('clients-tfoot');
+  const clients = Array.isArray(state.clients) ? state.clients : [];
+  const minRate = c.minRate;
+
+  let rows = '';
+  clients.forEach((cl, i) => {
+    const hrs = Math.max(0, Number(cl.hrs) || 0);
+    const rate = Math.max(0, Number(cl.rate) || 0);
+    const rev = hrs * rate;
+    // Badge
+    let badge, badgeClass;
+    if (rate >= minRate * 1.10) { badge = 'Above min'; badgeClass = 'badge-green'; }
+    else if (rate >= minRate) { badge = 'At min'; badgeClass = 'badge-yellow'; }
+    else { badge = 'Below min'; badgeClass = 'badge-red'; }
+
+    rows += `<tr>
+      <td><input type="text" aria-label="Client name" value="${escAttr(cl.name)}" data-cl-field="name" data-cl-idx="${i}" placeholder="Client name" style="min-width:100px;"></td>
+      <td><div class="input-wrap"><input type="number" aria-label="Hours per month" value="${escAttr(String(cl.hrs))}" data-cl-field="hrs" data-cl-idx="${i}" min="0" style="width:80px;"><span class="input-suffix">hrs</span></div></td>
+      <td><div class="input-wrap"><span class="input-prefix">$</span><input type="number" class="has-prefix" aria-label="Rate per hour" value="${escAttr(String(cl.rate))}" data-cl-field="rate" data-cl-idx="${i}" min="0" style="width:80px;"></div></td>
+      <td>${fmtCurrency(rev, false)}</td>
+      <td><span class="badge ${badgeClass}" title="${escAttr('Min rate: ' + fmtCurrency(minRate))}">${esc(badge)}</span></td>
+      <td><button class="btn btn-ghost btn-sm btn-icon" data-cl-delete="${i}" aria-label="Remove client" title="Remove">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button></td>
+    </tr>`;
+  });
+  if (clients.length === 0) {
+    rows = `<tr><td colspan="6" class="text-center text-muted text-small" style="padding:var(--sp-4);">No clients yet. Add one above.</td></tr>`;
+  }
+  safeSetHTML(tbody, rows);
+
+  // Footer totals
+  tfoot.innerHTML = `<tr class="tfoot-row">
+    <td colspan="2"><strong>Totals</strong></td>
+    <td></td>
+    <td><strong>${fmtCurrency(c.currentRev, false)}</strong></td>
+    <td colspan="2"><span class="text-small text-muted">${fmtNum(c.booked)} hrs booked</span></td>
+  </tr>`;
+}
+
+/* ===== RENDER: DONUT ===== */
+function renderDonutChart(c) {
+  const svgEl = document.querySelector('#chart-donut svg');
+  if (!svgEl) return;
+  const cx = 100, cy = 100, r = 72, stroke = 22;
+  const pct = Math.min(100, c.utilPct);
+  const circ = 2 * Math.PI * r;
+  const dashFill = (pct / 100) * circ;
+  const dashGap = circ - dashFill;
+  const overCap = c.booked > c.monthlyAvail;
+  const fillColor = overCap ? 'var(--red)' : (pct >= 90 ? 'var(--yellow)' : 'var(--accent)');
+
+  svgEl.innerHTML = `
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--border)" stroke-width="${stroke}"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none"
+      stroke="${fillColor}" stroke-width="${stroke}"
+      stroke-dasharray="${dashFill} ${dashGap}"
+      stroke-dashoffset="${circ / 4}"
+      stroke-linecap="round"
+      transform="rotate(-90 ${cx} ${cy})"/>
+    <text x="${cx}" y="${cy - 8}" text-anchor="middle" font-size="26" font-weight="800" fill="var(--text)">${fmtNum(pct, 0)}%</text>
+    <text x="${cx}" y="${cy + 14}" text-anchor="middle" font-size="11" fill="var(--text-muted)">Utilized</text>
+    <text x="${cx}" y="${cy + 28}" text-anchor="middle" font-size="11" fill="var(--text-muted)">${fmtNum(c.booked)} / ${fmtNum(c.monthlyAvail)} hrs</text>
+  `;
+}
+
+/* ===== RENDER: WHAT-IF ===== */
+function renderWhatif(c) {
+  const el = document.getElementById('whatif-result');
+  const wiOver = c.wiNewBooked > c.monthlyAvail;
+  const wiPctStr = fmtPct(Math.min(100, c.wiNewUtil));
+  const newRevStr = fmtCurrency(c.wiNewRev, false);
+  const colorStyle = wiOver ? 'color:var(--red)' : 'color:var(--green)';
+  el.innerHTML =
+    '<div style="font-weight:700;margin-bottom:4px;">With new client:</div>' +
+    '<div>Utilization: <strong style="' + colorStyle + '">' + wiPctStr + '</strong></div>' +
+    '<div>Monthly revenue: <strong>' + newRevStr + '</strong></div>' +
+    (wiOver ? '<div style="color:var(--red);margin-top:4px;">Warning: over capacity by ' + fmtNum(c.wiNewBooked - c.monthlyAvail) + ' hrs.</div>' : '');
+}
+
+/* ===== RENDER: PACKAGES ===== */
+function renderPackages(c) {
+  document.getElementById('pkg-min-rate-display').textContent = fmtCurrency(c.minRate) + '/hr';
+  const container = document.getElementById('pkg-tiers-container');
+  const tiers = Array.isArray(state.pkgTiers) ? state.pkgTiers : [];
+  let html = '';
+  tiers.forEach((t, i) => {
+    const pkg = c.pkgs[i] || { price: 0, effRate: 0, hrs: 0, disc: 0 };
+    html += `<div class="package-tier">
+      <div class="field">
+        <label for="pkg-name-${i}">Tier name</label>
+        <input type="text" id="pkg-name-${i}" value="${escAttr(t.name)}" data-pkg-field="name" data-pkg-idx="${i}" aria-label="Package tier name">
+      </div>
+      <div class="field">
+        <label for="pkg-hrs-${i}">Hours in package</label>
+        <div class="input-wrap">
+          <input type="number" id="pkg-hrs-${i}" value="${escAttr(String(t.hrs))}" data-pkg-field="hrs" data-pkg-idx="${i}" min="0" aria-label="Hours in package">
+          <span class="input-suffix">hrs</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="pkg-disc-${i}">Discount</label>
+        <div class="input-wrap">
+          <input type="number" id="pkg-disc-${i}" value="${escAttr(String(t.discount))}" data-pkg-field="discount" data-pkg-idx="${i}" min="0" max="99" aria-label="Discount percent">
+          <span class="input-suffix">%</span>
+        </div>
+      </div>
+      <div>
+        <div class="tier-price">${fmtCurrency(pkg.price, false)}</div>
+        <div class="tier-eff">${fmtCurrency(pkg.effRate)}/hr effective</div>
+      </div>
+    </div>`;
+  });
+  safeSetHTML(container, html);
+}
+
+/* ===== RENDER: RATE CARD ===== */
+function renderRateCard(c) {
+  // Inputs -> preview (textContent, never innerHTML for user data)
+  const name = state.rcName || '';
+  const tagline = state.rcTagline || '';
+  const services = state.rcServices || '';
+  const contact = state.rcContact || '';
+
+  document.getElementById('rc-preview-name').textContent = name;
+  document.getElementById('rc-preview-tagline').textContent = tagline;
+  document.getElementById('rc-services-display').textContent = services;
+  document.getElementById('rc-contact-display').textContent = contact;
+  document.getElementById('rc-hourly-display').textContent = fmtCurrency(c.minRate) + '/hr';
+
+  // Packages in rate card
+  const grid = document.getElementById('rc-pkg-grid');
+  const tiers = Array.isArray(state.pkgTiers) ? state.pkgTiers : [];
+  let pkgHtml = '';
+  tiers.forEach((t, i) => {
+    const pkg = c.pkgs[i] || { price: 0, effRate: 0, hrs: 0, disc: 0 };
+    const featured = i === 1 ? ' featured' : '';
+    pkgHtml += `<div class="rc-pkg${featured}">
+      <div class="pkg-name">${esc(t.name)}</div>
+      <div class="pkg-price">${fmtCurrency(pkg.price, false)}</div>
+      <div class="pkg-detail">${esc(String(pkg.hrs))} hrs &mdash; ${esc(String(pkg.disc))}% off</div>
+      <div class="pkg-detail">${fmtCurrency(pkg.effRate)}/hr</div>
+    </div>`;
+  });
+  grid.innerHTML = pkgHtml;
+
+  // Print date
+  const d = new Date();
+  const pd = document.getElementById('print-date');
+  if (pd) pd.textContent = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+/* ===== RENDER: THEME ICON ===== */
+function renderThemeIcon() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.getElementById('icon-sun').style.display = isDark ? 'none' : '';
+  document.getElementById('icon-moon').style.display = isDark ? '' : 'none';
+}
+
+/* ===== VALIDATION ===== */
+function validateField(id, errId, value, opts = {}) {
+  const el = document.getElementById(id);
+  const errEl = document.getElementById(errId);
+  if (!el || !errEl) return true;
+  const n = Number(value);
+  let msg = '';
+  if (value === '' || value === null || value === undefined) {
+    msg = 'Required';
+  } else if (isNaN(n)) {
+    msg = 'Must be a number';
+  } else if (opts.min !== undefined && n < opts.min) {
+    msg = 'Must be ' + opts.min + ' or more';
+  } else if (opts.max !== undefined && n > opts.max) {
+    msg = 'Max is ' + opts.max;
+  }
+  el.classList.toggle('invalid', !!msg);
+  errEl.textContent = msg;
+  errEl.classList.toggle('visible', !!msg);
+  return !msg;
+}
+
+/* ===== EVENT DELEGATION ===== */
+document.addEventListener('input', e => {
+  const t = e.target;
+
+  // Rate builder main fields
+  if (t.id === 'income-target') {
+    state.incomeTarget = Math.max(0, Number(t.value) || 0);
+    validateField('income-target', 'income-target-err', t.value, { min: 0 });
+  } else if (t.id === 'billable-hrs') {
+    state.billableHrs = Math.max(0, Number(t.value) || 0);
+    validateField('billable-hrs', 'billable-hrs-err', t.value, { min: 0, max: 80 });
+  } else if (t.id === 'vacation-weeks') {
+    state.vacationWeeks = Math.max(0, Number(t.value) || 0);
+    validateField('vacation-weeks', 'vacation-weeks-err', t.value, { min: 0, max: 51 });
+  } else if (t.id === 'admin-leakage') {
+    let v = Number(t.value) || 0;
+    if (v >= 100) { v = 99; t.value = 99; toast('Admin leakage capped at 99% - you need some billable hours!'); }
+    state.adminLeakage = Math.max(0, v);
+    validateField('admin-leakage', 'admin-leakage-err', t.value, { min: 0, max: 99 });
+  } else if (t.id === 'tax-setaside') {
+    let v = Number(t.value) || 0;
+    if (v >= 100) { v = 99; t.value = 99; toast('Tax rate capped at 99%.'); }
+    state.taxSetaside = Math.max(0, v);
+    validateField('tax-setaside', 'tax-setaside-err', t.value, { min: 0, max: 99 });
+  }
+  // Overhead fields (delegated via data attributes)
+  else if (t.dataset.ohField) {
+    const idx = parseInt(t.dataset.ohIdx, 10);
+    if (!isNaN(idx) && Array.isArray(state.overhead) && state.overhead[idx]) {
+      if (t.dataset.ohField === 'name') {
+        state.overhead[idx].name = t.value;
+      } else if (t.dataset.ohField === 'monthly') {
+        state.overhead[idx].monthly = Math.max(0, Number(t.value) || 0);
+      }
+    }
+  }
+  // Client fields
+  else if (t.dataset.clField) {
+    const idx = parseInt(t.dataset.clIdx, 10);
+    if (!isNaN(idx) && Array.isArray(state.clients) && state.clients[idx]) {
+      if (t.dataset.clField === 'name') {
+        state.clients[idx].name = t.value;
+      } else if (t.dataset.clField === 'hrs') {
+        state.clients[idx].hrs = Math.max(0, Number(t.value) || 0);
+      } else if (t.dataset.clField === 'rate') {
+        state.clients[idx].rate = Math.max(0, Number(t.value) || 0);
+      }
+    }
+  }
+  // Package fields
+  else if (t.dataset.pkgField) {
+    const idx = parseInt(t.dataset.pkgIdx, 10);
+    if (!isNaN(idx) && Array.isArray(state.pkgTiers) && state.pkgTiers[idx]) {
+      if (t.dataset.pkgField === 'name') {
+        state.pkgTiers[idx].name = t.value;
+      } else if (t.dataset.pkgField === 'hrs') {
+        state.pkgTiers[idx].hrs = Math.max(0, Number(t.value) || 0);
+      } else if (t.dataset.pkgField === 'discount') {
+        state.pkgTiers[idx].discount = Math.min(99, Math.max(0, Number(t.value) || 0));
+      }
+    }
+  }
+  // What-if
+  else if (t.id === 'whatif-hrs') {
+    state.whatifHrs = Math.max(0, Number(t.value) || 0);
+    validateField('whatif-hrs', 'whatif-hrs-err', t.value, { min: 0 });
+  } else if (t.id === 'whatif-rate') {
+    state.whatifRate = Math.max(0, Number(t.value) || 0);
+    validateField('whatif-rate', 'whatif-rate-err', t.value, { min: 0 });
+  }
+  // Rate card fields
+  else if (t.id === 'rc-name') { state.rcName = t.value; }
+  else if (t.id === 'rc-tagline') { state.rcTagline = t.value; }
+  else if (t.id === 'rc-services') { state.rcServices = t.value; }
+  else if (t.id === 'rc-contact') { state.rcContact = t.value; }
+
+  scheduleSave();
+  render();
+});
+
+/* ===== CLICK DELEGATION ===== */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab]');
+  if (t) {
+    switchTab(t.dataset.tab);
+    return;
+  }
+
+  // Overhead delete
+  const ohDel = e.target.closest('[data-oh-delete]');
+  if (ohDel) {
+    const idx = parseInt(ohDel.dataset.ohDelete, 10);
+    if (!isNaN(idx) && Array.isArray(state.overhead)) {
+      state.overhead.splice(idx, 1);
+      scheduleSave(); render(); return;
+    }
+  }
+
+  // Client delete
+  const clDel = e.target.closest('[data-cl-delete]');
+  if (clDel) {
+    const idx = parseInt(clDel.dataset.clDelete, 10);
+    if (!isNaN(idx) && Array.isArray(state.clients)) {
+      state.clients.splice(idx, 1);
+      scheduleSave(); render(); return;
+    }
+  }
+
+  // Buttons by id
+  const btn = e.target.closest('button');
+  if (!btn) return;
+
+  if (btn.id === 'btn-add-overhead') {
+    if (!Array.isArray(state.overhead)) state.overhead = [];
+    if (state.overhead.length >= 8) { toast('Max 8 overhead items.'); return; }
+    state.overhead.push({ id: 'oh' + Date.now(), name: '', monthly: 0 });
+    scheduleSave(); render(); return;
+  }
+  if (btn.id === 'btn-add-client') {
+    if (state.clients.length >= 8) { toast('Max 8 clients.'); return; }
+    state.clients.push({ id: 'cl' + Date.now(), name: '', hrs: 10, rate: 75 });
+    scheduleSave(); render(); return;
+  }
+  if (btn.id === 'btn-reset') {
+    if (!confirm('Reset all data to the worked example? Your current inputs will be cleared.')) return;
+    state = defaultState();
+    applyTheme(state.theme);
+    saveState();
+    render();
+    toast('Restored worked example.');
+    return;
+  }
+  if (btn.id === 'btn-export') {
+    exportJSON(); return;
+  }
+  if (btn.id === 'theme-toggle') {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const newTheme = isDark ? 'light' : 'dark';
+    state.theme = newTheme;
+    applyTheme(newTheme);
+    scheduleSave(); render(); return;
+  }
+  if (btn.id === 'import-btn') {
+    importClients(); return;
+  }
+  if (btn.id === 'btn-csv-template') {
+    downloadCSVTemplate(); return;
+  }
+  if (btn.id === 'btn-print') {
+    window.print(); return;
+  }
+});
+
+/* ===== TAB SWITCHING ===== */
+function switchTab(tabId) {
+  state.activeTab = tabId;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tabId);
+    b.setAttribute('aria-selected', b.dataset.tab === tabId ? 'true' : 'false');
+  });
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'panel-' + tabId);
+  });
+  scheduleSave();
+}
+
+/* ===== THEME ===== */
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  renderThemeIcon();
+}
+
+/* ===== EXPORT / IMPORT JSON ===== */
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'va-pricing-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Data exported!', 'success');
+}
+
+function importJSON(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      if (typeof parsed !== 'object' || parsed === null) throw new Error('Invalid file structure');
+      if (!confirm('Import this file? Your current data will be replaced.')) return;
+      const def = defaultState();
+      const merged = { ...def, ...parsed };
+      if (!Array.isArray(merged.overhead)) merged.overhead = def.overhead;
+      if (!Array.isArray(merged.clients)) merged.clients = def.clients;
+      if (!Array.isArray(merged.pkgTiers)) merged.pkgTiers = def.pkgTiers;
+      state = merged;
+      applyTheme(state.theme || 'light');
+      saveState();
+      render();
+      toast('Data imported!', 'success');
+    } catch (err) {
+      toast('Import failed: ' + (err.message || 'Invalid JSON file'), 'error');
+    }
+  };
+  reader.readAsText(file);
+}
+
+/* ===== IMPORT CLIENTS FROM PASTE ===== */
+function importClients() {
+  const ta = document.getElementById('import-paste');
+  if (!ta) return;
+  const raw = ta.value;
+  if (!raw.trim()) { toast('Paste some rows first.', 'error'); return; }
+
+  // Split into lines FIRST, then trim per field
+  const lines = raw.split(/\r?\n/);
+  let imported = 0, skipped = 0, skipReasons = [];
+  const sep = /\t|,/;
+
+  lines.forEach((line, li) => {
+    if (!line.trim()) return;
+    const parts = line.split(sep).map(p => p.trim());
+    // Skip header row if first field looks like a header
+    if (li === 0 && isNaN(parseFloat(parts[1])) && parts[0].toLowerCase().match(/^name|client$/)) { return; }
+    const name = parts[0] || '';
+    const hrsRaw = parts[1];
+    const rateRaw = parts[2];
+    // Parse: strip $, commas
+    const hrs = parseFloat((hrsRaw || '').replace(/[$,]/g, ''));
+    const rate = parseFloat((rateRaw || '').replace(/[$,]/g, ''));
+    if (!name) { skipped++; skipReasons.push('Row ' + (li+1) + ': missing name'); return; }
+    if (isNaN(hrs) || hrs < 0) { skipped++; skipReasons.push('Row ' + (li+1) + ': invalid hours "' + hrsRaw + '"'); return; }
+    if (isNaN(rate) || rate < 0) { skipped++; skipReasons.push('Row ' + (li+1) + ': invalid rate "' + rateRaw + '"'); return; }
+    if (!Array.isArray(state.clients)) state.clients = [];
+    if (state.clients.length >= 8) { skipped++; skipReasons.push('Row ' + (li+1) + ': max 8 clients reached'); return; }
+    state.clients.push({ id: 'cl' + Date.now() + Math.random(), name, hrs, rate });
+    imported++;
+  });
+
+  const resultEl = document.getElementById('import-result');
+  let msg = imported + ' imported';
+  if (skipped) msg += ', ' + skipped + ' skipped';
+  if (skipReasons.length) msg += ' (' + skipReasons.slice(0,3).join('; ') + (skipReasons.length > 3 ? '...' : '') + ')';
+  resultEl.textContent = msg;
+  ta.value = '';
+  scheduleSave();
+  render();
+  toast(imported + ' client(s) imported' + (skipped ? ', ' + skipped + ' skipped - see note below.' : '.'), imported ? 'success' : 'error');
+}
+
+/* ===== CSV TEMPLATE ===== */
+function downloadCSVTemplate() {
+  const csv = 'Client Name,Hours/Month,Rate/Hr\nAcme Corp,20,80\nJane\'s Bakery,15,75\n';
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'va-clients-template.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ===== FILE INPUT JSON ===== */
+document.getElementById('btn-import-file').addEventListener('change', function(e) {
+  const file = e.target.files && e.target.files[0];
+  if (file) { importJSON(file); this.value = ''; }
+});
+
+/* ===== DRAG + DROP JSON ===== */
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const files = e.dataTransfer.files;
+  if (files && files[0] && files[0].name.endsWith('.json')) {
+    importJSON(files[0]);
+  }
+});
+
+/* ===== INIT ===== */
+(function init() {
+  applyTheme(state.theme);
+  switchTab(state.activeTab || 'ratebuilder');
+  render();
+})();
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Virtual Assistant Pricing &amp; Capacity Calculator. It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4528129247?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($29) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

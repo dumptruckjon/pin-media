@@ -1,0 +1,1908 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Agency Capacity &amp; Client Profit Dashboard</title>
+<style>
+/* ===== DESIGN TOKENS ===== */
+:root {
+  /* Spacing scale */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px; --sp-12: 48px;
+  /* Type scale */
+  --text-xs: 13px; --text-sm: 15px; --text-base: 17px;
+  --text-lg: 20px; --text-xl: 26px; --text-2xl: 34px;
+  /* Radii */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 16px; --r-full: 9999px;
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+  /* Transitions */
+  --trans-fast: 120ms ease;
+  --trans-mid: 180ms ease;
+
+  /* LIGHT theme palette */
+  --bg-body: #F4F7FB;
+  --bg-card: #FFFFFF;
+  --bg-card-alt: #F8FAFD;
+  --bg-header: #FFFFFF;
+  --border: #E2E8F0;
+  --border-focus: #6B9BD1;
+  --text-primary: #2B3A4A;
+  --text-secondary: #5A6B7E;
+  --text-muted: #8FA0B4;
+  --accent: #6B9BD1;
+  --accent-hover: #5285BE;
+  --accent-light: #EBF3FF;
+  --danger: #E05252;
+  --danger-light: #FFF0F0;
+  --warn: #D4860C;
+  --warn-light: #FFF8EE;
+  --success: #2A9D5C;
+  --success-light: #F0FDF6;
+  --tab-active-bg: #6B9BD1;
+  --tab-active-text: #FFFFFF;
+  --tab-bg: #EBF3FF;
+  --tab-text: #2B3A4A;
+  --input-bg: #FFFFFF;
+  --input-border: #CBD5E1;
+  --input-border-focus: #6B9BD1;
+  --th-bg: #F1F5F9;
+  --th-text: #4A5E72;
+  --tr-hover: #F8FAFD;
+  --summary-card-bg: #FFFFFF;
+  --chart-track: #E2E8F0;
+  --btn-secondary-bg: #F1F5F9;
+  --btn-secondary-text: #2B3A4A;
+  --btn-secondary-hover: #E2E8F0;
+  --toast-bg: #2B3A4A;
+  --toast-text: #FFFFFF;
+  --overlay: rgba(43,58,74,0.5);
+}
+
+[data-theme="dark"] {
+  --bg-body: #0F1923;
+  --bg-card: #1A2535;
+  --bg-card-alt: #1F2D3F;
+  --bg-header: #131F2D;
+  --border: #2A3A4E;
+  --border-focus: #7EB3E8;
+  --text-primary: #E2EAF2;
+  --text-secondary: #8FA8C4;
+  --text-muted: #5A728A;
+  --accent: #7EB3E8;
+  --accent-hover: #9AC5F0;
+  --accent-light: #1A2D42;
+  --danger: #FF7070;
+  --danger-light: #2A1A1A;
+  --warn: #F5A623;
+  --warn-light: #2A1E0A;
+  --success: #4FCA84;
+  --success-light: #0D2218;
+  --tab-active-bg: #7EB3E8;
+  --tab-active-text: #0F1923;
+  --tab-bg: #1A2535;
+  --tab-text: #B8CDE0;
+  --input-bg: #1A2535;
+  --input-border: #2A3A4E;
+  --input-border-focus: #7EB3E8;
+  --th-bg: #131F2D;
+  --th-text: #8FA8C4;
+  --tr-hover: #1F2D3F;
+  --summary-card-bg: #1A2535;
+  --chart-track: #2A3A4E;
+  --btn-secondary-bg: #1F2D3F;
+  --btn-secondary-text: #B8CDE0;
+  --btn-secondary-hover: #2A3A4E;
+  --toast-bg: #E2EAF2;
+  --toast-text: #0F1923;
+  --overlay: rgba(0,0,0,0.65);
+}
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background: var(--bg-body);
+  line-height: 1.6;
+  min-height: 100vh;
+  transition: background var(--trans-mid), color var(--trans-mid);
+}
+h1, h2, h3, h4 { line-height: 1.3; font-weight: 700; }
+h1 { font-size: var(--text-xl); }
+h2 { font-size: var(--text-lg); }
+h3 { font-size: var(--text-base); }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+input, select, textarea { font-family: inherit; font-size: var(--text-sm); }
+table { border-collapse: collapse; width: 100%; }
+
+/* ===== LAYOUT ===== */
+#app { display: flex; flex-direction: column; min-height: 100vh; }
+
+#header {
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-4) var(--sp-6);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--sp-3);
+  position: sticky; top: 0; z-index: 100;
+}
+
+#header h1 {
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+  display: flex; align-items: center; gap: var(--sp-3);
+}
+
+#header h1 svg { flex-shrink: 0; }
+
+#header-right { display: flex; align-items: center; gap: var(--sp-3); }
+
+#save-status {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+#theme-toggle {
+  width: 44px; height: 44px; border-radius: var(--r-full);
+  background: var(--btn-secondary-bg); color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--trans-fast), color var(--trans-fast);
+  flex-shrink: 0;
+}
+#theme-toggle:hover { background: var(--btn-secondary-hover); color: var(--text-primary); }
+
+/* ===== TABS ===== */
+#nav {
+  background: var(--bg-header);
+  border-bottom: 1px solid var(--border);
+  padding: 0 var(--sp-6);
+  display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none;
+}
+#nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: var(--sp-3) var(--sp-4);
+  font-size: var(--text-sm); font-weight: 600;
+  color: var(--tab-text);
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  transition: color var(--trans-fast), border-color var(--trans-fast);
+  min-height: 44px;
+}
+.tab-btn:hover { color: var(--accent); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ===== PANELS ===== */
+#content { flex: 1; padding: var(--sp-6); max-width: 1200px; margin: 0 auto; width: 100%; }
+
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ===== CARDS ===== */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-6);
+}
+.card-title {
+  font-size: var(--text-base); font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--sp-4);
+  display: flex; align-items: center; gap: var(--sp-2);
+}
+
+/* ===== SUMMARY CARDS ROW ===== */
+.summary-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-6);
+}
+.summary-card {
+  background: var(--summary-card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+  padding: var(--sp-4) var(--sp-6);
+  text-align: center;
+  min-width: 0; overflow: hidden;
+}
+.summary-card .sc-label {
+  font-size: var(--text-xs); font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-muted); margin-bottom: var(--sp-2);
+}
+.summary-card .sc-value {
+  font-size: var(--text-xl); font-weight: 800;
+  color: var(--text-primary);
+  transition: color var(--trans-fast);
+}
+.summary-card.sc-profit .sc-value { color: var(--success); }
+.summary-card.sc-loss .sc-value { color: var(--danger); }
+.summary-card.sc-warn .sc-value { color: var(--warn); }
+.pulse { animation: pulse 400ms ease; }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.04)} }
+
+/* ===== TABLES ===== */
+.tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--r-md); border: 1px solid var(--border); }
+table th {
+  background: var(--th-bg); color: var(--th-text);
+  font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  padding: var(--sp-3) var(--sp-4); text-align: left; white-space: nowrap;
+}
+table td {
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--border);
+  color: var(--text-primary); font-size: var(--text-sm);
+  vertical-align: middle;
+}
+table tr:hover td { background: var(--tr-hover); }
+table td.mono { font-variant-numeric: tabular-nums; }
+
+/* ===== FLAGS ===== */
+.flag {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+  font-size: var(--text-xs); font-weight: 700; line-height: 1;
+  white-space: nowrap;
+}
+.flag-ok { background: var(--success-light); color: var(--success); }
+.flag-risk { background: var(--warn-light); color: var(--warn); }
+.flag-over { background: var(--danger-light); color: var(--danger); }
+.flag-green { background: var(--success-light); color: var(--success); }
+.flag-yellow { background: var(--warn-light); color: var(--warn); }
+.flag-red { background: var(--danger-light); color: var(--danger); }
+
+/* ===== BUTTONS ===== */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-4);
+  border-radius: var(--r-md);
+  font-size: var(--text-sm); font-weight: 600;
+  transition: background var(--trans-fast), transform var(--trans-fast), box-shadow var(--trans-fast);
+  min-height: 44px; min-width: 44px;
+  user-select: none;
+}
+.btn:active { transform: translateY(1px); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-hover); box-shadow: var(--shadow-sm); }
+.btn-secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--btn-secondary-hover); }
+.btn-danger { background: var(--danger-light); color: var(--danger); border: 1px solid rgba(224,82,82,.25); }
+.btn-danger:hover { background: var(--danger); color: #fff; }
+.btn-sm { padding: var(--sp-1) var(--sp-3); min-height: 36px; font-size: var(--text-xs); }
+.btn-group { display: flex; gap: var(--sp-2); flex-wrap: wrap; align-items: center; }
+
+/* ===== FORMS ===== */
+.form-group { margin-bottom: var(--sp-4); }
+.form-label {
+  display: block; font-size: var(--text-xs); font-weight: 700;
+  color: var(--text-secondary); text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: var(--sp-1);
+}
+.form-control {
+  width: 100%;
+  background: var(--input-bg); color: var(--text-primary);
+  border: 1.5px solid var(--input-border);
+  border-radius: var(--r-md); padding: var(--sp-2) var(--sp-3);
+  transition: border-color var(--trans-fast), box-shadow var(--trans-fast);
+  min-height: 44px;
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--input-border-focus);
+  box-shadow: 0 0 0 3px rgba(107,155,209,.18);
+}
+.form-control.invalid { border-color: var(--danger); background: var(--danger-light); }
+.input-error {
+  font-size: var(--text-xs); color: var(--danger);
+  margin-top: var(--sp-1); display: block;
+}
+.input-error:empty { display: none; }
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--sp-4);
+}
+
+/* ===== MODAL ===== */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: var(--overlay); z-index: 200;
+  display: none;
+  align-items: center; justify-content: center;
+  padding: var(--sp-4);
+  opacity: 0; pointer-events: none;
+  transition: opacity var(--trans-mid);
+}
+.modal-backdrop.shown { display: flex; }
+.modal-backdrop.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--bg-card); border-radius: var(--r-lg); box-shadow: var(--shadow-lg);
+  padding: var(--sp-6); width: 100%; max-width: 560px;
+  max-height: 90vh; overflow-y: auto;
+  transform: translateY(12px);
+  transition: transform var(--trans-mid);
+}
+.modal-backdrop.open .modal { transform: translateY(0); }
+.modal-title { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--sp-6); }
+.modal-footer { display: flex; gap: var(--sp-3); justify-content: flex-end; margin-top: var(--sp-6); }
+
+/* ===== SVG CHART ===== */
+#chart-capacity, #chart-capacity-dash { width: 100%; height: auto; overflow: visible; display: block; }
+
+/* ===== WHAT-IF ===== */
+.whatif-delta {
+  font-size: var(--text-xs); font-weight: 700;
+  padding: 1px 6px; border-radius: var(--r-full);
+}
+.whatif-delta.up { background: var(--danger-light); color: var(--danger); }
+.whatif-delta.down { background: var(--success-light); color: var(--success); }
+.whatif-delta.neutral { background: var(--th-bg); color: var(--text-muted); }
+
+.warning-line {
+  background: var(--danger-light); color: var(--danger);
+  border: 1px solid rgba(224,82,82,.25);
+  border-radius: var(--r-md); padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-sm); font-weight: 600;
+  margin-top: var(--sp-3);
+}
+.info-line {
+  background: var(--accent-light); color: var(--accent);
+  border: 1px solid rgba(107,155,209,.25);
+  border-radius: var(--r-md); padding: var(--sp-2) var(--sp-3);
+  font-size: var(--text-sm);
+  margin-top: var(--sp-3);
+}
+
+/* ===== TOAST ===== */
+#toast {
+  position: fixed; bottom: var(--sp-6); right: var(--sp-6); z-index: 999;
+  background: var(--toast-bg); color: var(--toast-text);
+  padding: var(--sp-3) var(--sp-6); border-radius: var(--r-md);
+  box-shadow: var(--shadow-md); font-size: var(--text-sm); font-weight: 600;
+  opacity: 0; transform: translateY(8px);
+  transition: opacity var(--trans-mid), transform var(--trans-mid);
+  pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+
+/* ===== CLIENT ALLOC GRID ===== */
+.alloc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+}
+.alloc-item {
+  background: var(--bg-card-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+}
+.alloc-item label { font-size: var(--text-xs); font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: var(--sp-1); }
+.alloc-item input[type=number] { width: 100%; }
+
+/* ===== IMPORT/PASTE ===== */
+#import-paste {
+  min-height: 120px; resize: vertical;
+  background: var(--input-bg); color: var(--text-primary);
+  border: 1.5px dashed var(--input-border);
+  border-radius: var(--r-md); padding: var(--sp-3);
+  font-family: 'Courier New', monospace; font-size: var(--text-xs);
+  width: 100%;
+  transition: border-color var(--trans-fast);
+}
+#import-paste:focus { outline: none; border-color: var(--input-border-focus); border-style: solid; }
+
+.col-preview {
+  background: var(--th-bg); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: var(--sp-3);
+  font-size: var(--text-xs); color: var(--text-secondary);
+  margin-top: var(--sp-2);
+  display: none;
+}
+.col-preview.visible { display: block; }
+
+/* ===== SECTION DIVIDER ===== */
+.section-sep {
+  border: none; border-top: 1px solid var(--border);
+  margin: var(--sp-6) 0;
+}
+
+/* ===== SORTABLE ===== */
+.sortable th.sort-asc::after { content: " ↑"; }
+.sortable th.sort-desc::after { content: " ↓"; }
+.sortable th[data-sort] { cursor: pointer; }
+.sortable th[data-sort]:hover { color: var(--accent); }
+
+/* ===== FOOTER ===== */
+#footer {
+  text-align: center;
+  padding: var(--sp-4) var(--sp-6);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  border-top: 1px solid var(--border);
+  background: var(--bg-header);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+  #content { padding: var(--sp-3); }
+  #header { padding: var(--sp-3); }
+  #nav { padding: 0 var(--sp-3); }
+  .card { padding: var(--sp-4); }
+  .btn { min-height: 48px; font-size: var(--text-base); }
+  .tab-btn { min-height: 48px; padding: var(--sp-3); }
+  .form-control { min-height: 48px; }
+  .summary-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .summary-card .sc-value { font-size: var(--text-lg); }
+  .alloc-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 380px) {
+  .summary-row { grid-template-columns: 1fr; }
+}
+
+/* ===== PRINT ===== */
+@media print {
+  #header, #nav, #footer, .btn, .btn-group, #toast, .modal-backdrop,
+  #tab-team-btn, #tab-clients-btn, #tab-whatif-btn, #tab-settings-btn,
+  .no-print { display: none !important; }
+  body { background: white !important; color: #000 !important; }
+  #content { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+  .panel { display: block !important; }
+  .panel:not(#panel-dashboard) { display: none !important; }
+  .card { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+  .tbl-wrap { overflow: visible !important; }
+  table tr { break-inside: avoid; }
+  #print-header { display: block !important; }
+  @page { margin: 18mm; }
+}
+
+#print-header {
+  display: none;
+  margin-bottom: var(--sp-6);
+}
+#print-header h2 { font-size: 20pt; }
+#print-header p { font-size: 11pt; color: #555; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- HEADER -->
+  <header id="header">
+    <h1>
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+        <rect width="28" height="28" rx="8" fill="var(--accent)"/>
+        <rect x="5" y="14" width="4" height="9" rx="1" fill="white" opacity=".7"/>
+        <rect x="12" y="9" width="4" height="14" rx="1" fill="white"/>
+        <rect x="19" y="5" width="4" height="18" rx="1" fill="white" opacity=".85"/>
+      </svg>
+      Agency Capacity &amp; Client Profit Dashboard
+    </h1>
+    <div id="header-right">
+      <span id="save-status">Not yet saved</span>
+      <button id="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+        <svg id="icon-sun" width="20" height="20" viewBox="0 0 20 20" fill="none" style="display:none">
+          <circle cx="10" cy="10" r="4" fill="currentColor"/>
+          <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <line x1="10" y1="1" x2="10" y2="3"/>
+            <line x1="10" y1="17" x2="10" y2="19"/>
+            <line x1="1" y1="10" x2="3" y2="10"/>
+            <line x1="17" y1="10" x2="19" y2="10"/>
+            <line x1="3.2" y1="3.2" x2="4.6" y2="4.6"/>
+            <line x1="15.4" y1="15.4" x2="16.8" y2="16.8"/>
+            <line x1="16.8" y1="3.2" x2="15.4" y2="4.6"/>
+            <line x1="4.6" y1="15.4" x2="3.2" y2="16.8"/>
+          </g>
+        </svg>
+        <svg id="icon-moon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M17 13.5A7.5 7.5 0 0 1 6.5 3a7.5 7.5 0 1 0 10.5 10.5z" fill="currentColor"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav id="nav" role="tablist" aria-label="Dashboard sections">
+    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-team" id="tab-team-btn" onclick="switchTab('team')">Team</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-clients" id="tab-clients-btn" onclick="switchTab('clients')">Clients</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-dashboard" id="tab-dashboard-btn" onclick="switchTab('dashboard')">Dashboard</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-whatif" id="tab-whatif-btn" onclick="switchTab('whatif')">What-If</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-settings" id="tab-settings-btn" onclick="switchTab('settings')">Settings</button>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main id="content" role="main">
+
+    <!-- PRINT HEADER (only shows in print) -->
+    <div id="print-header" aria-hidden="true">
+      <h2 id="print-agency-name">Agency Report</h2>
+      <p id="print-date"></p>
+    </div>
+
+    <!-- TAB 1: TEAM -->
+    <div class="panel active" id="panel-team" role="tabpanel" aria-labelledby="tab-team-btn">
+      <div class="card">
+        <div class="card-title">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <circle cx="6" cy="5" r="3" fill="var(--accent)"/>
+            <circle cx="12" cy="5" r="3" fill="var(--accent)" opacity=".6"/>
+            <path d="M0 15c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="var(--accent)" stroke-width="1.5" fill="none"/>
+            <path d="M12 9c2.2.8 4 3 4 6" stroke="var(--accent)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+          Team Roster
+        </div>
+        <div class="btn-group no-print" style="margin-bottom:var(--sp-4)">
+          <button class="btn btn-primary" onclick="openMemberModal()" id="add-member-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Add Member
+          </button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="member-table" aria-label="Team members">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Capacity (hrs/mo)</th>
+                <th>Cost Rate ($/hr)</th>
+                <th>Allocated (hrs)</th>
+                <th>Utilization</th>
+                <th>Status</th>
+                <th class="no-print">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="member-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <rect x="1" y="12" width="4" height="5" rx="1" fill="var(--accent)" opacity=".6"/>
+            <rect x="7" y="8" width="4" height="9" rx="1" fill="var(--accent)"/>
+            <rect x="13" y="4" width="4" height="13" rx="1" fill="var(--accent)" opacity=".85"/>
+          </svg>
+          Capacity Overview
+        </div>
+        <svg id="chart-capacity" role="img" aria-label="Member capacity bar chart"></svg>
+      </div>
+    </div>
+
+    <!-- TAB 2: CLIENTS -->
+    <div class="panel" id="panel-clients" role="tabpanel" aria-labelledby="tab-clients-btn">
+      <div class="card">
+        <div class="card-title">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+            <rect x="2" y="2" width="14" height="14" rx="3" stroke="var(--accent)" stroke-width="1.5" fill="none"/>
+            <line x1="5" y1="6" x2="13" y2="6" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="5" y1="9" x2="13" y2="9" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="5" y1="12" x2="9" y2="12" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          Client Roster
+        </div>
+        <div class="btn-group no-print" style="margin-bottom:var(--sp-4)">
+          <button class="btn btn-primary" onclick="openClientModal()" id="add-client-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><line x1="8" y1="2" x2="8" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="8" x2="14" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Add Client
+          </button>
+        </div>
+        <div class="tbl-wrap">
+          <table id="client-table" aria-label="Clients">
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Retainer ($/mo)</th>
+                <th>Cost ($/mo)</th>
+                <th>Margin $</th>
+                <th>Margin %</th>
+                <th>Status</th>
+                <th class="no-print">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="client-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DASHBOARD -->
+    <div class="panel" id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard-btn">
+      <div class="summary-row" id="summary-cards">
+        <div class="summary-card" id="sc-revenue">
+          <div class="sc-label">Total Revenue</div>
+          <div class="sc-value" id="val-total-revenue">$0.00</div>
+        </div>
+        <div class="summary-card" id="sc-cost">
+          <div class="sc-label">Total Cost</div>
+          <div class="sc-value" id="val-total-cost">$0.00</div>
+        </div>
+        <div class="summary-card" id="sc-margin-d">
+          <div class="sc-label">Blended Margin $</div>
+          <div class="sc-value" id="val-blended-margin-dollars">$0.00</div>
+        </div>
+        <div class="summary-card" id="sc-margin-p">
+          <div class="sc-label">Blended Margin %</div>
+          <div class="sc-value" id="val-blended-margin-pct">&#8212;</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Client Margin Summary</div>
+        <div class="tbl-wrap">
+          <table id="dashboard-client-table" class="sortable" aria-label="Client margin summary">
+            <thead>
+              <tr>
+                <th data-sort="name">Client</th>
+                <th data-sort="retainer">Retainer</th>
+                <th data-sort="cost">Cost</th>
+                <th data-sort="margin_d">Margin $</th>
+                <th data-sort="margin_p">Margin %</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-client-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Team Capacity Overview</div>
+        <svg id="chart-capacity-dash" role="img" aria-label="Member capacity bar chart (dashboard)"></svg>
+      </div>
+    </div>
+
+    <!-- TAB 4: WHAT-IF -->
+    <div class="panel" id="panel-whatif" role="tabpanel" aria-labelledby="tab-whatif-btn">
+      <div class="card">
+        <div class="card-title">New Client Scenario</div>
+        <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--sp-4)">
+          Model a potential new client before committing. This does not save anything.
+        </p>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="wi-name">Client Name</label>
+            <input class="form-control" type="text" id="wi-name" placeholder="e.g. Summit Corp" oninput="renderWhatIf()">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="wi-retainer">Monthly Retainer ($)</label>
+            <input class="form-control" type="number" id="wi-retainer" min="0" step="0.01" placeholder="5000" oninput="renderWhatIf()">
+            <span class="input-error" id="wi-retainer-err" role="alert"></span>
+          </div>
+        </div>
+        <h3 style="margin-bottom:var(--sp-3);font-size:var(--text-sm);color:var(--text-secondary)">Projected Hours per Member</h3>
+        <div class="alloc-grid" id="wi-alloc-grid"></div>
+        <div id="wi-results" style="margin-top:var(--sp-6)"></div>
+        <div class="btn-group no-print" style="margin-top:var(--sp-4)">
+          <button class="btn btn-primary" onclick="commitWhatIf()" id="wi-add-btn">Add This Client</button>
+          <button class="btn btn-secondary" onclick="clearWhatIf()" id="wi-clear-btn">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SETTINGS -->
+    <div class="panel" id="panel-settings" role="tabpanel" aria-labelledby="tab-settings-btn">
+      <div class="card">
+        <div class="card-title">Agency Settings</div>
+        <div class="form-group">
+          <label class="form-label" for="agency-name-input">Agency Name (used in printed reports)</label>
+          <input class="form-control" type="text" id="agency-name-input" placeholder="Your Agency Name" oninput="updateAgencyName(this.value)" style="max-width:400px">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Data Management</div>
+        <div class="btn-group" style="flex-wrap:wrap;gap:var(--sp-3)">
+          <button class="btn btn-secondary" onclick="exportJSON()" id="export-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Export JSON Backup
+          </button>
+          <label class="btn btn-secondary" style="cursor:pointer">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 14V6M5 9l3-3 3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 4h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Import JSON Backup
+            <input type="file" id="import-json-input" accept=".json" onchange="importJSON(this)" style="display:none">
+          </label>
+          <button class="btn btn-secondary" onclick="printDashboard()" id="print-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="6" width="12" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M4 6V3a1 1 0 011-1h6a1 1 0 011 1v3" stroke="currentColor" stroke-width="1.5" fill="none"/><rect x="5" y="10" width="6" height="1.5" rx=".75" fill="currentColor"/></svg>
+            Print Report
+          </button>
+          <button class="btn btn-danger" onclick="resetToExample()" id="reset-btn">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8a6 6 0 1 0 1.5-3.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 4v4h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Reset to Example
+          </button>
+        </div>
+        <p id="import-status" style="font-size:var(--text-xs);color:var(--text-secondary);margin-top:var(--sp-3)"></p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Import from Spreadsheet</div>
+        <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--sp-3)">
+          Paste rows from a spreadsheet to bulk-import team members or clients. One row per line.
+        </p>
+        <div class="form-group">
+          <label class="form-label" for="import-type">Import Type</label>
+          <select class="form-control" id="import-type" onchange="previewImport()" style="max-width:260px">
+            <option value="members">Team Members</option>
+            <option value="clients">Clients</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="import-paste">
+            Paste data (Tab or comma separated)
+          </label>
+          <textarea id="import-paste" placeholder="Name, Capacity Hrs, Cost Rate&#10;Alex, 160, 45&#10;Jordan, 120, 55" oninput="previewImport()"></textarea>
+          <div class="col-preview" id="import-preview"></div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="runPasteImport()" id="import-btn">Import Rows</button>
+          <button class="btn btn-secondary" onclick="downloadCSVTemplate()" id="csv-template-btn">Download CSV Template</button>
+        </div>
+        <p id="paste-import-status" style="font-size:var(--text-xs);color:var(--text-secondary);margin-top:var(--sp-3)"></p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer id="footer">
+    Agency Capacity &amp; Client Profit Dashboard &middot; jonsDesignerShop
+  </footer>
+
+  <!-- TOAST -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- MEMBER MODAL -->
+  <div class="modal-backdrop" id="member-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="member-modal-title" onclick="closeMemberModal(event)">
+    <div class="modal">
+      <h2 class="modal-title" id="member-modal-title">Add Team Member</h2>
+      <input type="hidden" id="member-edit-id">
+      <div class="form-group">
+        <label class="form-label" for="m-name">Name <span aria-hidden="true">*</span></label>
+        <input class="form-control" type="text" id="m-name" placeholder="e.g. Alex">
+        <span class="input-error" id="m-name-err" role="alert"></span>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" for="m-capacity">Capacity (hrs/month)</label>
+          <input class="form-control" type="number" id="m-capacity" min="0" step="1" placeholder="160">
+          <span class="input-error" id="m-capacity-err" role="alert"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="m-rate">Cost Rate ($/hr)</label>
+          <input class="form-control" type="number" id="m-rate" min="0" step="0.01" placeholder="45">
+          <span class="input-error" id="m-rate-err" role="alert"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeMemberModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveMember()" id="save-member-btn">Save Member</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENT MODAL -->
+  <div class="modal-backdrop" id="client-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="client-modal-title" onclick="closeClientModal(event)">
+    <div class="modal">
+      <h2 class="modal-title" id="client-modal-title">Add Client</h2>
+      <input type="hidden" id="client-edit-id">
+      <div class="form-group">
+        <label class="form-label" for="c-name">Client Name <span aria-hidden="true">*</span></label>
+        <input class="form-control" type="text" id="c-name" placeholder="e.g. Bright Co">
+        <span class="input-error" id="c-name-err" role="alert"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="c-retainer">Monthly Retainer ($)</label>
+        <input class="form-control" type="number" id="c-retainer" min="0" step="0.01" placeholder="4000">
+        <span class="input-error" id="c-retainer-err" role="alert"></span>
+      </div>
+      <h3 style="font-size:var(--text-sm);color:var(--text-secondary);margin:var(--sp-4) 0 var(--sp-2)">Hour Allocations (hrs/month per member)</h3>
+      <div class="alloc-grid" id="client-alloc-grid"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeClientModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveClient()" id="save-client-btn">Save Client</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+'use strict';
+
+// ===== CONSTANTS =====
+const STORAGE_KEY = 'agency-capacity-v1:state';
+
+// ===== DEFAULT EXAMPLE DATA =====
+function defaultState() {
+  return {
+    agencyName: 'My Agency',
+    theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+    members: [
+      { id: 'm1', name: 'Alex',   capacity: 160, rate: 45 },
+      { id: 'm2', name: 'Jordan', capacity: 120, rate: 55 },
+      { id: 'm3', name: 'Casey',  capacity: 160, rate: 35 },
+    ],
+    clients: [
+      { id: 'c1', name: 'Bright Co',  retainer: 4000, hours: { m1: 40, m2: 20, m3: 30 } },
+      { id: 'c2', name: 'Wave Media', retainer: 6500, hours: { m1: 60, m2: 40, m3: 50 } },
+      { id: 'c3', name: 'Peak Labs',  retainer: 2800, hours: { m1: 25, m2: 0,  m3: 35 } },
+    ],
+    dashSortKey: 'margin_p',
+    dashSortDir: 'asc',
+  };
+}
+
+// ===== STATE =====
+let state = loadState();
+
+var _loadWarning; // var WITHOUT init (L-129): avoid a TDZ / flag-reset if loadState runs before this line
+function loadState() {
+  let raw = null; try { raw = localStorage.getItem(STORAGE_KEY); } catch(_){}
+  if (!raw) return defaultState();
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') throw new Error('bad');
+    if (!Array.isArray(parsed.members) || !Array.isArray(parsed.clients)) throw new Error('bad shape');
+    return {
+      agencyName: typeof parsed.agencyName === 'string' ? parsed.agencyName : 'My Agency',
+      theme: parsed.theme === 'dark' ? 'dark' : 'light',
+      // L-129: coerce the rendered/computed fields to their TYPES — a member/client with a numeric or missing
+      // name (or non-numeric capacity/rate/retainer) otherwise crashes render()/compute on the next load.
+      members: parsed.members.filter(m => m && typeof m.id === 'string').map(m => ({ ...m, name: String(m.name == null ? '' : m.name), capacity: +m.capacity || 0, rate: +m.rate || 0 })),
+      clients: parsed.clients.filter(c => c && typeof c.id === 'string').map(c => ({ ...c, name: String(c.name == null ? '' : c.name), retainer: +c.retainer || 0 })),
+      dashSortKey: parsed.dashSortKey || 'margin_p',
+      dashSortDir: parsed.dashSortDir || 'asc',
+    };
+  } catch(e) {
+    // L-129: stash the unreadable bytes + warn instead of silently discarding (the next save overwrites it).
+    try { localStorage.setItem(STORAGE_KEY + '__corrupt-backup', raw); } catch(_){}
+    _loadWarning = true;
+    return defaultState();
+  }
+}
+window.addEventListener('load', () => { if (_loadWarning) { try { showToast('Your saved data could not be read, so it was set aside (a backup was kept) and the app started fresh. Message me your order number to recover it.'); } catch(_){} } });
+
+// ===== PERSISTENCE =====
+let saveTimer = null;
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 300);
+}
+// L-98: flush the pending debounced save the instant the tab is hidden or closed, so a fast tab-close or
+// reload right after an edit never loses the last change.
+window.addEventListener('pagehide', () => { clearTimeout(saveTimer); doSave(); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { clearTimeout(saveTimer); doSave(); } });
+function doSave() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const el = document.getElementById('save-status');
+    if (el) el.textContent = `Last saved ${hh}:${mm}`;
+  } catch(e) { try { showToast('Could not save: your browser storage may be full or disabled. Export a backup so you do not lose your work.'); } catch(_){} }
+}
+// Cross-tab safety: if another tab writes our data, WARN (do not auto-reload or overwrite an in-progress edit,
+// which would itself lose work). The user can reload when they are ready.
+window.addEventListener('storage', e => {
+  if (e.key === STORAGE_KEY) {
+    try { showToast('Your data was changed in another tab. Reload this page to see the latest and avoid overwriting it.'); } catch(_){}
+  }
+});
+
+// ===== UTILS =====
+function esc(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+function fmt$(n) {
+  if (!isFinite(n)) return '$0.00';
+  return '$' + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+}
+function fmtDollar(n) {
+  if (!isFinite(n)) return '$0.00';
+  if (Math.abs(n) < 0.005) n = 0; // snap near-zero so a rounding residue never shows "-$0.00"
+  const prefix = n < 0 ? '-' : '';
+  return prefix + fmt$(Math.abs(n));
+}
+function fmtPct(n) {
+  if (!isFinite(n)) return '&mdash;';
+  return n.toFixed(2) + '%';
+}
+function uid() {
+  return 'id_' + Math.random().toString(36).slice(2,10) + Date.now().toString(36);
+}
+function parseNum(v) {
+  const n = parseFloat(v);
+  return isFinite(n) ? n : 0;
+}
+function clamp0(v) { return Math.max(0, parseNum(v)); }
+
+// ===== COMPUTE ENGINE =====
+function compute() {
+  const { members, clients } = state;
+
+  // F1: allocated hours per member
+  const allocated = {};
+  for (const m of members) {
+    allocated[m.id] = 0;
+    for (const c of clients) {
+      allocated[m.id] += parseNum((c.hours || {})[m.id]);
+    }
+  }
+
+  // F3: client cost
+  const clientCost = {};
+  for (const c of clients) {
+    let cost = 0;
+    for (const m of members) {
+      cost += parseNum((c.hours || {})[m.id]) * parseNum(m.rate);
+    }
+    clientCost[c.id] = cost;
+  }
+
+  // F4: client margin
+  // Round the margin to cents BEFORE any sign test / flag classification / formatting, so a true break-even
+  // does not display as a money-loser ("-$0.00" / red "At Loss") from floating-point residue.
+  const clientMarginD = {};
+  const clientMarginP = {};
+  for (const c of clients) {
+    const r = parseNum(c.retainer);
+    clientMarginD[c.id] = Math.round((r - clientCost[c.id]) * 100) / 100;
+    clientMarginP[c.id] = r > 0 ? (clientMarginD[c.id] / r) * 100 : null;
+  }
+
+  // F5: agency blended
+  let totalRevenue = 0, totalCost = 0;
+  for (const c of clients) {
+    totalRevenue += parseNum(c.retainer);
+    totalCost += clientCost[c.id];
+  }
+  totalRevenue = Math.round(totalRevenue * 100) / 100;
+  totalCost = Math.round(totalCost * 100) / 100;
+  const blendedMarginD = Math.round((totalRevenue - totalCost) * 100) / 100;
+  const blendedMarginP = totalRevenue > 0 ? (blendedMarginD / totalRevenue) * 100 : null;
+
+  return { allocated, clientCost, clientMarginD, clientMarginP,
+           totalRevenue, totalCost, blendedMarginD, blendedMarginP };
+}
+
+// ===== RENDER =====
+function render() {
+  const cv = compute();
+  renderMemberTable(cv);
+  renderClientTable(cv);
+  renderDashboard(cv);
+  renderChart('chart-capacity', cv);
+  renderChart('chart-capacity-dash', cv);
+  renderWhatIf();
+  renderSettingsPanel();
+  scheduleSave();
+}
+
+// --- MEMBER TABLE ---
+function renderMemberTable(cv) {
+  const tbody = document.getElementById('member-tbody');
+  if (!tbody) return;
+  if (!state.members.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:var(--sp-8)">No team members yet. Add one above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = state.members.map(m => {
+    const alloc = cv.allocated[m.id] || 0;
+    const cap = parseNum(m.capacity);
+    const utilPct = cap > 0 ? (alloc / cap) * 100 : null;
+    const utilStr = utilPct === null ? '&mdash;' : utilPct.toFixed(2) + '%';
+    let flagHtml = '';
+    if (utilPct === null) flagHtml = '<span class="flag flag-ok">N/A</span>';
+    else if (utilPct > 100) flagHtml = '<span class="flag flag-over">OVER</span>';
+    else if (utilPct >= 80) flagHtml = '<span class="flag flag-risk">AT RISK</span>';
+    else flagHtml = '<span class="flag flag-ok">OK</span>';
+    return `<tr>
+      <td>${esc(m.name)}</td>
+      <td class="mono">${parseNum(m.capacity).toLocaleString()}</td>
+      <td class="mono">$${parseNum(m.rate).toFixed(2)}/hr</td>
+      <td class="mono">${alloc.toLocaleString()}</td>
+      <td class="mono">${utilStr}</td>
+      <td>${flagHtml}</td>
+      <td class="no-print" style="white-space:nowrap">
+        <button class="btn btn-sm btn-secondary" data-act="openMemberModal" data-arg="${esc(m.id)}" aria-label="Edit ${esc(m.name)}">Edit</button>
+        <button class="btn btn-sm btn-danger" data-act="deleteMember" data-arg="${esc(m.id)}" aria-label="Delete ${esc(m.name)}" style="margin-left:4px">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// --- CLIENT TABLE ---
+function renderClientTable(cv) {
+  const tbody = document.getElementById('client-tbody');
+  if (!tbody) return;
+  if (!state.clients.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:var(--sp-8)">No clients yet. Add one above.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = state.clients.map(c => {
+    const mp = cv.clientMarginP[c.id];
+    const md = cv.clientMarginD[c.id];
+    let flagHtml = '';
+    if (mp === null) flagHtml = '<span class="flag flag-ok">N/A</span>';
+    else if (mp >= 20) flagHtml = '<span class="flag flag-green">Healthy</span>';
+    else if (mp >= 0) flagHtml = '<span class="flag flag-yellow">Low</span>'; // a thin-but-POSITIVE margin is Low (caution), not a loss
+    else flagHtml = '<span class="flag flag-red">At Loss</span>'; // only a NEGATIVE margin is At Loss
+    const mpStr = mp === null ? '&mdash;' : fmtPct(mp);
+    return `<tr>
+      <td>${esc(c.name)}</td>
+      <td class="mono">${fmtDollar(parseNum(c.retainer))}</td>
+      <td class="mono">${fmtDollar(cv.clientCost[c.id])}</td>
+      <td class="mono" style="color:${md < 0 ? 'var(--danger)' : md === 0 ? 'inherit' : 'var(--success)'}">${fmtDollar(md)}</td>
+      <td class="mono">${mpStr}</td>
+      <td>${flagHtml}</td>
+      <td class="no-print" style="white-space:nowrap">
+        <button class="btn btn-sm btn-secondary" data-act="openClientModal" data-arg="${esc(c.id)}" aria-label="Edit ${esc(c.name)}">Edit</button>
+        <button class="btn btn-sm btn-danger" data-act="deleteClient" data-arg="${esc(c.id)}" aria-label="Delete ${esc(c.name)}" style="margin-left:4px">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// SECURITY (L-128): row action buttons carry data-act/data-arg (read via getAttribute, never eval'd) instead of
+// interpolating an id into an inline on* handler — a quote in a typed/imported id would otherwise break out of
+// the JS-string-inside-the-HTML-attribute and execute (stored XSS). One delegated listener dispatches by name.
+document.addEventListener('click', function (e) {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const fn = el.getAttribute('data-act'), arg = el.getAttribute('data-arg');
+  const map = { openMemberModal, deleteMember, openClientModal, deleteClient };
+  if (map[fn]) map[fn](arg);
+});
+
+// --- DASHBOARD ---
+let prevBlend = null;
+function renderDashboard(cv) {
+  setVal('val-total-revenue', fmtDollar(cv.totalRevenue));
+  setVal('val-total-cost', fmtDollar(cv.totalCost));
+  const mdStr = fmtDollar(cv.blendedMarginD);
+  const mpStr = cv.blendedMarginP === null ? '&mdash;' : fmtPct(cv.blendedMarginP);
+
+  const elMD = document.getElementById('val-blended-margin-dollars');
+  const elMP = document.getElementById('val-blended-margin-pct');
+  if (elMD) {
+    elMD.innerHTML = mdStr;
+    if (prevBlend !== null && prevBlend !== cv.blendedMarginD) { elMD.classList.remove('pulse'); void elMD.offsetWidth; elMD.classList.add('pulse'); }
+  }
+  if (elMP) elMP.innerHTML = mpStr;
+  prevBlend = cv.blendedMarginD;
+
+  const scMD = document.getElementById('sc-margin-d');
+  const scMP = document.getElementById('sc-margin-p');
+  if (scMD) {
+    scMD.className = 'summary-card';
+    if (cv.blendedMarginD > 0) scMD.classList.add('sc-profit');
+    else if (cv.blendedMarginD < 0) scMD.classList.add('sc-loss');
+  }
+  if (scMP) {
+    scMP.className = 'summary-card'; // reset unconditionally so a stale color clears when the value becomes "—"
+    if (cv.blendedMarginP !== null) {
+      if (cv.blendedMarginP >= 20) scMP.classList.add('sc-profit');
+      else if (cv.blendedMarginP >= 0) scMP.classList.add('sc-warn'); // a thin-but-POSITIVE margin is a caution (yellow), not a loss
+      else scMP.classList.add('sc-loss'); // only a NEGATIVE margin is a loss (was: any <5% -> sc-loss, so +2.63% wrongly showed RED, inconsistent with the green $ card)
+    }
+  }
+
+  renderDashClientTable(cv);
+}
+
+function setVal(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+let dashSortKey = 'margin_p', dashSortDir = 'asc';
+function renderDashClientTable(cv) {
+  dashSortKey = state.dashSortKey || 'margin_p';
+  dashSortDir = state.dashSortDir || 'asc';
+
+  const tbody = document.getElementById('dashboard-client-tbody');
+  const thead = document.querySelector('#dashboard-client-table thead tr');
+  if (!tbody) return;
+
+  // update sort indicators
+  if (thead) {
+    for (const th of thead.querySelectorAll('th[data-sort]')) {
+      th.className = '';
+      if (th.dataset.sort === dashSortKey) {
+        th.className = dashSortDir === 'asc' ? 'sort-asc' : 'sort-desc';
+      }
+    }
+  }
+
+  const rows = state.clients.map(c => ({
+    c,
+    name: String(c.name || '').toLowerCase(), // defensive: loadState coerces name (L-129), but never trust the sink
+
+    retainer: parseNum(c.retainer),
+    cost: cv.clientCost[c.id],
+    margin_d: cv.clientMarginD[c.id],
+    margin_p: cv.clientMarginP[c.id] === null ? -Infinity : cv.clientMarginP[c.id],
+  }));
+
+  rows.sort((a, b) => {
+    const va = a[dashSortKey], vb = b[dashSortKey];
+    if (typeof va === 'string') return dashSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+    return dashSortDir === 'asc' ? va - vb : vb - va;
+  });
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:var(--sp-6)">No clients yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(({ c }) => {
+    const mp = cv.clientMarginP[c.id];
+    const md = cv.clientMarginD[c.id];
+    let flagHtml = '';
+    if (mp === null) flagHtml = '<span class="flag flag-ok">N/A</span>';
+    else if (mp >= 20) flagHtml = '<span class="flag flag-green">Healthy</span>';
+    else if (mp >= 0) flagHtml = '<span class="flag flag-yellow">Low</span>'; // a thin-but-POSITIVE margin is Low (caution), not a loss
+    else flagHtml = '<span class="flag flag-red">At Loss</span>'; // only a NEGATIVE margin is At Loss
+    return `<tr>
+      <td>${esc(c.name)}</td>
+      <td class="mono">${fmtDollar(parseNum(c.retainer))}</td>
+      <td class="mono">${fmtDollar(cv.clientCost[c.id])}</td>
+      <td class="mono" style="color:${md < 0 ? 'var(--danger)' : md === 0 ? 'inherit' : 'var(--success)'}">${fmtDollar(md)}</td>
+      <td class="mono">${mp === null ? '&mdash;' : fmtPct(mp)}</td>
+      <td>${flagHtml}</td>
+    </tr>`;
+  }).join('');
+}
+
+function dashSort(key) {
+  if (state.dashSortKey === key) {
+    state.dashSortDir = state.dashSortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.dashSortKey = key;
+    state.dashSortDir = 'asc';
+  }
+  renderDashClientTable(compute());
+}
+
+// Wire up sortable headers
+document.addEventListener('DOMContentLoaded', function() {
+  const thead = document.querySelector('#dashboard-client-table thead tr');
+  if (thead) {
+    for (const th of thead.querySelectorAll('th[data-sort]')) {
+      th.addEventListener('click', function() { dashSort(this.dataset.sort); });
+    }
+  }
+});
+
+// --- SVG CAPACITY CHART ---
+function renderChart(svgId, cv) {
+  const svg = document.getElementById(svgId);
+  if (!svg) return;
+  const members = state.members;
+  if (!members.length) {
+    svg.setAttribute('height', '60');
+    svg.innerHTML = '<text x="50%" y="40" text-anchor="middle" fill="var(--text-muted)" font-size="14">No team members.</text>';
+    return;
+  }
+
+  const rowH = 44, paddingL = 120, paddingR = 80, paddingTop = 8, barH = 22, labelSize = 13;
+  const totalH = members.length * rowH + paddingTop * 2;
+  svg.setAttribute('height', String(totalH));
+  svg.setAttribute('viewBox', `0 0 800 ${totalH}`);
+  svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+  const barMaxW = 800 - paddingL - paddingR;
+
+  let html = '';
+  members.forEach((m, i) => {
+    const alloc = cv.allocated[m.id] || 0;
+    const cap = parseNum(m.capacity);
+    const util = cap > 0 ? alloc / cap : 0;
+    const pct = cap > 0 ? Math.min(util, 1.5) : 0; // cap bar at 150% display
+    const barW = Math.max(0, pct * barMaxW);
+    const actualBarW = Math.min(barW, barMaxW); // clip at track width
+
+    let barColor = 'var(--success)';
+    if (util > 1) barColor = 'var(--danger)';
+    else if (util >= 0.8) barColor = 'var(--warn)';
+
+    const y = paddingTop + i * rowH;
+    const barY = y + (rowH - barH) / 2;
+
+    // overflow indicator line at 100%
+    const lineX = paddingL + barMaxW;
+    const pctLabel = cap > 0 ? (util * 100).toFixed(1) + '%' : '—';
+
+    html += `
+      <text x="${paddingL - 8}" y="${barY + barH / 2 + 4}" text-anchor="end" font-size="${labelSize}" fill="var(--text-primary)">${esc(m.name)}</text>
+      <rect x="${paddingL}" y="${barY}" width="${barMaxW}" height="${barH}" rx="6" fill="var(--chart-track)"/>
+      <rect x="${paddingL}" y="${barY}" width="${actualBarW}" height="${barH}" rx="6" fill="${barColor}" style="transition:width .3s ease"/>
+      <line x1="${lineX}" y1="${barY - 2}" x2="${lineX}" y2="${barY + barH + 2}" stroke="var(--text-muted)" stroke-width="1.5" stroke-dasharray="3,2"/>
+      <text x="${lineX + 8}" y="${barY + barH / 2 + 4}" font-size="${labelSize}" fill="var(--text-secondary)" font-weight="600">${pctLabel}</text>
+    `;
+  });
+  svg.innerHTML = html;
+}
+
+// --- WHAT-IF ---
+function renderWhatIfAllocGrid() {
+  const grid = document.getElementById('wi-alloc-grid');
+  if (!grid) return;
+  grid.innerHTML = state.members.map(m => `
+    <div class="alloc-item">
+      <label for="wi-${esc(m.id)}">${esc(m.name)}</label>
+      <input class="form-control" type="number" id="wi-${esc(m.id)}" min="0" step="1" placeholder="0" oninput="renderWhatIf()" aria-label="Hours for ${esc(m.name)}">
+    </div>
+  `).join('');
+}
+
+function renderWhatIf() {
+  // validate retainer
+  const retainerEl = document.getElementById('wi-retainer');
+  const retainerErr = document.getElementById('wi-retainer-err');
+  let valid = true;
+  let retainer = 0;
+  if (retainerEl && retainerEl.value !== '') {
+    const v = parseFloat(retainerEl.value);
+    if (!isFinite(v) || v < 0) {
+      if (retainerEl) { retainerEl.classList.add('invalid'); }
+      if (retainerErr) retainerErr.textContent = 'Must be 0 or greater.';
+      valid = false;
+    } else {
+      retainer = v;
+      if (retainerEl) retainerEl.classList.remove('invalid');
+      if (retainerErr) retainerErr.textContent = '';
+    }
+  } else {
+    if (retainerEl) retainerEl.classList.remove('invalid');
+    if (retainerErr) retainerErr.textContent = '';
+  }
+
+  const cv = compute();
+  const resultsEl = document.getElementById('wi-results');
+  if (!resultsEl) return;
+
+  if (!state.members.length) {
+    resultsEl.innerHTML = '<p class="info-line">Add team members first.</p>';
+    return;
+  }
+
+  // Gather what-if hours
+  const wiHours = {};
+  for (const m of state.members) {
+    const el = document.getElementById('wi-' + m.id);
+    wiHours[m.id] = el ? clamp0(el.value) : 0;
+  }
+
+  // Compute projected utilization
+  const rows = state.members.map(m => {
+    const currAlloc = cv.allocated[m.id] || 0;
+    const addHrs = wiHours[m.id] || 0;
+    const newAlloc = currAlloc + addHrs;
+    const cap = parseNum(m.capacity);
+    const currUtil = cap > 0 ? (currAlloc / cap) * 100 : null;
+    const newUtil = cap > 0 ? (newAlloc / cap) * 100 : null;
+    const delta = currUtil !== null && newUtil !== null ? newUtil - currUtil : null;
+    const isOver = newUtil !== null && newUtil > 100;
+    return { m, currAlloc, addHrs, newAlloc, cap, currUtil, newUtil, delta, isOver };
+  });
+
+  // Projected client cost
+  let wiCost = 0;
+  for (const r of rows) {
+    wiCost += (r.addHrs || 0) * parseNum(r.m.rate);
+  }
+  const wiMarginD = retainer - wiCost;
+  const wiMarginP = retainer > 0 ? (wiMarginD / retainer) * 100 : null;
+
+  const newTotalRevenue = cv.totalRevenue + retainer;
+  const newTotalCost = cv.totalCost + wiCost;
+  const newBlendD = newTotalRevenue - newTotalCost;
+  const newBlendP = newTotalRevenue > 0 ? (newBlendD / newTotalRevenue) * 100 : null;
+
+  const overMembers = rows.filter(r => r.isOver);
+
+  let html = '<h3 style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--sp-3)">Projected Utilization</h3>';
+  html += '<div class="tbl-wrap"><table aria-label="Projected utilization"><thead><tr><th>Member</th><th>Current</th><th>Added Hrs</th><th>Projected</th><th>Change</th></tr></thead><tbody>';
+  for (const r of rows) {
+    const currStr = r.currUtil === null ? '&mdash;' : r.currUtil.toFixed(2) + '%';
+    const newStr = r.newUtil === null ? '&mdash;' : r.newUtil.toFixed(2) + '%';
+    let deltaHtml = '';
+    if (r.delta !== null && r.delta !== 0) {
+      const sign = r.delta > 0 ? '+' : '';
+      const cls = r.delta > 0 ? 'up' : 'down';
+      deltaHtml = `<span class="whatif-delta ${cls}">${sign}${r.delta.toFixed(2)}%</span>`;
+    } else {
+      deltaHtml = '<span class="whatif-delta neutral">+0%</span>';
+    }
+    html += `<tr>
+      <td>${esc(r.m.name)}</td>
+      <td class="mono">${currStr}</td>
+      <td class="mono">${(r.addHrs || 0).toLocaleString()}</td>
+      <td class="mono" style="color:${r.isOver ? 'var(--danger)' : 'inherit'};font-weight:${r.isOver ? '700' : '400'}">${newStr}</td>
+      <td>${deltaHtml}</td>
+    </tr>`;
+  }
+  html += '</tbody></table></div>';
+
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--sp-4);margin-top:var(--sp-4)">
+    <div class="summary-card">
+      <div class="sc-label">New Client Cost</div>
+      <div class="sc-value">${fmtDollar(wiCost)}</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-label">New Client Margin $</div>
+      <div class="sc-value" style="color:${wiMarginD >= 0 ? 'var(--success)' : 'var(--danger)'}">${fmtDollar(wiMarginD)}</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-label">New Client Margin %</div>
+      <div class="sc-value" style="color:${wiMarginP === null ? 'inherit' : wiMarginP >= 20 ? 'var(--success)' : wiMarginP >= 5 ? 'var(--warn)' : 'var(--danger)'}">${wiMarginP === null ? '&mdash;' : fmtPct(wiMarginP)}</div>
+    </div>
+    <div class="summary-card">
+      <div class="sc-label">New Agency Blended %</div>
+      <div class="sc-value" style="color:${newBlendP === null ? 'inherit' : newBlendP >= 20 ? 'var(--success)' : newBlendP >= 5 ? 'var(--warn)' : 'var(--danger)'}">${newBlendP === null ? '&mdash;' : fmtPct(newBlendP)}</div>
+    </div>
+  </div>`;
+
+  for (const r of overMembers) {
+    html += `<div class="warning-line" role="alert">${esc(r.m.name)} would be over capacity (${r.newUtil !== null ? r.newUtil.toFixed(1) : '?'}%).</div>`;
+  }
+
+  resultsEl.innerHTML = html;
+}
+
+function commitWhatIf() {
+  const nameEl = document.getElementById('wi-name');
+  const retainerEl = document.getElementById('wi-retainer');
+  const name = (nameEl ? nameEl.value : '').trim();
+  const retainerStr = retainerEl ? retainerEl.value : '';
+
+  if (!name) { showToast('Enter a client name first.'); if(nameEl) nameEl.focus(); return; }
+  const retainer = parseFloat(retainerStr);
+  if (!isFinite(retainer) || retainer < 0) { showToast('Enter a valid retainer.'); if(retainerEl) retainerEl.focus(); return; }
+
+  const hours = {};
+  for (const m of state.members) {
+    const el = document.getElementById('wi-' + m.id);
+    hours[m.id] = el ? clamp0(el.value) : 0;
+  }
+
+  state.clients.push({ id: uid(), name, retainer, hours });
+  render();
+  clearWhatIf();
+  showToast('Client added from What-If.');
+}
+
+function clearWhatIf() {
+  const nameEl = document.getElementById('wi-name');
+  const retainerEl = document.getElementById('wi-retainer');
+  if (nameEl) nameEl.value = '';
+  if (retainerEl) retainerEl.value = '';
+  for (const m of state.members) {
+    const el = document.getElementById('wi-' + m.id);
+    if (el) el.value = '';
+  }
+  renderWhatIf();
+}
+
+// --- SETTINGS PANEL ---
+function renderSettingsPanel() {
+  const el = document.getElementById('agency-name-input');
+  if (el && document.activeElement !== el) el.value = state.agencyName;
+}
+
+function updateAgencyName(v) {
+  state.agencyName = v;
+  scheduleSave();
+}
+
+// ===== TABS =====
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  const panel = document.getElementById('panel-' + name);
+  const btn = document.getElementById('tab-' + name + '-btn');
+  if (panel) panel.classList.add('active');
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected','true'); }
+  if (name === 'whatif') renderWhatIfAllocGrid(), renderWhatIf();
+}
+
+// ===== MEMBER MODAL =====
+function openMemberModal(id) {
+  const modal = document.getElementById('member-modal-backdrop');
+  const titleEl = document.getElementById('member-modal-title');
+  const idEl = document.getElementById('member-edit-id');
+  const nameEl = document.getElementById('m-name');
+  const capEl = document.getElementById('m-capacity');
+  const rateEl = document.getElementById('m-rate');
+
+  clearMemberErrors();
+  if (id) {
+    const m = state.members.find(x => x.id === id);
+    if (!m) return;
+    if (titleEl) titleEl.textContent = 'Edit Team Member';
+    if (idEl) idEl.value = m.id;
+    if (nameEl) nameEl.value = m.name;
+    if (capEl) capEl.value = m.capacity;
+    if (rateEl) rateEl.value = m.rate;
+  } else {
+    if (titleEl) titleEl.textContent = 'Add Team Member';
+    if (idEl) idEl.value = '';
+    if (nameEl) nameEl.value = '';
+    if (capEl) capEl.value = '';
+    if (rateEl) rateEl.value = '';
+  }
+  if (modal) { modal.classList.add('shown'); requestAnimationFrame(() => modal.classList.add('open')); }
+  if (nameEl) nameEl.focus();
+}
+
+function closeMemberModal(e) {
+  if (e && e.target !== document.getElementById('member-modal-backdrop')) return;
+  const mb = document.getElementById('member-modal-backdrop');
+  mb.classList.remove('open');
+  setTimeout(() => mb.classList.remove('shown'), 200);
+}
+
+function clearMemberErrors() {
+  ['m-name','m-capacity','m-rate'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('invalid');
+  });
+  ['m-name-err','m-capacity-err','m-rate-err'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
+}
+
+function saveMember() {
+  clearMemberErrors();
+  const idEl = document.getElementById('member-edit-id');
+  const nameEl = document.getElementById('m-name');
+  const capEl = document.getElementById('m-capacity');
+  const rateEl = document.getElementById('m-rate');
+
+  const name = (nameEl ? nameEl.value : '').trim();
+  const capStr = capEl ? capEl.value : '';
+  const rateStr = rateEl ? rateEl.value : '';
+
+  let valid = true;
+  if (!name) {
+    setFieldError('m-name','Name required.');
+    valid = false;
+  }
+  const cap = parseFloat(capStr);
+  if (capStr !== '' && (!isFinite(cap) || cap < 0)) {
+    setFieldError('m-capacity','Must be 0 or greater.');
+    valid = false;
+  }
+  const rate = parseFloat(rateStr);
+  if (rateStr !== '' && (!isFinite(rate) || rate < 0)) {
+    setFieldError('m-rate','Must be 0 or greater.');
+    valid = false;
+  }
+  if (!valid) return;
+
+  const editId = idEl ? idEl.value : '';
+  if (editId) {
+    const m = state.members.find(x => x.id === editId);
+    if (m) {
+      m.name = name;
+      m.capacity = isFinite(cap) ? cap : 0;
+      m.rate = isFinite(rate) ? rate : 0;
+    }
+  } else {
+    state.members.push({ id: uid(), name, capacity: isFinite(cap) ? cap : 0, rate: isFinite(rate) ? rate : 0 });
+  }
+  const mbSave = document.getElementById('member-modal-backdrop');
+  mbSave.classList.remove('open');
+  setTimeout(() => mbSave.classList.remove('shown'), 200);
+  render();
+  showToast('Team member saved.');
+}
+
+function deleteMember(id) {
+  const m = state.members.find(x => x.id === id);
+  if (!m) return;
+  if (!confirm('Delete ' + m.name + ' from the team?')) return;
+  state.members = state.members.filter(x => x.id !== id);
+  // remove from client allocations
+  for (const c of state.clients) {
+    if (c.hours) delete c.hours[id];
+  }
+  render();
+  showToast('Member removed.');
+}
+
+// ===== CLIENT MODAL =====
+function openClientModal(id) {
+  const modal = document.getElementById('client-modal-backdrop');
+  const titleEl = document.getElementById('client-modal-title');
+  const idEl = document.getElementById('client-edit-id');
+  const nameEl = document.getElementById('c-name');
+  const retEl = document.getElementById('c-retainer');
+
+  clearClientErrors();
+  renderClientAllocGrid(id ? state.clients.find(x => x.id === id) : null);
+
+  if (id) {
+    const c = state.clients.find(x => x.id === id);
+    if (!c) return;
+    if (titleEl) titleEl.textContent = 'Edit Client';
+    if (idEl) idEl.value = c.id;
+    if (nameEl) nameEl.value = c.name;
+    if (retEl) retEl.value = c.retainer;
+    // fill alloc inputs
+    for (const m of state.members) {
+      const el = document.getElementById('ca-' + m.id);
+      if (el) el.value = (c.hours || {})[m.id] || 0;
+    }
+  } else {
+    if (titleEl) titleEl.textContent = 'Add Client';
+    if (idEl) idEl.value = '';
+    if (nameEl) nameEl.value = '';
+    if (retEl) retEl.value = '';
+  }
+  if (modal) { modal.classList.add('shown'); requestAnimationFrame(() => modal.classList.add('open')); }
+  if (nameEl) nameEl.focus();
+}
+
+function renderClientAllocGrid(client) {
+  const grid = document.getElementById('client-alloc-grid');
+  if (!grid) return;
+  if (!state.members.length) {
+    grid.innerHTML = '<p style="color:var(--text-muted);font-size:var(--text-sm)">Add team members first.</p>';
+    return;
+  }
+  grid.innerHTML = state.members.map(m => {
+    const hrs = client ? ((client.hours || {})[m.id] || 0) : 0;
+    return `<div class="alloc-item">
+      <label for="ca-${esc(m.id)}">${esc(m.name)} (hrs/mo)</label>
+      <input class="form-control" type="number" id="ca-${esc(m.id)}" min="0" step="1" value="${hrs}" aria-label="Hours for ${esc(m.name)}">
+      <span class="input-error" id="ca-${esc(m.id)}-err" role="alert"></span>
+    </div>`;
+  }).join('');
+}
+
+function closeClientModal(e) {
+  if (e && e.target !== document.getElementById('client-modal-backdrop')) return;
+  const cb = document.getElementById('client-modal-backdrop');
+  cb.classList.remove('open');
+  setTimeout(() => cb.classList.remove('shown'), 200);
+}
+
+function clearClientErrors() {
+  ['c-name','c-retainer'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('invalid');
+  });
+  ['c-name-err','c-retainer-err'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '';
+  });
+  // also clear the per-member allocation field errors
+  for (const m of state.members) {
+    const inp = document.getElementById('ca-' + m.id);
+    if (inp) inp.classList.remove('invalid');
+    const err = document.getElementById('ca-' + m.id + '-err');
+    if (err) err.textContent = '';
+  }
+}
+
+function saveClient() {
+  clearClientErrors();
+  const idEl = document.getElementById('client-edit-id');
+  const nameEl = document.getElementById('c-name');
+  const retEl = document.getElementById('c-retainer');
+
+  const name = (nameEl ? nameEl.value : '').trim();
+  const retStr = retEl ? retEl.value : '';
+
+  let valid = true;
+  if (!name) { setFieldError('c-name','Name required.'); valid = false; }
+  const ret = parseFloat(retStr);
+  if (retStr !== '' && (!isFinite(ret) || ret < 0)) {
+    setFieldError('c-retainer','Must be 0 or greater.');
+    valid = false;
+  }
+
+  // Validate each hour allocation the same way as capacity/rate: block a negative or
+  // non-finite value with an inline error instead of silently coercing it to 0.
+  const hours = {};
+  for (const m of state.members) {
+    const el = document.getElementById('ca-' + m.id);
+    const valStr = el ? el.value : '';
+    if (valStr !== '') {
+      const v = parseFloat(valStr);
+      if (!isFinite(v) || v < 0) {
+        setFieldError('ca-' + m.id, 'Must be 0 or greater.');
+        valid = false;
+        continue;
+      }
+      hours[m.id] = v;
+    } else {
+      hours[m.id] = 0;
+    }
+  }
+  if (!valid) return;
+
+  const editId = idEl ? idEl.value : '';
+  if (editId) {
+    const c = state.clients.find(x => x.id === editId);
+    if (c) { c.name = name; c.retainer = isFinite(ret) ? ret : 0; c.hours = hours; }
+  } else {
+    state.clients.push({ id: uid(), name, retainer: isFinite(ret) ? ret : 0, hours });
+  }
+  const cbSave = document.getElementById('client-modal-backdrop');
+  cbSave.classList.remove('open');
+  setTimeout(() => cbSave.classList.remove('shown'), 200);
+  render();
+  showToast('Client saved.');
+}
+
+function deleteClient(id) {
+  const c = state.clients.find(x => x.id === id);
+  if (!c) return;
+  if (!confirm('Delete client ' + c.name + '?')) return;
+  state.clients = state.clients.filter(x => x.id !== id);
+  render();
+  showToast('Client removed.');
+}
+
+// ===== FIELD ERRORS =====
+function setFieldError(fieldId, msg) {
+  const el = document.getElementById(fieldId);
+  if (el) el.classList.add('invalid');
+  const err = document.getElementById(fieldId + '-err');
+  if (err) err.textContent = msg;
+}
+
+// ===== THEME =====
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const sun = document.getElementById('icon-sun');
+  const moon = document.getElementById('icon-moon');
+  if (sun) sun.style.display = theme === 'dark' ? 'block' : 'none';
+  if (moon) moon.style.display = theme === 'dark' ? 'none' : 'block';
+}
+document.getElementById('theme-toggle').addEventListener('click', function() {
+  state.theme = state.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(state.theme);
+  scheduleSave();
+});
+
+// ===== EXPORT / IMPORT =====
+function exportJSON() {
+  const json = JSON.stringify(state, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'agency-dashboard-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('JSON backup downloaded.');
+}
+
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('import-status');
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || !Array.isArray(parsed.members) || !Array.isArray(parsed.clients)) {
+        if (statusEl) statusEl.textContent = 'Import failed: invalid file format.';
+        return;
+      }
+      if ((state.members.length || state.clients.length) && !confirm('Importing will REPLACE all current members and clients (' + state.members.length + ' members, ' + state.clients.length + ' clients) with the file contents. Export a backup first if you want to keep them. Continue?')) { if (statusEl) statusEl.textContent = 'Import cancelled.'; input.value = ''; return; }
+      // sanitize
+      state.members = parsed.members.filter(m => m && typeof m.id === 'string' && typeof m.name === 'string').map(m => ({
+        id: String(m.id), name: String(m.name).slice(0,200),
+        capacity: clamp0(m.capacity), rate: clamp0(m.rate)
+      }));
+      state.clients = parsed.clients.filter(c => c && typeof c.id === 'string' && typeof c.name === 'string').map(c => ({
+        id: String(c.id), name: String(c.name).slice(0,200),
+        retainer: clamp0(c.retainer),
+        hours: (typeof c.hours === 'object' && c.hours !== null) ?
+          Object.fromEntries(Object.entries(c.hours).map(([k,v]) => [String(k).slice(0,50), clamp0(v)])) : {}
+      }));
+      if (typeof parsed.agencyName === 'string') state.agencyName = parsed.agencyName.slice(0,200);
+      // Restore theme + dashboard sort preferences so import is a symmetric round-trip of export.
+      if (parsed.theme === 'dark' || parsed.theme === 'light') { state.theme = parsed.theme; applyTheme(state.theme); }
+      const VALID_SORT_KEYS = ['name','retainer','cost','margin_d','margin_p'];
+      if (VALID_SORT_KEYS.includes(parsed.dashSortKey)) state.dashSortKey = parsed.dashSortKey;
+      if (parsed.dashSortDir === 'asc' || parsed.dashSortDir === 'desc') state.dashSortDir = parsed.dashSortDir;
+      render();
+      if (statusEl) statusEl.textContent = `Imported ${state.members.length} members, ${state.clients.length} clients.`;
+      showToast('Data imported successfully.');
+    } catch(err) {
+      if (statusEl) statusEl.textContent = 'Import failed: could not parse file.';
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ===== PASTE IMPORT =====
+function previewImport() {
+  const type = document.getElementById('import-type').value;
+  const raw = (document.getElementById('import-paste').value || '').trim();
+  const preview = document.getElementById('import-preview');
+  if (!preview) return;
+  if (!raw) { preview.className = 'col-preview'; preview.textContent = ''; return; }
+
+  const lines = raw.split('\n').filter(l => l.trim());
+  if (!lines.length) { preview.className = 'col-preview'; return; }
+  const firstLine = lines[0];
+  const sep = firstLine.includes('\t') ? '\t' : ',';
+  const cols = firstLine.split(sep).map(s => s.trim());
+
+  let mapping = '';
+  if (type === 'members') {
+    mapping = `Detected columns: ${cols.map((c,i) => `col ${i+1} = ${['Name','Capacity (hrs)','Cost Rate ($/hr)'][i] || 'ignored'}`).join('; ')}`;
+  } else {
+    mapping = `Detected columns: ${cols.map((c,i) => {
+      if (i === 0) return `col 1 = Client Name`;
+      if (i === 1) return `col 2 = Retainer ($)`;
+      const m = state.members[i - 2];
+      return `col ${i+1} = ${m ? 'hrs for ' + m.name : 'ignored (no matching member)'}`;
+    }).join('; ')}`;
+  }
+  preview.className = 'col-preview visible';
+  preview.textContent = mapping + ` | ${lines.length} row(s) detected`;
+}
+
+function runPasteImport() {
+  const type = document.getElementById('import-type').value;
+  const raw = (document.getElementById('import-paste').value || '').trim();
+  const statusEl = document.getElementById('paste-import-status');
+
+  if (!raw) { if (statusEl) statusEl.textContent = 'Nothing to import.'; return; }
+
+  const lines = raw.split('\n').filter(l => l.trim());
+  const firstLine = lines[0];
+  const sep = firstLine.includes('\t') ? '\t' : ',';
+
+  let imported = 0, skipped = 0;
+
+  for (let li = 0; li < lines.length; li++) {
+    const cols = lines[li].split(sep).map(s => s.trim().replace(/^["']|["']$/g,''));
+    if (!cols[0]) { skipped++; continue; }
+    // Only the FIRST line can be a header, and only when its expected-numeric column is non-numeric.
+    // This stops a legitimate data row whose name begins with 'name'/'client' from being silently dropped.
+    if (li === 0 && /^(name|client)/i.test(cols[0]) && !isFinite(parseFloat(cols[1]))) { skipped++; continue; }
+
+    if (type === 'members') {
+      const name = cols[0] ? String(cols[0]).slice(0,200) : '';
+      if (!name) { skipped++; continue; }
+      const cap = parseFloat(cols[1]);
+      const rate = parseFloat(cols[2]);
+      state.members.push({
+        id: uid(), name,
+        capacity: isFinite(cap) && cap >= 0 ? cap : 0,
+        rate: isFinite(rate) && rate >= 0 ? rate : 0
+      });
+      imported++;
+    } else {
+      const name = cols[0] ? String(cols[0]).slice(0,200) : '';
+      if (!name) { skipped++; continue; }
+      const retainer = parseFloat(cols[1]);
+      // Map the extra columns (cols[2..]) onto the existing team members in order, so the per-member hours
+      // the preview promises are actually imported instead of silently dropped.
+      const hours = {};
+      for (let mi = 0; mi < state.members.length; mi++) {
+        const h = parseFloat(cols[2 + mi]);
+        if (isFinite(h) && h >= 0) hours[state.members[mi].id] = h;
+      }
+      state.clients.push({
+        id: uid(), name,
+        retainer: isFinite(retainer) && retainer >= 0 ? retainer : 0,
+        hours
+      });
+      imported++;
+    }
+  }
+
+  render();
+  if (statusEl) statusEl.textContent = `Imported ${imported} row(s), skipped ${skipped}.`;
+  showToast(`Imported ${imported} ${type}.`);
+  document.getElementById('import-paste').value = '';
+  document.getElementById('import-preview').className = 'col-preview';
+}
+
+function downloadCSVTemplate() {
+  const type = document.getElementById('import-type').value;
+  let csv = '';
+  if (type === 'members') {
+    csv = 'Name,Capacity (hrs/month),Cost Rate ($/hr)\nAlex,160,45\nJordan,120,55\n';
+  } else {
+    csv = 'Client Name,Monthly Retainer ($)\nBright Co,4000\nWave Media,6500\n';
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `agency-${type}-template.csv`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+// ===== PRINT =====
+function printDashboard() {
+  switchTab('dashboard');
+  const nameEl = document.getElementById('print-agency-name');
+  const dateEl = document.getElementById('print-date');
+  if (nameEl) nameEl.textContent = state.agencyName || 'Agency Report';
+  if (dateEl) dateEl.textContent = 'Printed: ' + new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+  setTimeout(() => window.print(), 100);
+}
+
+// ===== RESET =====
+function resetToExample() {
+  if (!confirm('Reset all data to the built-in example? This cannot be undone.')) return;
+  state = defaultState();
+  state.theme = document.documentElement.getAttribute('data-theme') || 'light';
+  render();
+  applyTheme(state.theme);
+  showToast('Reset to example data.');
+}
+
+// ===== TOAST =====
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    const escMb = document.getElementById('member-modal-backdrop');
+    escMb.classList.remove('open'); setTimeout(() => escMb.classList.remove('shown'), 200);
+    const escCb = document.getElementById('client-modal-backdrop');
+    escCb.classList.remove('open'); setTimeout(() => escCb.classList.remove('shown'), 200);
+  }
+  if (e.key === 'Enter' && document.getElementById('member-modal-backdrop').classList.contains('open')) {
+    saveMember();
+  }
+  if (e.key === 'Enter' && document.getElementById('client-modal-backdrop').classList.contains('open')) {
+    saveClient();
+  }
+});
+
+// ===== INIT =====
+applyTheme(state.theme);
+render();
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Agency Capacity &amp; Client Profit Dashboard. It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4524744552?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($32) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>

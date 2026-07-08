@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta name="robots" content="noindex">
+<script>/* L-245 demo mode: in-memory storage + export block. The real tool saves your work; this demo doesn't. */
+(function(){var m={};var s={getItem:function(k){return Object.prototype.hasOwnProperty.call(m,k)?m[k]:null},setItem:function(k,v){m[k]=String(v)},removeItem:function(k){delete m[k]},clear:function(){m={}},key:function(i){return Object.keys(m)[i]||null}};
+try{Object.defineProperty(s,'length',{get:function(){return Object.keys(m).length}});Object.defineProperty(window,'localStorage',{value:s,configurable:false});}catch(e){}
+document.addEventListener('click',function(e){var t=e.target;var a=t&&t.closest?t.closest('a[download]'):null;if(a){e.preventDefault();e.stopPropagation();var b=document.getElementById('demo-cta');if(b){b.style.transform='translateY(-4px)';setTimeout(function(){b.style.transform=''},250);}}},true);
+})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Live Demo · Seller Net Proceeds Calculator</title>
+<style>
+/* === DESIGN TOKENS === */
+:root {
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--sp-8:32px;--sp-12:48px;
+  --ts-xs:13px;--ts-sm:15px;--ts-base:16px;--ts-lg:20px;--ts-xl:26px;--ts-2xl:36px;--ts-3xl:52px;
+  --r-sm:4px;--r-md:8px;--r-lg:12px;--r-xl:16px;
+  --shadow-sm:0 1px 3px rgba(43,58,74,.08),0 1px 2px rgba(43,58,74,.04);
+  --shadow-md:0 4px 12px rgba(43,58,74,.10),0 2px 4px rgba(43,58,74,.05);
+  --shadow-lg:0 8px 24px rgba(43,58,74,.12),0 4px 8px rgba(43,58,74,.06);
+  --tr:150ms ease;
+  --bg-page:#eef1f6;--bg-card:#fff;--bg-panel:#f7f9fb;--bg-input:#fff;
+  --bg-stripe:#f5f7fa;--bg-accent-lt:#e8f1fb;--bg-success:#eaf5ee;
+  --bg-error:#fdf0ef;--bg-warning:#fef8ee;
+  --text-ink:#2B3A4A;--text-muted:#566878;--text-ph:#9eaebb;--text-on-acc:#fff;
+  --text-success:#1a6637;--text-error:#b32318;--text-warning:#7a5208;
+  --accent:#6B9BD1;--accent-dk:#5585bf;--accent-lt:#e8f1fb;
+  --border:#d0dae6;--border-focus:#6B9BD1;--border-err:#d94f41;--border-input:#c8d4de;
+  --net-pos:#1e6f42;--net-neg:#b32318;
+  --bar-payoff:#8a7fc8;--bar-comm:#6B9BD1;--bar-cost:#5a88b0;--bar-net:#2a9259;--bar-bg:#e2eaf3;
+  --tog-bg:#e4eaf2;--tog-act:#fff;
+}
+[data-theme="dark"]{
+  --bg-page:#131c2b;--bg-card:#1d2d3f;--bg-panel:#172232;--bg-input:#162030;
+  --bg-stripe:#192638;--bg-accent-lt:#1a2f48;--bg-success:#0c2218;
+  --bg-error:#2a1210;--bg-warning:#241c07;
+  --text-ink:#d8e4f0;--text-muted:#7e99b4;--text-ph:#3d5570;--text-on-acc:#fff;
+  --text-success:#4fc47a;--text-error:#f06a5a;--text-warning:#e0b04a;
+  --accent:#7aabdf;--accent-dk:#6b9bd1;--accent-lt:#1a2f48;
+  --border:#243a54;--border-focus:#7aabdf;--border-err:#e05040;--border-input:#1f3450;
+  --net-pos:#3db870;--net-neg:#e85f50;
+  --bar-payoff:#9d92d8;--bar-comm:#7aabdf;--bar-cost:#5f8fb8;--bar-net:#3db870;--bar-bg:#1c3048;
+  --tog-bg:#1a2d42;--tog-act:#243a54;
+}
+
+/* === RESET === */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%;overflow-x:hidden}
+body{font-family:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  font-size:var(--ts-base);color:var(--text-ink);background:var(--bg-page);
+  line-height:1.5;min-height:100vh;transition:color var(--tr);
+  overflow-x:hidden}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3,h4{line-height:1.25}
+
+/* === TOP BAR === */
+#top-bar{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--sp-2);
+  background:var(--bg-card);border-bottom:1px solid var(--border);
+  padding:var(--sp-3) var(--sp-6);position:sticky;top:0;z-index:100;
+  box-shadow:var(--shadow-sm);
+}
+#brand h1{font-size:var(--ts-lg);font-weight:700;color:var(--text-ink);letter-spacing:-.3px}
+#brand-sub{font-size:var(--ts-xs);color:var(--text-muted);margin-top:1px;display:block}
+#top-actions{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+
+/* === LAYOUT === */
+#main-grid{
+  display:grid;grid-template-columns:400px 1fr;gap:var(--sp-6);
+  max-width:1200px;margin:0 auto;padding:var(--sp-6) var(--sp-6) var(--sp-8);
+  align-items:start;
+}
+#input-panel{display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
+#results-panel{display:flex;flex-direction:column;gap:var(--sp-4);position:sticky;top:68px;min-width:0}
+
+/* === INPUT SECTIONS === */
+.input-section{
+  background:var(--bg-card);border-radius:var(--r-lg);border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);overflow:hidden;
+  transition:box-shadow var(--tr);
+}
+.input-section:hover{box-shadow:var(--shadow-md)}
+.section-header{
+  padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--border);
+  background:var(--bg-panel);display:flex;align-items:center;gap:var(--sp-2);
+}
+.section-icon{width:18px;height:18px;flex-shrink:0;opacity:.7}
+.section-title{font-size:var(--ts-sm);font-weight:600;color:var(--text-ink)}
+.section-body{padding:var(--sp-4);display:flex;flex-direction:column;gap:var(--sp-3)}
+
+/* === FIELD GROUPS === */
+.field-group{display:flex;flex-direction:column;gap:var(--sp-1)}
+.field-label{font-size:var(--ts-xs);font-weight:600;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.4px}
+.field-label-sm{font-size:var(--ts-xs);color:var(--text-muted);font-weight:500}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--sp-2)}
+
+/* === INPUTS === */
+.input-wrap{position:relative;display:flex;align-items:center}
+.input-pfx,.input-sfx{
+  position:absolute;font-size:var(--ts-sm);color:var(--text-muted);
+  font-weight:500;pointer-events:none;z-index:1;
+}
+.input-pfx{left:var(--sp-3)}
+.input-sfx{right:var(--sp-3)}
+input[type="number"],input[type="text"]{
+  width:100%;background:var(--bg-input);border:1.5px solid var(--border-input);
+  border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);
+  font-size:var(--ts-sm);color:var(--text-ink);
+  transition:border-color var(--tr),box-shadow var(--tr),background var(--tr);
+  appearance:textfield;-moz-appearance:textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none}
+input.has-pfx{padding-left:var(--sp-8)}
+input.has-sfx{padding-right:96px}
+input:focus{outline:none;border-color:var(--border-focus);
+  box-shadow:0 0 0 3px rgba(107,155,209,.15)}
+input.input-error-state{border-color:var(--border-err)}
+input.input-error-state:focus{box-shadow:0 0 0 3px rgba(217,79,65,.15)}
+.input-error{font-size:var(--ts-xs);color:var(--text-error);margin-top:2px;min-height:0;
+  display:none}
+.input-error.visible{display:block}
+.input-warn{font-size:var(--ts-xs);color:var(--text-warning);margin-top:2px;display:none}
+.input-warn.visible{display:block}
+
+/* === TRANSFER TOGGLE === */
+.toggle-group{display:flex;background:var(--tog-bg);border-radius:var(--r-md);
+  padding:3px;gap:3px;width:fit-content}
+.toggle-btn{
+  border:none;background:transparent;border-radius:calc(var(--r-md) - 2px);
+  padding:var(--sp-1) var(--sp-3);font-size:var(--ts-xs);font-weight:600;
+  color:var(--text-muted);cursor:pointer;transition:all var(--tr);
+}
+.toggle-btn.active{background:var(--tog-act);color:var(--text-ink);
+  box-shadow:var(--shadow-sm)}
+.toggle-btn:hover:not(.active){color:var(--text-ink)}
+
+/* === NAR CALLOUT === */
+.nar-callout{
+  font-size:var(--ts-xs);color:var(--text-muted);line-height:1.5;
+  background:var(--bg-accent-lt);border-radius:var(--r-sm);
+  padding:var(--sp-2) var(--sp-3);border-left:3px solid var(--accent);
+}
+
+/* === PRORATION DISPLAY === */
+.proration-result{
+  font-size:var(--ts-xs);color:var(--text-muted);margin-top:var(--sp-1);
+}
+.proration-result strong{color:var(--text-ink);font-weight:600}
+
+/* === MISC LINES === */
+.misc-line{display:grid;grid-template-columns:1fr 140px;gap:var(--sp-2);align-items:end}
+.misc-line-num{font-size:var(--ts-xs);color:var(--text-muted);font-weight:600;
+  padding-bottom:var(--sp-1)}
+
+/* === SECTION NOTE === */
+.section-note{font-size:var(--ts-xs);color:var(--text-muted)}
+
+/* === RESULT CARDS === */
+.result-card{
+  background:var(--bg-card);border-radius:var(--r-lg);border:1px solid var(--border);
+  box-shadow:var(--shadow-sm);overflow:hidden;
+  transition:box-shadow var(--tr);
+}
+.result-card:hover{box-shadow:var(--shadow-md)}
+.result-section-title{
+  font-size:var(--ts-sm);font-weight:600;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.4px;
+  padding:var(--sp-3) var(--sp-4);border-bottom:1px solid var(--border);
+  background:var(--bg-panel);display:flex;align-items:center;gap:var(--sp-2);
+}
+
+/* === NET DISPLAY === */
+#net-display{
+  padding:var(--sp-6) var(--sp-6) var(--sp-6);text-align:center;
+  background:linear-gradient(135deg,var(--bg-card) 0%,var(--bg-accent-lt) 100%);
+}
+#net-label{font-size:var(--ts-sm);font-weight:600;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:var(--sp-2)}
+#net-amount{font-size:var(--ts-3xl);font-weight:800;color:var(--net-pos);
+  letter-spacing:-1.5px;line-height:1;transition:color var(--tr);
+  animation:none}
+#net-amount.negative{color:var(--net-neg)}
+#net-pct{font-size:var(--ts-lg);color:var(--text-muted);font-weight:500;
+  margin-top:var(--sp-1)}
+#net-subtitle{font-size:var(--ts-xs);color:var(--text-muted);margin-top:var(--sp-2)}
+@keyframes pulse{0%{opacity:1}50%{opacity:.6}100%{opacity:1}}
+.pulse{animation:pulse .35s ease}
+
+/* === WATERFALL TABLE === */
+#waterfall-table-container{padding:0}
+.wf-table{width:100%;border-collapse:collapse;font-size:var(--ts-sm)}
+.wf-table th{font-size:var(--ts-xs);font-weight:600;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.4px;padding:var(--sp-2) var(--sp-4);
+  border-bottom:1px solid var(--border);text-align:left}
+.wf-table th:last-child,.wf-table td:last-child{text-align:right}
+.wf-table th:nth-child(2),.wf-table td:nth-child(2){text-align:right}
+.wf-row td{padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--border);
+  transition:background var(--tr)}
+.wf-row:nth-child(even) td{background:var(--bg-stripe)}
+.wf-row:hover td{background:var(--bg-accent-lt)}
+.wf-row .wf-label{color:var(--text-ink);font-weight:500}
+.wf-row .wf-amount{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text-ink)}
+.wf-row .wf-pct{color:var(--text-muted);font-size:var(--ts-xs);white-space:nowrap}
+.wf-sep td{border-top:2px solid var(--border);border-bottom:2px solid var(--border);
+  padding:var(--sp-2) var(--sp-4);background:var(--bg-stripe)}
+.wf-total td{padding:var(--sp-3) var(--sp-4);background:var(--bg-stripe)}
+.wf-total .wf-label{font-weight:700;color:var(--text-ink)}
+.wf-total .wf-amount{font-weight:700;font-variant-numeric:tabular-nums}
+.wf-net td{padding:var(--sp-3) var(--sp-4)}
+.wf-net .wf-label{font-weight:700;font-size:var(--ts-base)}
+.wf-net .wf-amount{font-weight:800;font-size:var(--ts-base);color:var(--net-pos)}
+.wf-net.negative .wf-amount{color:var(--net-neg)}
+.wf-badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 6px;
+  border-radius:3px;margin-left:var(--sp-1);vertical-align:middle}
+.badge-neg{background:var(--bg-error);color:var(--text-error)}
+.wf-dot{display:inline-block;width:8px;height:8px;border-radius:50%;
+  margin-right:6px;vertical-align:middle;flex-shrink:0}
+
+/* === SVG CHART === */
+#chart-container{padding:var(--sp-4);overflow-x:auto}
+#chart-legend{padding:0 var(--sp-4) var(--sp-4);display:flex;flex-wrap:wrap;
+  gap:var(--sp-2) var(--sp-4)}
+.legend-item{display:flex;align-items:center;gap:var(--sp-1);
+  font-size:var(--ts-xs);color:var(--text-muted)}
+.legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0}
+
+/* === SCENARIO TABLE === */
+#scenario-table-container{padding:0;overflow-x:auto}
+.sc-table{width:100%;border-collapse:collapse;font-size:var(--ts-sm)}
+.sc-table th{font-size:var(--ts-xs);font-weight:600;color:var(--text-muted);
+  text-transform:uppercase;letter-spacing:.4px;padding:var(--sp-2) var(--sp-4);
+  border-bottom:1px solid var(--border);text-align:center}
+.sc-table th:first-child{text-align:left}
+.sc-table td{padding:var(--sp-2) var(--sp-4);border-bottom:1px solid var(--border);
+  text-align:center;font-variant-numeric:tabular-nums}
+.sc-table td:first-child{text-align:left;font-weight:600;color:var(--text-muted);
+  font-size:var(--ts-xs)}
+.sc-table tr:last-child td{font-weight:700;border-top:2px solid var(--border)}
+.sc-highlight{background:var(--bg-accent-lt)}
+.sc-net-pos{color:var(--net-pos);font-weight:700}
+.sc-net-neg{color:var(--net-neg);font-weight:700}
+
+/* === BUTTONS === */
+.btn{
+  display:inline-flex;align-items:center;gap:var(--sp-1);border:none;cursor:pointer;
+  border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);font-size:var(--ts-xs);
+  font-weight:600;white-space:nowrap;transition:all var(--tr);
+  text-decoration:none;
+}
+.btn:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dk);box-shadow:var(--shadow-md)}
+.btn-ghost{background:transparent;color:var(--text-muted);border:1px solid var(--border)}
+.btn-ghost:hover{background:var(--bg-accent-lt);color:var(--text-ink);
+  border-color:var(--border-focus)}
+.btn-danger{color:var(--text-error)}
+.btn-danger:hover{background:var(--bg-error);border-color:var(--border-err)}
+.btn-icon{padding:var(--sp-2);border-radius:var(--r-md)}
+.btn svg{flex-shrink:0}
+
+/* === TOASTS === */
+#toast-container{position:fixed;bottom:var(--sp-6);right:var(--sp-6);
+  display:flex;flex-direction:column;gap:var(--sp-2);z-index:9999;pointer-events:none}
+.toast{
+  background:var(--bg-card);color:var(--text-ink);border:1px solid var(--border);
+  border-radius:var(--r-lg);padding:var(--sp-3) var(--sp-4);box-shadow:var(--shadow-lg);
+  font-size:var(--ts-sm);max-width:320px;pointer-events:auto;
+  animation:slideIn .2s ease;
+}
+.toast.toast-success{border-left:4px solid var(--text-success)}
+.toast.toast-error{border-left:4px solid var(--text-error)}
+.toast.toast-warn{border-left:4px solid var(--text-warning)}
+@keyframes slideIn{from{transform:translateX(20px);opacity:0}to{transform:none;opacity:1}}
+
+/* === PRINT HEADER (hidden in screen view) === */
+#print-header{display:none}
+
+/* === FOOTER === */
+#app-footer{
+  text-align:center;font-size:var(--ts-xs);color:var(--text-muted);
+  padding:var(--sp-6) var(--sp-6);border-top:1px solid var(--border);
+  margin-top:var(--sp-8);
+}
+
+/* === PRINT === */
+@media print{
+  [data-theme="dark"]{
+    --bg-page:#fff;--bg-card:#fff;--bg-panel:#f5f5f5;--bg-input:#fff;
+    --bg-stripe:#f5f5f5;--bg-accent-lt:#eef3f9;
+    --text-ink:#111;--text-muted:#444;--border:#ccc;--border-input:#ccc;
+    --net-pos:#1a5e35;--net-neg:#a02018;
+    --bar-payoff:#6b5eb8;--bar-comm:#4a7fb0;--bar-cost:#3a6890;
+    --bar-net:#1a8050;--bar-bg:#d8e4ee;
+    --tog-bg:#eee;--tog-act:#fff;
+  }
+  #top-bar,#input-panel,#toast-container,#app-footer,
+  #btn-export,#import-label,#btn-print,#btn-reset,#theme-toggle{display:none!important}
+  #print-header{display:flex!important;justify-content:space-between;align-items:flex-start;
+    padding:0 0 var(--sp-4);border-bottom:2px solid #2B3A4A;margin-bottom:var(--sp-4)}
+  #print-agent-info{font-size:14px;color:#2B3A4A}
+  #print-agent-info strong{display:block;font-size:16px;font-weight:700}
+  #print-date{font-size:13px;color:#555;text-align:right}
+  body{background:#fff!important}
+  #main-grid{display:block;padding:var(--sp-4)!important;max-width:none}
+  #results-panel{position:static!important;display:block}
+  .result-card{box-shadow:none!important;border:1px solid #ccc!important;
+    margin-bottom:var(--sp-4);page-break-inside:avoid}
+  .wf-row,.sc-table tr{page-break-inside:avoid}
+  #net-display{background:none!important;border-bottom:1px solid #ccc}
+  #net-amount{font-size:40px}
+  #chart-container{padding:var(--sp-2)!important}
+}
+
+/* === MOBILE === */
+@media(max-width:900px){
+  #main-grid{grid-template-columns:1fr;padding:var(--sp-4)}
+  #results-panel{position:static}
+}
+@media(max-width:600px){
+  #top-bar{padding:var(--sp-2) var(--sp-3)}
+  #brand h1{font-size:var(--ts-base)}
+  #brand-sub{display:none}
+  #top-actions .btn{padding:var(--sp-2) var(--sp-2)}
+  #main-grid{padding:var(--sp-3) var(--sp-2)}
+  .field-row,.field-row-3{grid-template-columns:1fr}
+  input[type="number"],input[type="text"]{font-size:16px;padding:var(--sp-3) var(--sp-3)}
+  input.has-pfx{padding-left:28px}
+  .toggle-btn{padding:var(--sp-2) var(--sp-3);font-size:12px}
+  #net-amount{font-size:40px}
+  .misc-line{grid-template-columns:1fr}
+}
+@media(max-width:400px){
+  #top-actions{gap:var(--sp-1)}
+  .btn{font-size:11px}
+}
+
+/* === TOUCH TARGETS (44px min, INV-2) === */
+@media(max-width:600px){
+  input[type="number"],input[type="text"]{min-height:44px}
+  .toggle-btn{min-height:36px}
+  .btn{min-height:40px}
+  #top-actions .btn{min-height:40px}
+  .misc-line{gap:var(--sp-3)}
+  #chart-container{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #scenario-table-container{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  #waterfall-table-container{overflow-x:auto;-webkit-overflow-scrolling:touch}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header id="top-bar">
+  <div id="brand">
+    <h1>Seller Net Proceeds Calculator</h1>
+    <span id="brand-sub">Real Estate - Listing Appointment Tool</span>
+  </div>
+  <div id="top-actions">
+    <button id="theme-toggle" class="btn btn-ghost btn-icon" aria-label="Toggle dark mode">
+      <svg id="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      <svg id="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <button id="btn-export" class="btn btn-ghost">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export
+    </button>
+    <label id="import-label" class="btn btn-ghost" tabindex="0" role="button"
+      onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('btn-import').click()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Import
+      <input type="file" id="btn-import" accept=".json" style="display:none" aria-label="Import JSON file">
+    </label>
+    <button id="btn-print" class="btn btn-ghost">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Print
+    </button>
+    <button id="btn-reset" class="btn btn-ghost btn-danger">Reset</button>
+  </div>
+</header>
+
+<!-- PRINT HEADER -->
+<div id="print-header">
+  <div id="print-agent-info"></div>
+  <div id="print-date"></div>
+</div>
+
+<!-- MAIN -->
+<main id="main-grid">
+
+  <!-- LEFT: INPUTS -->
+  <aside id="input-panel">
+
+    <!-- Section 1: Sale Details -->
+    <section class="input-section" id="sec-sale">
+      <div class="section-header">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        <h2 class="section-title">Sale Details</h2>
+      </div>
+      <div class="section-body">
+        <div class="field-group">
+          <label class="field-label" for="sale-price">Sale Price</label>
+          <div class="input-wrap">
+            <span class="input-pfx">$</span>
+            <input type="number" id="sale-price" class="has-pfx" min="0" step="1000"
+              aria-label="Sale price in dollars" placeholder="450000">
+          </div>
+          <div class="input-error" id="err-sale-price" role="alert"></div>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:var(--sp-2)">Scenario Prices</div>
+          <div class="field-row-3">
+            <div class="field-group">
+              <label class="field-label-sm" for="scenario-a">Scenario A</label>
+              <div class="input-wrap">
+                <span class="input-pfx">$</span>
+                <input type="number" id="scenario-a" class="has-pfx" min="0" step="1000" placeholder="435000">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label-sm" for="scenario-b">Scenario B</label>
+              <div class="input-wrap">
+                <span class="input-pfx">$</span>
+                <input type="number" id="scenario-b" class="has-pfx" min="0" step="1000" placeholder="450000">
+              </div>
+            </div>
+            <div class="field-group">
+              <label class="field-label-sm" for="scenario-c">Scenario C</label>
+              <div class="input-wrap">
+                <span class="input-pfx">$</span>
+                <input type="number" id="scenario-c" class="has-pfx" min="0" step="1000" placeholder="465000">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Mortgages -->
+    <section class="input-section" id="sec-mortgage">
+      <div class="section-header">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <h2 class="section-title">Mortgage Payoffs</h2>
+      </div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="payoff-1">1st Lien Payoff</label>
+            <div class="input-wrap">
+              <span class="input-pfx">$</span>
+              <input type="number" id="payoff-1" class="has-pfx" min="0" step="1000" placeholder="0"
+                aria-label="First mortgage payoff amount">
+            </div>
+            <div class="input-error" id="err-payoff-1" role="alert"></div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="payoff-2">2nd Lien Payoff</label>
+            <div class="input-wrap">
+              <span class="input-pfx">$</span>
+              <input type="number" id="payoff-2" class="has-pfx" min="0" step="1000" placeholder="0"
+                aria-label="Second mortgage payoff amount">
+            </div>
+            <div class="input-error" id="err-payoff-2" role="alert"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 3: Commissions -->
+    <section class="input-section" id="sec-commission">
+      <div class="section-header">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <h2 class="section-title">Commissions</h2>
+      </div>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="listing-pct">Listing Agent</label>
+            <div class="input-wrap">
+              <input type="number" id="listing-pct" class="has-sfx" min="0" max="20" step="0.1"
+                placeholder="3.0" aria-label="Listing agent commission percentage">
+              <span class="input-sfx" style="right:8px;font-size:12px">% of price</span>
+            </div>
+            <div class="input-error" id="err-listing-pct" role="alert"></div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="buyer-pct">Buyer Agent Concession</label>
+            <div class="input-wrap">
+              <input type="number" id="buyer-pct" class="has-sfx" min="0" max="20" step="0.1"
+                placeholder="2.5" aria-label="Buyer agent concession percentage">
+              <span class="input-sfx" style="right:8px;font-size:12px">% of price</span>
+            </div>
+          </div>
+        </div>
+        <p class="nar-callout">Post-settlement: buyer agent compensation is negotiated separately and may be offered as a seller concession.</p>
+      </div>
+    </section>
+
+    <!-- Section 4: Closing Costs -->
+    <section class="input-section" id="sec-closing">
+      <div class="section-header">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <h2 class="section-title">Closing Costs</h2>
+      </div>
+      <div class="section-body">
+        <div class="field-group">
+          <label class="field-label" for="title-flat">Title / Escrow Fees</label>
+          <div class="input-wrap">
+            <span class="input-pfx">$</span>
+            <input type="number" id="title-flat" class="has-pfx" min="0" step="50" placeholder="0">
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Transfer Tax</label>
+          <div style="margin-bottom:var(--sp-2)">
+            <div class="toggle-group" id="transfer-mode-toggle" role="group" aria-label="Transfer tax mode">
+              <button class="toggle-btn" data-mode="flat" aria-pressed="false">Flat $</button>
+              <button class="toggle-btn" data-mode="rate" aria-pressed="true">Rate %</button>
+            </div>
+          </div>
+          <div id="transfer-flat-wrap" class="input-wrap" style="display:none">
+            <span class="input-pfx">$</span>
+            <input type="number" id="transfer-flat" class="has-pfx" min="0" step="50"
+              placeholder="0" aria-label="Transfer tax flat dollar amount">
+          </div>
+          <div id="transfer-rate-wrap" class="input-wrap">
+            <input type="number" id="transfer-rate" class="has-sfx" min="0" max="10" step="0.01"
+              placeholder="0.15" aria-label="Transfer tax rate percentage of sale price">
+            <span class="input-sfx" style="right:8px;font-size:12px">% of price</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Prorated Property Tax</label>
+          <div class="field-row">
+            <div>
+              <label class="field-label-sm" for="annual-tax">Annual Tax Amount</label>
+              <div class="input-wrap" style="margin-top:4px">
+                <span class="input-pfx">$</span>
+                <input type="number" id="annual-tax" class="has-pfx" min="0" step="100"
+                  placeholder="0" aria-label="Annual property tax amount">
+              </div>
+            </div>
+            <div>
+              <label class="field-label-sm" for="tax-days">Days Remaining in Period</label>
+              <input type="number" id="tax-days" min="0" max="365" step="1"
+                placeholder="0" style="margin-top:4px" aria-label="Days remaining in tax period">
+              <div class="input-warn" id="warn-tax-days" role="alert">Clamped to 365 days</div>
+            </div>
+          </div>
+          <div class="proration-result">Calculated proration: <strong id="result-proration">$0.00</strong></div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="hoa-flat">HOA / Special Assessments</label>
+            <div class="input-wrap">
+              <span class="input-pfx">$</span>
+              <input type="number" id="hoa-flat" class="has-pfx" min="0" step="50" placeholder="0">
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="repairs-flat">Repairs / Buyer Credits</label>
+            <div class="input-wrap">
+              <span class="input-pfx">$</span>
+              <input type="number" id="repairs-flat" class="has-pfx" min="0" step="100" placeholder="0">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 5: Misc Lines -->
+    <section class="input-section" id="sec-misc">
+      <div class="section-header">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <h2 class="section-title">Additional Items</h2>
+      </div>
+      <div class="section-body">
+        <div class="misc-line">
+          <div class="field-group">
+            <label class="field-label-sm" for="misc-label-0">Description</label>
+            <input type="text" id="misc-label-0" placeholder="Home Warranty" maxlength="50"
+              aria-label="Misc item 1 description">
+          </div>
+          <div class="field-group">
+            <label class="field-label-sm" for="misc-amount-0">Amount</label>
+            <div class="input-wrap">
+              <span class="input-pfx">$</span>
+              <input type="number" id="misc-amount-0" class="has-pfx" min="0" step="50"
+                placeholder="0" aria-label="Misc item 1 amount">
+            </div>
+          </div>
+        </div>
+        <div class="input-error" id="err-misc-0" role="alert"></div>
+        <div class="misc-line">
+          <div class="field-group">
+            <label class="field-label-sm" for="misc-label-1">Description</label>
+            <input type="text" id="misc-label-1" placeholder="e.g. Attorney Fee" maxlength="50"
+              aria-label="Misc item 2 description">
+          </div>
+          <div class="field-group">
+            <label class="field-label-sm" for="misc-amount-1">Amount</label>
+            <div class="input-wrap">
+              <span class="input-pfx">$</span>
+              <input type="number" id="misc-amount-1" class="has-pfx" min="0" step="50"
+                placeholder="0" aria-label="Misc item 2 amount">
+            </div>
+          </div>
+        </div>
+        <div class="input-error" id="err-misc-1" role="alert"></div>
+        <div class="misc-line">
+          <div class="field-group">
+            <label class="field-label-sm" for="misc-label-2">Description</label>
+            <input type="text" id="misc-label-2" placeholder="e.g. Staging Fee" maxlength="50"
+              aria-label="Misc item 3 description">
+          </div>
+          <div class="field-group">
+            <label class="field-label-sm" for="misc-amount-2">Amount</label>
+            <div class="input-wrap">
+              <span class="input-pfx">$</span>
+              <input type="number" id="misc-amount-2" class="has-pfx" min="0" step="50"
+                placeholder="0" aria-label="Misc item 3 amount">
+            </div>
+          </div>
+        </div>
+        <div class="input-error" id="err-misc-2" role="alert"></div>
+      </div>
+    </section>
+
+    <!-- Section 6: Agent Branding -->
+    <section class="input-section" id="sec-agent">
+      <div class="section-header">
+        <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <h2 class="section-title">Agent Branding</h2>
+      </div>
+      <div class="section-body">
+        <p class="section-note">Appears on printed net sheet only - hidden in normal view.</p>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="agent-name">Agent Name</label>
+            <input type="text" id="agent-name" placeholder="Jane Smith" maxlength="80">
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="agent-phone">Phone</label>
+            <input type="text" id="agent-phone" placeholder="(555) 000-0000" maxlength="30">
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="agent-brokerage">Brokerage (optional)</label>
+          <input type="text" id="agent-brokerage" placeholder="ABC Realty" maxlength="80">
+        </div>
+        <p class="section-note" style="margin-top:var(--sp-1)">
+          Tip: export a backup before clearing browser data. Your work saves only in this browser.
+        </p>
+      </div>
+    </section>
+
+  </aside><!-- #input-panel -->
+
+  <!-- RIGHT: RESULTS -->
+  <div id="results-panel">
+
+    <!-- Net to Seller Hero -->
+    <div class="result-card" id="net-display">
+      <div id="net-label">Net to Seller</div>
+      <div id="net-amount">$123,495.00</div>
+      <div id="net-pct">27.44% of sale price</div>
+      <div id="net-subtitle"></div>
+    </div>
+
+    <!-- Waterfall Table -->
+    <div class="result-card" id="waterfall-card">
+      <div class="result-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        Closing Cost Breakdown
+      </div>
+      <div id="waterfall-table-container"></div>
+    </div>
+
+    <!-- SVG Chart -->
+    <div class="result-card" id="chart-card">
+      <div class="result-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Visual Breakdown
+      </div>
+      <div id="chart-container"></div>
+      <div id="chart-legend"></div>
+    </div>
+
+    <!-- 3-Scenario Comparison -->
+    <div class="result-card" id="scenario-card">
+      <div class="result-section-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        Price Scenario Comparison
+      </div>
+      <div id="scenario-table-container"></div>
+    </div>
+
+  </div><!-- #results-panel -->
+
+</main>
+
+<div id="toast-container" role="status" aria-live="polite"></div>
+
+<footer id="app-footer">
+  Seller Net Proceeds Calculator (Real Estate) &middot; jonsDesignerShop &middot; Educational tool, not professional advice.
+</footer>
+
+<script>
+'use strict';
+// ===== CONSTANTS =====
+const KEY = 'snc_v1';
+let _saveTimer = null;
+let _state = null;
+
+// ===== UTILITIES =====
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function fmt(n) {
+  if (!isFinite(n) || isNaN(n)) return '$0.00';
+  const abs = Math.abs(n);
+  return '$' + abs.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function fmtSigned(n) {
+  if (!isFinite(n) || isNaN(n)) return '$0.00';
+  const s = Math.abs(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return (n < 0 ? '-$' : '$') + s;
+}
+function fmtPct(n) {
+  if (!isFinite(n) || isNaN(n)) return '0.00%';
+  return n.toFixed(2) + '%';
+}
+function safeNum(v, def) {
+  const n = parseFloat(v);
+  return isNaN(n) ? (def || 0) : n;
+}
+function safeInt(v, def) {
+  const n = parseInt(v, 10);
+  return isNaN(n) ? (def || 0) : n;
+}
+
+// ===== DEFAULT STATE =====
+function defaultState() {
+  return {
+    theme: 'light',
+    salePrice: 450000,
+    scenarioA: 435000,
+    scenarioB: 450000,
+    scenarioC: 465000,
+    payoff1: 295000,
+    payoff2: 0,
+    listingPct: 3.0,
+    buyerPct: 2.5,
+    titleFlat: 1450,
+    transferMode: 'rate',
+    transferFlat: 0,
+    transferRate: 0.15,
+    annualTax: 5400,
+    taxDays: 73,
+    hoaFlat: 0,
+    repairsFlat: 3000,
+    misc: [
+      { label: 'Home Warranty', amount: 550 },
+      { label: '', amount: 0 },
+      { label: '', amount: 0 }
+    ],
+    agentName: '',
+    agentPhone: '',
+    agentBrokerage: ''
+  };
+}
+
+// ===== FORMULAS =====
+function compute(overridePrice) {
+  const s = _state;
+  const sp = overridePrice !== undefined ? Math.max(0, overridePrice) : Math.max(0, safeNum(s.salePrice));
+
+  // F-01: Commissions
+  const listingComm = sp * Math.max(0, safeNum(s.listingPct)) / 100;
+  const buyerComm   = sp * Math.max(0, safeNum(s.buyerPct)) / 100;
+
+  // F-02: Transfer tax — flat $ + % of price (mode toggle hides one input; zeroing it picks single mode)
+  const transferTax = Math.max(0, safeNum(s.transferFlat))
+    + sp * Math.max(0, safeNum(s.transferRate)) / 100;
+
+  // Fixed costs (unchanged across scenarios)
+  const payoff1    = Math.max(0, safeNum(s.payoff1));
+  const payoff2    = Math.max(0, safeNum(s.payoff2));
+  const titleFlat  = Math.max(0, safeNum(s.titleFlat));
+  const hoaFlat    = Math.max(0, safeNum(s.hoaFlat));
+  const repairsFlat = Math.max(0, safeNum(s.repairsFlat));
+  const misc = Array.isArray(s.misc) ? s.misc : [];
+  const miscItems  = misc.map(m => ({
+    label: String(m && m.label ? m.label : ''),
+    amount: Math.max(0, safeNum(m && m.amount))
+  }));
+  const miscTotal  = miscItems.reduce((acc, m) => acc + m.amount, 0);
+
+  // F-03: Proration (unchanged across scenarios)
+  const annualTax = Math.max(0, safeNum(s.annualTax));
+  const taxDays   = Math.min(365, Math.max(0, safeInt(s.taxDays)));
+  const proration = annualTax * taxDays / 365;
+
+  // F-04: Total costs
+  const totalCosts = payoff1 + payoff2 + listingComm + buyerComm
+    + titleFlat + transferTax + proration + hoaFlat + repairsFlat + miscTotal;
+
+  // F-05: Net
+  const netProceeds = sp - totalCosts;
+  const netPct      = sp > 0 ? netProceeds / sp * 100 : 0;
+
+  // Build line items (all non-zero, or always-shown mortgage lines)
+  const lines = [];
+  if (payoff1 > 0) lines.push({ label:'Mortgage Payoff (1st Lien)', amount:payoff1, type:'payoff' });
+  if (payoff2 > 0) lines.push({ label:'Mortgage Payoff (2nd Lien)', amount:payoff2, type:'payoff' });
+  if (listingComm > 0) lines.push({ label:'Listing Agent Commission', amount:listingComm, type:'comm' });
+  if (buyerComm > 0) lines.push({ label:'Buyer Agent Concession', amount:buyerComm, type:'comm' });
+  if (titleFlat > 0) lines.push({ label:'Title / Escrow Fees', amount:titleFlat, type:'cost' });
+  if (transferTax > 0) lines.push({ label:'Transfer Tax', amount:transferTax, type:'cost' });
+  if (proration > 0) lines.push({ label:'Prorated Property Tax', amount:proration, type:'cost' });
+  if (hoaFlat > 0) lines.push({ label:'HOA / Special Assessments', amount:hoaFlat, type:'cost' });
+  if (repairsFlat > 0) lines.push({ label:'Repairs / Buyer Credits', amount:repairsFlat, type:'cost' });
+  miscItems.forEach(m => {
+    if (m.amount > 0) lines.push({ label: m.label || 'Misc', amount: m.amount, type:'misc' });
+  });
+
+  return {
+    salePrice: sp, payoff1, payoff2, listingComm, buyerComm,
+    titleFlat, transferTax, proration, hoaFlat, repairsFlat,
+    miscTotal, totalCosts, netProceeds, netPct,
+    lines, annualTax, taxDays, miscItems
+  };
+}
+
+function computeScenario(price) {
+  const savedPrice = _state.salePrice;
+  // compute() uses overridePrice for price-dependent items,
+  // but reads fixed items from _state — correct by spec
+  return compute(price);
+}
+
+// ===== RENDER =====
+function render() {
+  const r = compute();
+  renderInputValues();
+  renderNet(r);
+  renderWaterfall(r);
+  renderChart(r);
+  renderScenarios();
+  renderPrintHeader();
+}
+
+function renderInputValues() {
+  const s = _state;
+  // Sync all input values from state (two-way binding)
+  setVal('sale-price', s.salePrice);
+  setVal('scenario-a', s.scenarioA);
+  setVal('scenario-b', s.scenarioB);
+  setVal('scenario-c', s.scenarioC);
+  setVal('payoff-1', s.payoff1);
+  setVal('payoff-2', s.payoff2);
+  setVal('listing-pct', s.listingPct);
+  setVal('buyer-pct', s.buyerPct);
+  setVal('title-flat', s.titleFlat);
+  setVal('transfer-flat', s.transferFlat);
+  setVal('transfer-rate', s.transferRate);
+  setVal('annual-tax', s.annualTax);
+  setVal('tax-days', s.taxDays);
+  setVal('hoa-flat', s.hoaFlat);
+  setVal('repairs-flat', s.repairsFlat);
+  const misc = Array.isArray(s.misc) ? s.misc : [{},{},{}];
+  for (let i = 0; i < 3; i++) {
+    const m = misc[i] || {};
+    setVal('misc-label-' + i, m.label || '');
+    setVal('misc-amount-' + i, m.amount || 0);
+  }
+  setVal('agent-name', s.agentName || '');
+  setVal('agent-phone', s.agentPhone || '');
+  setVal('agent-brokerage', s.agentBrokerage || '');
+  // Transfer mode toggle
+  const btns = document.querySelectorAll('#transfer-mode-toggle .toggle-btn');
+  btns.forEach(b => {
+    const isActive = b.dataset.mode === s.transferMode;
+    b.classList.toggle('active', isActive);
+    b.setAttribute('aria-pressed', String(isActive));
+  });
+  const isFlat = s.transferMode === 'flat';
+  document.getElementById('transfer-flat-wrap').style.display = isFlat ? 'flex' : 'none';
+  document.getElementById('transfer-rate-wrap').style.display = isFlat ? 'none' : 'flex';
+  // Proration display
+  const prorResult = compute();
+  document.getElementById('result-proration').textContent = fmt(prorResult.proration);
+  // Tax days warning
+  const tdWarn = document.getElementById('warn-tax-days');
+  const rawTd = safeInt(s.taxDays);
+  if (rawTd > 365) {
+    tdWarn.textContent = 'Clamped to 365 days';
+    tdWarn.classList.add('visible');
+  } else {
+    tdWarn.classList.remove('visible');
+  }
+}
+
+function setVal(id, val) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  // Only update if user isn't focused on this input (prevents cursor jump)
+  if (document.activeElement === el) return;
+  el.value = val === 0 || val === '' ? '' : val;
+}
+
+function renderNet(r) {
+  const amtEl = document.getElementById('net-amount');
+  const pctEl = document.getElementById('net-pct');
+  const subEl = document.getElementById('net-subtitle');
+  const isNeg = r.netProceeds < 0;
+
+  amtEl.textContent = fmtSigned(r.netProceeds);
+  amtEl.className = isNeg ? 'negative' : '';
+  pctEl.textContent = fmtPct(r.netPct) + ' of sale price';
+  if (isNeg) {
+    subEl.textContent = 'Seller owes at closing - costs exceed sale price.';
+    subEl.style.color = 'var(--text-error)';
+  } else {
+    subEl.textContent = '';
+  }
+  // Pulse animation
+  amtEl.classList.remove('pulse');
+  void amtEl.offsetWidth;
+  amtEl.classList.add('pulse');
+}
+
+function renderWaterfall(r) {
+  const sp = r.salePrice;
+  let html = '<table class="wf-table"><thead><tr>'
+    + '<th>Item</th><th>Amount</th><th>% of Price</th></tr></thead><tbody>';
+
+  const colors = { payoff:'var(--bar-payoff)', comm:'var(--bar-comm)', cost:'var(--bar-cost)', misc:'var(--bar-cost)' };
+
+  r.lines.forEach(line => {
+    const pct = sp > 0 ? line.amount / sp * 100 : 0;
+    const color = colors[line.type] || 'var(--bar-cost)';
+    html += `<tr class="wf-row">`
+      + `<td class="wf-label"><span class="wf-dot" style="background:${color}"></span>${esc(line.label)}</td>`
+      + `<td class="wf-amount" id="result-line-${esc(line.label.replace(/\s+/g,'-').toLowerCase())}">${fmt(line.amount)}</td>`
+      + `<td class="wf-pct">${fmtPct(pct)}</td>`
+      + `</tr>`;
+  });
+
+  // Separator + Total Costs
+  html += `<tr class="wf-sep"><td colspan="3"></td></tr>`;
+  html += `<tr class="wf-total">`
+    + `<td class="wf-label">Total Costs</td>`
+    + `<td class="wf-amount" id="result-total-costs">${fmt(r.totalCosts)}</td>`
+    + `<td class="wf-pct">${sp > 0 ? fmtPct(r.totalCosts / sp * 100) : '0.00%'}</td>`
+    + `</tr>`;
+
+  // Net to seller row
+  const isNeg = r.netProceeds < 0;
+  const badge = isNeg ? `<span class="wf-badge badge-neg">Owes at closing</span>` : '';
+  html += `<tr class="wf-net${isNeg ? ' negative' : ''}">`
+    + `<td class="wf-label">Net to Seller${badge}</td>`
+    + `<td class="wf-amount" id="result-net-proceeds">${fmtSigned(r.netProceeds)}</td>`
+    + `<td class="wf-pct" id="result-net-pct">${fmtPct(r.netPct)}</td>`
+    + `</tr>`;
+
+  html += '</tbody></table>';
+  document.getElementById('waterfall-table-container').innerHTML = html;
+}
+
+function renderChart(r) {
+  const sp = r.salePrice;
+  const container = document.getElementById('chart-container');
+  const legendEl  = document.getElementById('chart-legend');
+
+  if (sp <= 0 || r.lines.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:16px;font-size:13px">Enter a sale price to see the chart.</p>';
+    legendEl.innerHTML = '';
+    return;
+  }
+
+  // Build bar data: cost lines + net bar
+  // barAmount drives bar width (clamped >=0); displayAmount drives the label text
+  const netBarW = Math.max(0, r.netProceeds);
+  const allBars = [
+    ...r.lines.map(l => ({ ...l, barAmount: l.amount, displayAmount: l.amount })),
+    { label: 'Net to Seller', amount: netBarW, barAmount: netBarW, displayAmount: r.netProceeds, type: 'net' }
+  ];
+
+  const BAR_H = 22;
+  const GAP = 5;
+  const LBL_W = 172;
+  const BAR_AREA = 280;
+  const AMT_W = 90;
+  const W = LBL_W + 8 + BAR_AREA + 8 + AMT_W;
+  const H = allBars.length * (BAR_H + GAP) + GAP;
+  const colorsMap = {
+    payoff:'var(--bar-payoff)', comm:'var(--bar-comm)',
+    cost:'var(--bar-cost)', misc:'var(--bar-cost)', net:'var(--bar-net)'
+  };
+
+  let parts = [
+    `<svg id="waterfall-chart" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" `
+    + `style="width:100%;height:auto;display:block;overflow:hidden" `
+    + `role="img" aria-label="Cost breakdown chart">`
+  ];
+
+  allBars.forEach((bar, i) => {
+    const y = GAP + i * (BAR_H + GAP);
+    const barW = sp > 0 ? Math.max(0, Math.min(1, bar.barAmount / sp)) * BAR_AREA : 0;
+    const color = colorsMap[bar.type] || 'var(--bar-cost)';
+    const textY = y + BAR_H / 2 + 5;
+    const isNet = bar.type === 'net';
+    const fontW = isNet ? '700' : '500';
+    const textFill = isNet ? 'var(--text-ink)' : 'var(--text-muted)';
+
+    // Label (left, clipped)
+    parts.push(
+      `<text x="${LBL_W}" y="${textY}" text-anchor="end" font-size="12" `
+      + `fill="${textFill}" font-weight="${fontW}" font-family="inherit">`
+      + esc(bar.label.length > 22 ? bar.label.slice(0, 21) + '...' : bar.label)
+      + `</text>`
+    );
+    // Background bar
+    parts.push(
+      `<rect x="${LBL_W + 8}" y="${y}" width="${BAR_AREA}" height="${BAR_H}" `
+      + `rx="4" fill="var(--bar-bg)"/>`
+    );
+    // Value bar
+    if (barW > 0) {
+      parts.push(
+        `<rect x="${LBL_W + 8}" y="${y}" width="${barW}" height="${BAR_H}" `
+        + `rx="4" fill="${color}" opacity="${isNet ? 1 : 0.85}"/>`
+      );
+    }
+    // Amount text (right of bar area)
+    parts.push(
+      `<text x="${LBL_W + 8 + BAR_AREA + 8}" y="${textY}" text-anchor="start" `
+      + `font-size="12" fill="${isNet ? 'var(--net-pos)' : 'var(--text-ink)'}" `
+      + `font-weight="${isNet ? '700' : '500'}" font-family="inherit">`
+      + esc(bar.displayAmount < 0 ? fmtSigned(bar.displayAmount) : fmt(bar.displayAmount))
+      + `</text>`
+    );
+  });
+
+  parts.push('</svg>');
+  container.innerHTML = parts.join('');
+
+  // Wrapping legend
+  const legendTypes = [
+    { color: 'var(--bar-payoff)', label: 'Mortgage Payoff' },
+    { color: 'var(--bar-comm)',   label: 'Commissions' },
+    { color: 'var(--bar-cost)',   label: 'Closing Costs' },
+    { color: 'var(--bar-net)',    label: 'Net to Seller' }
+  ];
+  legendEl.innerHTML = legendTypes.map(lt =>
+    `<span class="legend-item">`
+    + `<span class="legend-swatch" style="background:${lt.color}"></span>`
+    + `<span>${esc(lt.label)}</span>`
+    + `</span>`
+  ).join('');
+}
+
+function renderScenarios() {
+  const s = _state;
+  const prices = [
+    { id: 'a', price: Math.max(0, safeNum(s.scenarioA)), label: 'Scenario A' },
+    { id: 'b', price: Math.max(0, safeNum(s.scenarioB)), label: 'Scenario B' },
+    { id: 'c', price: Math.max(0, safeNum(s.scenarioC)), label: 'Scenario C' }
+  ];
+
+  // Identify which scenario matches the main sale price (for highlighting)
+  const mainPrice = Math.max(0, safeNum(s.salePrice));
+  const results = prices.map(p => ({ ...p, r: computeScenario(p.price) }));
+
+  let html = '<table class="sc-table"><thead><tr>'
+    + '<th>Row</th>';
+  results.forEach(p => {
+    const isMain = Math.abs(p.price - mainPrice) < 0.01;
+    html += `<th${isMain ? ' class="sc-highlight"' : ''}>`
+      + esc(p.label) + (isMain ? ' *' : '') + '</th>';
+  });
+  html += '</tr></thead><tbody>';
+
+  const rows = [
+    { key:'salePrice',   label:'Sale Price',    fmt_fn: fmt },
+    { key:'totalCosts',  label:'Total Costs',   fmt_fn: fmt },
+    { key:'netProceeds', label:'Net to Seller', fmt_fn: fmtSigned, isNet: true },
+    { key:'netPct',      label:'Net %',         fmt_fn: fmtPct }
+  ];
+
+  rows.forEach(row => {
+    html += `<tr><td>${esc(row.label)}</td>`;
+    results.forEach((p, pi) => {
+      const val = p.r[row.key];
+      const isMain = Math.abs(p.price - mainPrice) < 0.01;
+      let cls = isMain ? 'sc-highlight' : '';
+      if (row.isNet) cls += (val < 0 ? ' sc-net-neg' : ' sc-net-pos');
+      const idAttr = row.isNet ? ` id="result-scenario-${p.id}-net"` : '';
+      html += `<td${idAttr} class="${cls.trim()}">${row.fmt_fn(val)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>'
+    + `<p style="font-size:12px;color:var(--text-muted);padding:8px 16px">* matches main sale price above. Flat fees and proration unchanged across scenarios.</p>`;
+  document.getElementById('scenario-table-container').innerHTML = html;
+}
+
+function renderPrintHeader() {
+  const s = _state;
+  const agentEl = document.getElementById('print-agent-info');
+  const dateEl  = document.getElementById('print-date');
+  let agentHtml = '';
+  if (s.agentName) agentHtml += `<strong>${esc(s.agentName)}</strong>`;
+  if (s.agentPhone) agentHtml += `<span>${esc(s.agentPhone)}</span>`;
+  if (s.agentBrokerage) agentHtml += `<span>${esc(s.agentBrokerage)}</span>`;
+  agentEl.innerHTML = agentHtml;
+  const d = new Date();
+  dateEl.innerHTML = `<strong>Seller Net Sheet</strong><br>Prepared on ${d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`;
+}
+
+// ===== PERSISTENCE =====
+function saveState() {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(_doSave, 300);
+}
+
+function _doSave() {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(_state));
+  } catch(e) {
+    toast('Auto-save unavailable in this browser session - use Export to save your work.', 'warn');
+    try { localStorage.setItem(KEY + '__backup', JSON.stringify(_state)); } catch(_) {}
+  }
+}
+
+function flushSave() {
+  clearTimeout(_saveTimer);
+  _doSave();
+}
+
+function loadState() {
+  const def = defaultState();
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (!raw) return def;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') throw new Error('bad shape');
+    // Upgrade-safety: merge missing fields from defaults
+    const merged = { ...def, ...parsed };
+    // Coerce misc to array
+    if (!Array.isArray(merged.misc)) {
+      merged.misc = def.misc;
+    } else {
+      merged.misc = merged.misc.slice(0,3).map((m, i) => ({
+        label: String(m && m.label ? m.label : (def.misc[i]||{}).label||''),
+        amount: Math.max(0, safeNum(m && m.amount))
+      }));
+      while (merged.misc.length < 3) merged.misc.push({ label:'', amount:0 });
+    }
+    return merged;
+  } catch(e) {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) localStorage.setItem(KEY + '__corrupt-backup', raw);
+    } catch(_) {}
+    toast('Previous save was unreadable - backed up to snc_v1__corrupt-backup. Starting fresh.', 'warn');
+    return def;
+  }
+}
+
+// ===== THEME =====
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('icon-sun').style.display = theme === 'dark' ? 'none' : '';
+  document.getElementById('icon-moon').style.display = theme === 'dark' ? '' : 'none';
+  document.getElementById('theme-toggle').setAttribute('aria-label',
+    theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+}
+
+// ===== TOASTS =====
+function toast(msg, type) {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = 'toast' + (type ? ' toast-' + type : '');
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(), 300); }, 4500);
+}
+
+// ===== VALIDATION =====
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('visible', !!msg);
+  const inputId = id.replace('err-', '');
+  const inp = document.getElementById(inputId);
+  if (inp) inp.classList.toggle('input-error-state', !!msg);
+}
+function clearErr(id) { showErr(id, ''); }
+
+function validateForPrint() {
+  let ok = true;
+  const sp = safeNum(_state.salePrice);
+  if (sp <= 0) {
+    showErr('err-sale-price', 'Enter a sale price to print.');
+    ok = false;
+  } else {
+    clearErr('err-sale-price');
+  }
+  return ok;
+}
+
+// ===== EXPORT / IMPORT =====
+function exportJSON() {
+  flushSave();
+  const json = JSON.stringify(_state, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const d    = new Date();
+  const ds   = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  a.href     = url;
+  a.download = `net-sheet-${ds}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Net sheet exported.', 'success');
+}
+
+function importJSON(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (!parsed || typeof parsed !== 'object') throw new Error('not an object');
+      // Validate/coerce - this is untrusted external data
+      if (parsed.misc !== undefined && !Array.isArray(parsed.misc)) throw new Error('misc must be array');
+      if (!window.confirm('Import this file? Your current net sheet will be replaced.')) return;
+      const def = defaultState();
+      const merged = { ...def, ...parsed };
+      if (!Array.isArray(merged.misc)) merged.misc = def.misc;
+      else {
+        merged.misc = merged.misc.slice(0,3).map((m, i) => ({
+          label: String(m && m.label ? m.label : ''),
+          amount: Math.max(0, safeNum(m && m.amount))
+        }));
+        while (merged.misc.length < 3) merged.misc.push({ label:'', amount:0 });
+      }
+      // Sanitize text fields (trust only string types, clamp to maxlength)
+      ['agentName','agentPhone','agentBrokerage'].forEach(k => {
+        merged[k] = String(merged[k] || '').slice(0, 100);
+      });
+      merged.misc.forEach(m => { m.label = String(m.label||'').slice(0,50); });
+      _state = merged;
+      saveState();
+      // Blur any focused input so setVal's focus-guard doesn't skip restoring its value
+      if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+      }
+      render();
+      applyTheme(_state.theme || 'light');
+      toast('Net sheet imported.', 'success');
+    } catch(err) {
+      toast('Could not read that file - make sure it is a valid net sheet export.', 'error');
+    }
+    // Clear the file input so the same file can be re-imported if needed
+    document.getElementById('btn-import').value = '';
+  };
+  reader.onerror = function() {
+    toast('Error reading file.', 'error');
+  };
+  reader.readAsText(file);
+}
+
+// ===== EVENT HANDLERS =====
+function getStateFromInputs() {
+  // Read all inputs into state object
+  _state.salePrice   = safeNum(document.getElementById('sale-price').value);
+  _state.scenarioA   = safeNum(document.getElementById('scenario-a').value);
+  _state.scenarioB   = safeNum(document.getElementById('scenario-b').value);
+  _state.scenarioC   = safeNum(document.getElementById('scenario-c').value);
+  _state.payoff1     = safeNum(document.getElementById('payoff-1').value);
+  _state.payoff2     = safeNum(document.getElementById('payoff-2').value);
+  _state.listingPct  = safeNum(document.getElementById('listing-pct').value);
+  _state.buyerPct    = safeNum(document.getElementById('buyer-pct').value);
+  _state.titleFlat   = safeNum(document.getElementById('title-flat').value);
+  _state.transferFlat = safeNum(document.getElementById('transfer-flat').value);
+  _state.transferRate = safeNum(document.getElementById('transfer-rate').value);
+  _state.annualTax   = safeNum(document.getElementById('annual-tax').value);
+  _state.taxDays     = safeInt(document.getElementById('tax-days').value);
+  _state.hoaFlat     = safeNum(document.getElementById('hoa-flat').value);
+  _state.repairsFlat = safeNum(document.getElementById('repairs-flat').value);
+  for (let i = 0; i < 3; i++) {
+    const lbl = document.getElementById('misc-label-' + i);
+    const amt = document.getElementById('misc-amount-' + i);
+    if (!Array.isArray(_state.misc)) _state.misc = [{},{},{}];
+    _state.misc[i] = {
+      label: lbl ? lbl.value : '',
+      amount: amt ? safeNum(amt.value) : 0
+    };
+  }
+  _state.agentName      = (document.getElementById('agent-name').value || '').slice(0,80);
+  _state.agentBrokerage = (document.getElementById('agent-brokerage').value || '').slice(0,80);
+  _state.agentPhone     = (document.getElementById('agent-phone').value || '').slice(0,30);
+}
+
+function validateNegative(id, errId) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const v = safeNum(el.value);
+  if (el.value !== '' && v < 0) {
+    showErr(errId, 'Enter a positive amount.');
+  } else {
+    clearErr(errId);
+  }
+}
+
+// ===== STORAGE CROSS-TAB =====
+window.addEventListener('storage', function(e) {
+  if (e.key === KEY) {
+    toast('Net sheet updated in another tab - reload to see the latest.', 'warn');
+  }
+});
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
+  _state = loadState();
+  applyTheme(_state.theme || 'light');
+
+  // Honor system prefers-color-scheme on FIRST load only
+  if (!localStorage.getItem(KEY)) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      _state.theme = 'dark';
+      applyTheme('dark');
+    }
+  }
+
+  render();
+
+  // === Delegated input handler ===
+  document.getElementById('input-panel').addEventListener('input', function(e) {
+    const t = e.target;
+    getStateFromInputs();
+    // Inline validation for negative amounts
+    const negChecks = [
+      ['payoff-1','err-payoff-1'],['payoff-2','err-payoff-2'],
+      ['misc-amount-0','err-misc-0'],['misc-amount-1','err-misc-1'],
+      ['misc-amount-2','err-misc-2']
+    ];
+    negChecks.forEach(([fld,err]) => {
+      if (t.id === fld) validateNegative(fld, err);
+    });
+    // Clear sale price error on change
+    if (t.id === 'sale-price') clearErr('err-sale-price');
+    // Tax days clamp warning
+    if (t.id === 'tax-days') {
+      const dw = document.getElementById('warn-tax-days');
+      if (safeInt(t.value) > 365) {
+        dw.textContent = 'Clamped to 365 days';
+        dw.classList.add('visible');
+      } else {
+        dw.classList.remove('visible');
+      }
+    }
+    saveState();
+    // Partial render (skip input sync to avoid cursor jump)
+    const r = compute();
+    renderNet(r);
+    renderWaterfall(r);
+    renderChart(r);
+    renderScenarios();
+    renderPrintHeader();
+    document.getElementById('result-proration').textContent = fmt(r.proration);
+  });
+
+  // Transfer mode toggle — zero out the hidden field so flat+rate formula stays single-mode
+  document.getElementById('transfer-mode-toggle').addEventListener('click', function(e) {
+    const btn = e.target.closest('.toggle-btn');
+    if (!btn) return;
+    _state.transferMode = btn.dataset.mode;
+    if (btn.dataset.mode === 'flat') {
+      _state.transferRate = 0;
+    } else {
+      _state.transferFlat = 0;
+    }
+    saveState();
+    render();
+  });
+
+  // Theme toggle
+  document.getElementById('theme-toggle').addEventListener('click', function() {
+    _state.theme = _state.theme === 'dark' ? 'light' : 'dark';
+    applyTheme(_state.theme);
+    saveState();
+  });
+
+  // Export
+  document.getElementById('btn-export').addEventListener('click', exportJSON);
+
+  // Import
+  document.getElementById('btn-import').addEventListener('change', function(e) {
+    importJSON(e.target.files[0]);
+  });
+
+  // Print
+  document.getElementById('btn-print').addEventListener('click', function() {
+    if (!validateForPrint()) {
+      toast('Enter a sale price before printing.', 'warn');
+      return;
+    }
+    flushSave();
+    renderPrintHeader();
+    window.print();
+  });
+
+  // Reset
+  document.getElementById('btn-reset').addEventListener('click', function() {
+    if (!window.confirm('Reset to the worked example? Your current inputs will be cleared.')) return;
+    _state = defaultState();
+    saveState();
+    render();
+    applyTheme(_state.theme);
+    toast('Reset to example values.', 'success');
+  });
+
+  // Flush on tab close / visibility change (L-98)
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') flushSave();
+  });
+  window.addEventListener('pagehide', flushSave);
+});
+</script>
+<div id="demo-cta" style="position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#1f3044;color:#fff;font:15px/1.4 'Segoe UI',Arial,sans-serif;padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(0,0,0,.25);transition:transform .2s">
+<span>Live demo of Seller Net Proceeds Calculator (Real Estate). It's the real tool, but nothing you type here is saved.</span>
+<a href="https://www.etsy.com/listing/4531378742?utm_source=pin-media&utm_medium=demo&utm_campaign=articles" target="_blank" rel="noopener" style="background:#e8654f;color:#fff;text-decoration:none;padding:7px 14px;border-radius:8px;font-weight:600;white-space:nowrap">Get the full version ($13) on Etsy</a>
+<button onclick="this.parentNode.style.display='none'" aria-label="dismiss" style="background:none;border:0;color:#cfd8e3;font-size:18px;cursor:pointer">&#215;</button></div>
+<div style="height:64px"></div>
+</body>
+</html>
