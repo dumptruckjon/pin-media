@@ -1,0 +1,2 @@
+# Claude Code personal settings: "don't ask again" approvals can contain secrets. Never commit.
+**/.claude/settings.local.json
